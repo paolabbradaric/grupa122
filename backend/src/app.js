@@ -29,6 +29,19 @@ const server = http.createServer((req, res) => {
     return res.end(JSON.stringify(castings));
   }
 
+    if (req.method === "GET" && req.url.startsWith("/castings/")) {
+    const id = Number(req.url.slice("/castings/".length));
+    const casting = castings.find((poziv) => poziv.id === id);
+
+    res.writeHead(casting ? 200 : 404, {
+      "Content-Type": "application/json; charset=utf-8",
+    });
+
+    return res.end(
+      JSON.stringify(casting || { poruka: "Casting poziv ne postoji." })
+    );
+  }
+
   res.writeHead(200, { "Content-Type": "text/plain" });
   res.end("API running");
 });
