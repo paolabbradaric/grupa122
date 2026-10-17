@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const pool = require("./config/database");
 const registerCandidate = require("./candidate-registration");
+const registerCompany = require("./company-registration");
 
 const port = process.env.PORT || 10000;
 const devRegistration = process.env.DEV_REGISTRATION === "true" &&
@@ -12,8 +13,9 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
 
   // Probni obrazac dostupan je samo kada je uključen lokalni način rada.
-  if (devRegistration && req.method === "GET" && url.pathname === "/") {
-    const filePath = path.join(__dirname, "../../frontend/public/registration.html");
+  if (devRegistration && req.method === "GET" && (url.pathname === "/" || url.pathname === "/company")) {
+    const page = url.pathname === "/company" ? "company-registration.html" : "registration.html";
+    const filePath = path.join(__dirname, "../../frontend/public", page);
     return fs.readFile(filePath, (error, html) => {
       if (error) {
         res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
@@ -30,6 +32,10 @@ const server = http.createServer(async (req, res) => {
   // POST šalje unesene podatke funkciji za provjeru i spremanje.
   if (devRegistration && req.method === "POST" && url.pathname === "/dev/candidates") {
     return registerCandidate(req, res);
+  }
+
+  if (devRegistration && req.method === "POST" && url.pathname === "/dev/companies") {
+    return registerCompany(req, res);
   }
 
   if (req.method === "GET" && url.pathname === "/health") {
