@@ -23,7 +23,7 @@
 - Nina: #10 — oglasi, filtriranje, prijave.
 - Tara: #11 — poslodavac i admin panel.
 - Mario: #12 — baza, autentifikacija, sesije, ovlasti.
-- Tin: #4 — backend oglasa i prijava (postojeći issue).
+- Tin: #16 — backend casting oglasa i prijava (novi plan; prethodni #4 zatvoren kao zamijenjen).
 - Lucija: #13 — audicije, rezervacije, obavijesti.
 - Paola: #14 — verifikacija, moderacija, integracijski testovi.
 
