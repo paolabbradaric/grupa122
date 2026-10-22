@@ -5,7 +5,7 @@
 - Uloge: kandidat, poslodavac, admin. Jedan zajednički admin račun samo za demo.
 - Gosti vide javne oglase; prijavljeni poslodavac vidi samo svoje oglase.
 - Svaki oglas je zaseban projekt s jednom ulogom.
-- Odvojena polja: maksimalan broj prijava i broj traženih kandidata.
+- Nema maksimalnog broja prijava dok je oglas objavljen i rok otvoren. `positions_count` označava broj traženih kandidata; kandidat se može prijaviti najviše jednom na isti oglas.
 - Verificirani poslodavci objavljuju; neverificirani spremaju nacrte.
 - Pozvani kandidat odabire slobodan termin audicije.
 - Admin nepovratno briše neprimjeren oglas i povezane podatke uz potvrdu i provjere.
