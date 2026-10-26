@@ -1,0 +1,188 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* NAVIGACIJA */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px 30px;
+  background-color: #f5f0ff;
+}
+
+.navbar-logo {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #7c3aed;
+  color: white;
+  cursor: pointer;
+  font-size: 22px;
+  white-space: nowrap;
+}
+
+.navbar input {
+  flex: 1;
+  min-width: 180px;
+  max-width: 400px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.navbar>div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar>div>div {
+  display: flex;
+  gap: 8px;
+}
+
+.navbar button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #7c3aed;
+  color: white;
+  cursor: pointer;
+}
+
+.navbar button:hover {
+  background-color: #5b21b6;
+}
+
+/* KORISNIČKI IZBORNIK */
+
+.user-menu {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 190px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.user-menu button {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+  background: white;
+  color: #333;
+}
+
+.user-menu button:hover {
+  background: #f5f0ff;
+}
+
+/* SADRŽAJ STRANICE */
+
+main {
+  padding: 40px;
+  text-align: center;
+}
+
+main h1 {
+  font-size: 36px;
+  overflow-wrap: anywhere;
+}
+
+main p {
+  font-size: 18px;
+}
+
+/* MOBITELI */
+
+@media (max-width: 700px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .navbar-logo {
+    width: 100%;
+    white-space: normal;
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .navbar input {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    flex: none;
+  }
+
+  .navbar>div {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .navbar>div>div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .navbar select {
+    max-width: 100%;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .navbar button {
+    font-size: 16px;
+  }
+
+  .user-menu {
+    right: 0;
+    max-width: calc(100vw - 30px);
+  }
+
+  main {
+    padding: 20px 15px;
+  }
+
+  main h1 {
+    font-size: 28px;
+  }
+
+  main p {
+    font-size: 16px;
+  }
+
+  main form {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  main form input,
+  main form textarea,
+  main form select {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  main form img {
+    max-width: 100%;
+    height: auto;
+  }
+}
