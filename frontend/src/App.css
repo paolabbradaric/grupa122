@@ -1,0 +1,142 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+nav h2 {
+  font-size: 22px;
+  white-space: nowrap;
+}
+
+nav input {
+  flex: 1;
+  max-width: 400px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+nav button {
+  padding: 10px 16px;
+  margin-left: 8px;
+  border: none;
+  border-radius: 8px;
+  background-color: #7c3aed;
+  color: white;
+  cursor: pointer;
+}
+
+nav button:hover {
+  background-color: #5b21b6;
+}
+
+main {
+  padding: 40px;
+  text-align: center;
+}
+
+main h1 {
+  font-size: 36px;
+}
+
+main p {
+  font-size: 18px;
+}
+
+@media (max-width: 700px) {
+  nav {
+    flex-wrap: wrap;
+  }
+
+  nav input {
+    max-width: 100%;
+  }
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px 30px;
+  background-color: #f5f0ff;
+}
+
+.navbar h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.navbar input {
+  flex: 1;
+  min-width: 180px;
+  max-width: 400px;
+}
+
+.navbar > div {
+  display: flex;
+  gap: 10px;
+}
+
+.navbar button {
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navbar h2 {
+    text-align: center;
+    white-space: normal;
+  }
+
+  .navbar input {
+    width: 100%;
+    max-width: none;
+    flex: auto;
+  }
+
+  .navbar > div {
+    justify-content: center;
+  }
+}
+
+.user-menu {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 190px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.user-menu button {
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  background: white;
+  color: #333;
+}
+
+.user-menu button:hover {
+  background: #f5f0ff;
+}
