@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cast Me If You Can - Moja statistika</title>
+    <link rel="stylesheet" href="../assets/css/poslodavac.css">
+</head>
+<body>
+
+    <!--zaglavlje-->
+    <header>
+        <a href="poslodavac-moji-oglasi.html" class="logo">
+            Cast Me If You Can
+        </a>
+        <nav>
+            <a href="poslodavac-moji-oglasi.html">Moji oglasi</a>
+            <a href="poslodavac-novi-oglas.html">Novi oglas</a>
+            <a href="poslodavac-statistika.html">Statistika</a>
+        </nav>
+        <!--kasnije povezati sa prijavljenim korisnikom, kor. ime, izbornik s opcijama...-->
+        <div class="korisnik">
+            <span>Poslodavac</span>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section class="naslov-stranice">
+            <div>
+                <h1>Statistika casting poziva</h1>
+                <p>
+                    Pregled statistike vaših oglasa i prijava.
+                </p>
+            </div>
+        </section>
+
+        <!--dodatno statistika po točno određenim odabranim oglasima-->
+
+        <section class="poslodavac-ukupna-statistika">
+
+             <div class="poslodavac-statistika-kartica">
+                <h3>Ukupno prijava</h3>
+                <p id="poslodavacStatistikaUkupnoPrijava">0</p>
+            </div>
+
+            <div class="poslodavac-statistika-kartica">
+                <h3>Kandidati u užem izboru</h3>
+                <p id="poslodavacStatistikaUziIzbor">0</p>               
+            </div>
+
+            <div class="poslodavac-statistika-kartica">
+                <h3>Odabrani kandidati</h3>
+                <p id="poslodavacStatistikaOdabraniKandidati">0</p>                
+            </div>
+
+            <div class="poslodavac-statistika-kartica">
+                <h3>Potvrđeni dolasci na audiciju</h3>
+                <p id="poslodavacStatistikaDolasciAudicije">0</p>                
+            </div>
+
+        </section>
+        
+        <section class="prijave-po-stanju">
+
+             <div class="poslodavac-statistika-kartica"> <!--umjesto div i ul pa JS dodaje podatkw-->
+                <h3>Prijave po stanju</h3>
+                <!--treba doraditi da piše za svako stanje-->
+                <p id="poslodavacStatistikaPrijaveStanje">0</p> <!--ovo ne tako, samo predložak-->
+            </div>
+
+        </section>
+            
+    </main>
+
+    <!--dodati script, JS-->
+    
+</body>
+</html>
