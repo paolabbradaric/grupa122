@@ -1,25 +1,48 @@
-import { useState } from 'react'
+import { useState } from "react";
 
-function EmployerLogin({ onKorisnik, onRegistracija }) {  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+function EmployerLogin({ onKorisnik, onRegistracija }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [greska, setGreska] = useState("");
+  const [poruka, setPoruka] = useState("");
 
   function handleSubmit(e) {
-    e.preventDefault()
-    alert('Prijava poslodavca bit će dostupna nakon povezivanja s backendom.')
+    e.preventDefault();
+
+    setGreska("");
+    setPoruka("");
+
+    if (!username.trim()) {
+      setGreska("Unesi korisničko ime.");
+      return;
+    }
+
+    if (!password) {
+      setGreska("Unesi lozinku.");
+      return;
+    }
+
+    setPoruka(
+      "Podaci su uneseni. Prijava poslodavca još nije dostupna jer backend nije povezan.",
+    );
   }
 
   return (
     <main>
       <h1>Prijava za poslodavce</h1>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div>
           <label htmlFor="employer-username">Korisničko ime</label>
           <input
             id="employer-username"
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setGreska("");
+              setPoruka("");
+            }}
             required
           />
         </div>
@@ -30,27 +53,40 @@ function EmployerLogin({ onKorisnik, onRegistracija }) {  const [username, setUs
             id="employer-password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setGreska("");
+              setPoruka("");
+            }}
             required
           />
         </div>
+
+        {greska && (
+          <p role="alert" style={{ color: "red" }}>
+            {greska}
+          </p>
+        )}
+
+        {poruka && <p role="status">{poruka}</p>}
 
         <button type="submit">Prijavi se</button>
       </form>
 
       <p>
-    Još nemaš račun?{' '}
-    <button type="button" onClick={onRegistracija}>
-        Registriraj poslodavca
-    </button>
-    </p>
+        Još nemaš račun?{" "}
+        <button type="button" onClick={onRegistracija}>
+          Registriraj poslodavca
+        </button>
+      </p>
+
       <p>
         <button type="button" onClick={onKorisnik}>
-            Prijava za korisnike
+          Prijava za korisnike
         </button>
-    </p>
+      </p>
     </main>
-  )
+  );
 }
 
-export default EmployerLogin
+export default EmployerLogin;
