@@ -9,6 +9,7 @@ import EmployerProfile from "./pages/EmployerProfile";
 import CandidateNotifications from "./pages/CandidateNotifications";
 import CandidateApplications from "./pages/CandidateApplications";
 import "./App.css";
+import Home from "./pages/Home";
 import MojiOglasi from "./pages/MojiOglasi"
 import NoviOglas from "./pages/NoviOglas";
 
@@ -65,10 +66,7 @@ function App() {
           onMojiOglasi={() => setStranica("moji-oglasi")} 
           oglasZaUredivanje={odabraniOglas}/>
       ) : (
-        <main>
-          <h1>Dobrodošli na Cast Me If You Can!</h1>
-          <p>Pronađi svoju sljedeću ulogu ili idealnog kandidata.</p>
-        </main>
+        <Home />
       )}
     </>
   );
