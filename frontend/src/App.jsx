@@ -9,15 +9,19 @@ import EmployerProfile from "./pages/EmployerProfile";
 import CandidateNotifications from "./pages/CandidateNotifications";
 import CandidateApplications from "./pages/CandidateApplications";
 import "./App.css";
+import MojiOglasi from "./pages/MojiOglasi"
+import NoviOglas from "./pages/NoviOglas";
 
 function App() {
   const [stranica, setStranica] = useState("pocetna");
+  const [odabraniOglas, setOdabraniOglas] = useState(null);
 
   return (
     <>
       <Navbar
         onPrijava={() => setStranica("prijava")}
         onRegistracija={() => setStranica("registracija")}
+        onMojiOglasi={() => setStranica("moji-oglasi")}
         onPocetna={() => setStranica("pocetna")}
         onProfilKandidata={() => setStranica("profil-kandidata")}
         onProfilPoslodavca={() => setStranica("profil-poslodavca")}
@@ -47,6 +51,19 @@ function App() {
         <CandidateNotifications />
       ) : stranica === "prijave-kandidata" ? (
         <CandidateApplications />
+      ) : stranica === "moji-oglasi" ? (
+        <MojiOglasi onNoviOglas={() => {
+          setOdabraniOglas(null);
+          setStranica("novi-oglas");
+        }} onUrediOglas={(oglas) => {
+          setOdabraniOglas(oglas);
+          setStranica("novi-oglas");
+        }}/>
+      ) : stranica === "novi-oglas" ? (
+        <NoviOglas 
+          key={odabraniOglas?.id ?? "novi"}
+          onMojiOglasi={() => setStranica("moji-oglasi")} 
+          oglasZaUredivanje={odabraniOglas}/>
       ) : (
         <main>
           <h1>Dobrodošli na Cast Me If You Can!</h1>
