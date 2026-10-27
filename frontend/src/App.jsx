@@ -9,6 +9,8 @@ import EmployerProfile from "./pages/EmployerProfile";
 import CandidateNotifications from "./pages/CandidateNotifications";
 import CandidateApplications from "./pages/CandidateApplications";
 import "./App.css";
+import Home from "./pages/Home";
+
 
 function App() {
   const [stranica, setStranica] = useState("pocetna");
@@ -48,10 +50,7 @@ function App() {
       ) : stranica === "prijave-kandidata" ? (
         <CandidateApplications />
       ) : (
-        <main>
-          <h1>Dobrodošli na Cast Me If You Can!</h1>
-          <p>Pronađi svoju sljedeću ulogu ili idealnog kandidata.</p>
-        </main>
+        <Home />
       )}
     </>
   );
