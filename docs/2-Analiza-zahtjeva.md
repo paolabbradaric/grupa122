@@ -91,13 +91,13 @@ Ovdje smo zapisali pravila projekta i stvari koje još trebamo potvrditi.
 | --- | --- | --- | --- | --- |
 | C-01 | Ograničenje | Jedan casting oglas predstavlja jedan zaseban projekt i jednu ulogu; broj traženih kandidata i maksimalni broj prijava odvojena su polja (početni maksimum prijava 1000). | Plan razvoja tima | Uskladiti bazu, API i obrazac oglasa te testirati pravila za oba broja. |
 | C-02 | Ograničenje | Registracija kandidata predviđena je za punoljetne osobe (18+). | Plan razvoja tima | Sustav provjerava datum rođenja pri registraciji i ne dopušta maloljetnički račun. |
-| C-03 | Ograničenje | Postojeću PostgreSQL bazu treba sačuvati; usklađenja sheme izvoditi migracijama bez nepotrebnog gubitka podataka. | Dogovor restarta projekta 22. 10. 2026.; Plan razvoja tima | Usporediti trenutačni `db/schema.sql` s planom (npr. polje `max_applications`) i izraditi migracijski plan. |
-| C-04 | Ograničenje | Za demonstraciju se koristi jedan zajednički administratorski račun; pristupni podaci nisu dio repozitorija. | Dogovor tima (listopad 2026.); Plan razvoja tima | Ograničiti ovlasti i čuvanje tajni; provjeriti postupak demo prijave. |
+| C-03 | Ograničenje | Postojeću PostgreSQL bazu treba sačuvati; usklađenja sheme izvoditi migracijama bez nepotrebnog gubitka podataka. | Dogovor tima (22. 10. 2026.) | Usporediti trenutačni `db/schema.sql` s planom (npr. polje `max_applications`) i izraditi migracijski plan. |
+| C-04 | Ograničenje | Za demonstraciju se koristi jedan zajednički administratorski račun; pristupni podaci nisu dio repozitorija. | Dogovor tima | Ograničiti ovlasti i čuvanje tajni; provjeriti postupak demo prijave. |
 | C-05 | Otvoreno ograničenje | Nastavni plan za 6. tjedan navodi OpenID Connect/OAuth 2.0 prijavu putem vanjskog pružatelja identiteta, a tim je planirao vlastitu prijavu. | Plan rada kolegija, 6. tjedan; Plan razvoja tima | Prije konačne potvrde F-003 dogovoriti s asistentom: prilagoditi autentifikaciju ili dobiti izričitu odluku o odstupanju. Ovo se ne smatra riješenim. |
 | C-06 | Ograničenje | Nastavni plan predviđa domenski relevantnu integraciju s vanjskim sustavom/uslugom najkasnije u nastavku implementacije. | Plan rada kolegija, 10. tjedan; Plan razvoja tima | Potvrditi prihvaća li se e-pošta za audicije kao integracija i odabrati dobavljača; nakon odluke precizirati F-034. |
 | AS-01 | Pretpostavka | Pravila prikaza profila i portfolija poslodavcu ograničit će pristup na kandidata povezanog s odgovarajućom prijavom. | Procjena tima, potreban dogovor o privatnosti | Potvrditi s asistentom i u testovima provjeriti autorizaciju privatnih podataka. |
-| AS-02 | Pretpostavka | Otkazana audicija oslobađa mjesto, a status oglasa i rezervacije ažuriraju se dosljedno. | Radni dogovor iz Plan razvoja tima | Precizirati statusne prijelaze i testirati otkazivanje, ponovno rezerviranje i konkurentne zahtjeve. |
-| AS-03 | Pretpostavka | Maksimalan broj prijava 1000 je početna vrijednost po oglasu, uz mogućnost manje vrijednosti. | Radni dogovor iz Plan razvoja tima | Provjeriti točnu dopuštenu granicu (1–1000 u prototipu) i uskladiti frontend, API i bazu. |
+| AS-02 | Pretpostavka | Otkazana audicija oslobađa mjesto, a status oglasa i rezervacije ažuriraju se dosljedno. | Plan razvoja tima | Precizirati statusne prijelaze i testirati otkazivanje, ponovno rezerviranje i konkurentne zahtjeve. |
+| AS-03 | Pretpostavka | Maksimalan broj prijava 1000 je početna vrijednost po oglasu, uz mogućnost manje vrijednosti. | Plan razvoja tima | Provjeriti točnu dopuštenu granicu (1–1000 u prototipu) i uskladiti frontend, API i bazu. |
 
 **Što trebamo pitati na M0:** (1) Je li vanjska prijava OpenID Connect/OAuth 2.0 obvezna umjesto vlastite prijave? (2) Koja vanjska domenski relevantna integracija se priznaje — e-pošta za audicije ili druga usluga? (3) Tko ima ovlast nepovratnog brisanja i kako postupati s obavijestima i datotekama? (4) Koji podaci profila postaju vidljivi poslodavcu i kada? (5) Koji su konačni statusni prijelazi oglasa, prijava i rezervacija? (6) Jesu li vrijednosti iz NF-05 prihvatljive i mjerljive?
 
@@ -108,8 +108,8 @@ U ovu tablicu upisujemo veće promjene u dogovorima. Dopunit ćemo je nakon razg
 | Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
 | --- | --- | --- | --- |
 | 22. 10. 2026. | F-001–F-034; NF-01–NF-12 | Ponovni početak razvoja uz očuvanje baze; prethodni kod više se ne smatra dovršenim sustavom. Zahtjevi dokumentiraju ciljanu funkcionalnost, ne završenost. | Dogovori i zadaci tima |
-| Listopad 2026. (dan nije evidentiran) | F-019, F-030 | Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. | Dogovor tima (listopad 2026.); Plan razvoja tima |
-| Listopad 2026. (dan nije evidentiran) | F-025 | Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. | Dogovor tima (listopad 2026.); Plan razvoja tima |
+| Listopad 2026. (dan nije evidentiran) | F-019, F-030 | Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. | Dogovor tima |
+| Listopad 2026. (dan nije evidentiran) | F-025 | Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. | Dogovor tima |
 | 28. 10. 2026. — dokumentacijski nacrt | F-003; C-05 | Zabilježen nesklad između vlastite prijave iz plana tima i OIDC/OAuth prijave u nastavnom planu. Odluka još nije donesena. | Za raspravu s asistentom na M0 — nije odobrena promjena |
 
 „Dokumentacijski nacrt” znači da smo primijetili otvoreno pitanje, a ne da je asistent već odlučio. Nakon M0 ćemo upisati što smo stvarno dogovorili.
