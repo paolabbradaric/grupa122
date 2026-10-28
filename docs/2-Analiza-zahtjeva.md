@@ -11,11 +11,10 @@ Ovo su funkcije koje naša aplikacija treba imati. Svaka ima oznaku, prioritet, 
 
 | ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
 | --- | --- | --- | --- | --- |
-| F-001 | Kandidat s 18 ili više godina može napraviti račun pomoću korisničkog imena, e-pošte i lozinke. | Visok | Plan razvoja tima | Za valjane podatke punoljetne osobe nastaje račun kandidata; duplikat korisničkog imena ili e-pošte, datum rođenja osobe mlađe od 18 godina i neispravna lozinka odbijaju se bez stvaranja računa. |
-| F-002 | Poslodavac može napraviti račun i upisati podatke svoje tvrtke. | Visok | Plan razvoja tima | Valjan naziv tvrtke, OIB, kontakt, sjedište, korisničko ime i lozinka stvaraju račun poslodavca; nepotpuni podaci i OIB bez 11 znamenki odbijaju se. Registracija sama po sebi ne daje ovlast objave oglasa. |
-| F-003 | Kandidati i poslodavci mogu se prijaviti korisničkim imenom i lozinkom, uz različite uloge. | Visok | Dogovor tima (način prijave još trebamo potvrditi) | Valjani podaci omogućuju autentificiranu sesiju s odgovarajućom ulogom; pogrešni podaci ne otvaraju sesiju i ne daju pristup zaštićenim funkcijama. Na M0 potvrditi način prijave. |
+| F-001 | Kandidat se prvi put prijavljuje putem OAuth 2.0 / OpenID Connect i dovršava svoj profil. | Visok | Dogovor tima o OAuth/OIDC prijavi | Nakon uspješne prijave kandidat odabire ulogu i unosi potrebne podatke. Račun nastaje samo za osobe s najmanje 18 godina; neispravni ili nepotpuni podaci ne spremaju se. |
+| F-002 | Poslodavac se prvi put prijavljuje putem OAuth 2.0 / OpenID Connect i unosi podatke svoje tvrtke. | Visok | Dogovor tima o OAuth/OIDC prijavi | Nakon vanjske prijave poslodavac odabire ulogu i upisuje naziv tvrtke, OIB, kontakt i sjedište. Neispravni podaci odbijaju se; račun nije automatski verificiran. |
+| F-003 | Korisnici se prijavljuju putem vanjskog OAuth 2.0 / OpenID Connect pružatelja identiteta. | Visok | Dogovor tima (28. 10. 2026.) | Korisnik se preusmjerava pružatelju identiteta. Uspješna prijava otvara korisničku sesiju s njegovom ulogom, a neuspjela ili otkazana prijava ne dopušta zaštićene funkcije. |
 | F-004 | Prijavljeni korisnik može se odjaviti iz aplikacije. | Visok | Plan razvoja tima | Nakon odjave korisnik ne može izvršavati radnje koje zahtijevaju prijavu, čak ni izravnim slanjem API zahtjeva sa starom sesijom. |
-| F-005 | Korisnik može promijeniti svoju lozinku. | Srednji | Plan razvoja tima | Korisnik koji je unio ispravnu postojeću lozinku i valjanu novu lozinku može se prijaviti novom, ali ne starom lozinkom; neispravna postojeća lozinka ne mijenja podatke. |
 | F-006 | Kandidat može pregledavati i uređivati svoj profil, iskustvo i vještine. | Visok | Plan razvoja tima | Kandidat može spremiti ime, prezime, grad, iskustvo, vještine te ponuđene fizičke karakteristike; izmjene se vide nakon ponovne prijave, a drugi kandidat ne može mijenjati taj profil. |
 | F-007 | Kandidat može dodati profilnu sliku i najviše pet JPG/PNG slika u portfolio. | Srednji | Plan razvoja tima | Kandidat može dodati i ukloniti fotografije te ih ponovno pregledati nakon prijave; više od pet fotografija ili nepodržan format odbijaju se bez neispravne pohrane. |
 | F-008 | Poslodavac može pregledavati i uređivati podatke o svojoj tvrtki. | Visok | Plan razvoja tima | Vlasnik računa može spremiti i ponovno dohvatiti naziv tvrtke, OIB, kontakt, sjedište i logotip; podaci drugih poslodavaca nisu mu dostupni za uređivanje. |
@@ -46,7 +45,7 @@ Ovo su funkcije koje naša aplikacija treba imati. Svaka ima oznaku, prioritet, 
 | F-033 | Administrator može vidjeti osnovnu statistiku korisnika, verifikacija, oglasa i prijava. | Nizak | Plan razvoja tima | Administratorski prikaz pokazuje brojeve usklađene sa zapisima u bazi; neovlašteni korisnik nema pristup administrativnoj statistici. |
 | F-034 | Aplikacija šalje važne obavijesti o prijavama i audicijama putem e-pošte. | Srednji | Plan tima i upute kolegija (usluga nije odabrana) | Nakon dogovorenog događaja sustav pokušava dostaviti obavijest na adresu korisnika putem konfigurirane vanjske usluge; uspjeh ili neuspjeh dostave može se provjeriti u zapisima. Odabir usluge i točne vrste poruka treba potvrditi. |
 
-**Još trebamo dogovoriti:** Planirali smo vlastitu prijavu (F-003), ali u uputama kolegija piše OIDC/OAuth. To ćemo pitati asistenta. Također trebamo potvrditi koju vanjsku uslugu koristimo za e-poštu (F-034), tko smije trajno brisati oglase i koja su pravila promjene statusa. Provjere moraju raditi na backendu, a ne samo u sučelju.
+**Dogovorena prijava:** Koristit ćemo **OAuth 2.0 / OpenID Connect** preko vanjskog pružatelja identiteta. Ne spremamo vlastite lozinke niti izrađujemo njihovu promjenu, pa je F-005 povučen. Još trebamo odabrati pružatelja identiteta, uslugu za e-poštu (F-034) i potvrditi pravila brisanja i statusa.
 
 ## 2.2 Nefunkcijski zahtjevi
 
@@ -55,7 +54,7 @@ Ovo su zahtjevi vezani uz sigurnost, brzinu, pouzdanost i jednostavnost korište
 | ID | Opis | Prioritet | Izvor | Način provjere |
 | --- | --- | --- | --- | --- |
 | NF-01 | Backend mora provjeravati korisničke ovlasti, tako da nitko ne može mijenjati tuđe podatke. | Visok | Dogovor tima i kvaliteta aplikacije | Izravnim API zahtjevima pokušati pristupiti tuđim profilima, oglasima i prijavama te administratorskim radnjama; neovlaštene radnje moraju biti odbijene. |
-| NF-02 | Ako koristimo vlastitu prijavu, lozinke se moraju sigurno spremati kao hash sa soli, a ne kao običan tekst. | Visok | Sigurnost i dogovor tima (ako ostane vlastita prijava) | Pregledati tablice i kod za registraciju i provjeriti sigurno hashiranje lozinki (npr. Argon2id) te da se izvorna lozinka ne zapisuje ni šalje u odgovoru API-ja. |
+| NF-02 | Aplikacija ne sprema korisničke lozinke, a OAuth/OIDC tokeni i sesije moraju biti sigurno obrađeni. | Visok | Sigurnost i dogovor tima o OAuth/OIDC prijavi | Pregledati backend i frontend: korisničke lozinke ne smiju biti u našoj bazi, valjanost prijave mora se provjeravati, a tokeni, sesije i tajne ne smiju biti javno izloženi. |
 | NF-03 | Objavljena aplikacija mora koristiti HTTPS za prijavu i slanje privatnih podataka. | Visok | Dogovor tima i kvaliteta aplikacije | Na javno postavljenoj aplikaciji provjeriti valjani HTTPS te spriječiti slanje osjetljivih podataka nezaštićenom vezom. |
 | NF-04 | Backend mora provjeravati unesene podatke čak i kada je to već napravio frontend. | Visok | Dogovor tima i kvaliteta aplikacije | Izravno poslati nevaljane vrijednosti, npr. negativan broj kandidata, pogrešan OIB, istekao rok ili prekoračen kapacitet; baza se ne smije mijenjati i mora se vratiti razumljiva pogreška. |
 | NF-05 | U testnom okruženju najmanje 95 % zahtjeva za dohvat oglasa pri 20 istodobnih korisnika treba završiti unutar 3 sekunde. | Srednji | Prijedlog tima (treba potvrditi) | Izvesti test opterećenja s 20 istodobnih korisnika, izmjeriti 95. percentil i zapisati okolinu i rezultate; brojke nisu mjerene ni unaprijed odobrene. |
@@ -67,7 +66,7 @@ Ovo su zahtjevi vezani uz sigurnost, brzinu, pouzdanost i jednostavnost korište
 | NF-11 | Kod greške aplikacija prikazuje jasnu poruku, bez otkrivanja lozinki, SQL upita ili internih detalja. | Visok | Dogovor tima i kvaliteta aplikacije | Simulirati pogrešnu prijavu, nepostojeći oglas i grešku baze te pregledati odgovore i korisničke poruke. |
 | NF-12 | Podaci kandidata, fotografije i prijave moraju biti dostupni samo korisnicima koji imaju ovlasti. | Visok | Zaštita privatnosti | Pokušati dohvatiti privatne podatke kao gost i drugi korisnik; provjeriti odbijanje, kontrolu pristupa datotekama i prikaz samo dopuštenih podataka poslodavcu. |
 
-**Napomena:** Brzinu iz NF-05 još nismo mjerili, nego je to naš prijedlog. Ciljeve za uređaje i preglednike također trebamo potvrditi. Ako budemo koristili vanjsku prijavu, moramo prilagoditi NF-02.
+**Napomena:** Brzinu iz NF-05 još nismo mjerili, nego je to naš prijedlog. Ciljeve za uređaje i preglednike trebamo potvrditi. NF-02 je prilagođen OAuth/OIDC prijavi.
 
 ## 2.3 Dionici i akteri
 
@@ -79,9 +78,10 @@ Ovdje su navedene uloge koje koriste aplikaciju i što svaka od njih može radit
 | A-02 | Kandidat (registrirani korisnik) | Uređuje profil i portfolio, pregledava i predaje/povlači prijave, rezervira audicije i prima obavijesti. | F-001, F-003–F-007, F-011–F-017, F-026, F-028–F-029, F-034 |
 | A-03 | Poslodavac (predstavnik organizacije) | Uređuje organizaciju, traži verifikaciju, upravlja oglasima i odabirom, terminima i prijavama. | F-002–F-005, F-008–F-009, F-018–F-024, F-027, F-029–F-030 |
 | A-04 | Administrator (zajednički demo račun) | Provjerava organizacije, obrađuje prijavljeni sadržaj i uklanja oglase; pregledava statistike. | F-010, F-025, F-031–F-033 |
-| A-05 | Vanjska usluga e-pošte (sekundarni akter, planirano) | Sudjeluje pri dostavi važnih obavijesti; konkretan pružatelj nije odabran. | F-034 |
+| A-05 | Vanjska usluga e-pošte (sekundarni akter, planirano) | Sudjeluje pri slanju važnih obavijesti; usluga još nije odabrana. | F-034 |
+| A-06 | OAuth/OIDC pružatelj identiteta (sekundarni akter) | Provjerava korisnički identitet; konkretnog pružatelja još trebamo odabrati. | F-001, F-002, F-003 |
 
-**Ostali dionici:** naš tim koji razvija aplikaciju te asistent i nastavnik koji prate projekt. Ako odaberemo vanjsku prijavu, dodat ćemo i tu uslugu među aktere.
+**Ostali dionici:** naš tim i nastavno osoblje koje prati projekt. Vanjski pružatelj identiteta je akter A-06 jer sudjeluje u prijavi.
 
 ## 2.4 Ograničenja i pretpostavke
 
@@ -93,13 +93,13 @@ Ovdje smo zapisali pravila projekta i stvari koje još trebamo potvrditi.
 | C-02 | Ograničenje | Registracija kandidata predviđena je za punoljetne osobe (18+). | Plan razvoja tima | Sustav provjerava datum rođenja pri registraciji i ne dopušta maloljetnički račun. |
 | C-03 | Ograničenje | Postojeću PostgreSQL bazu treba sačuvati; usklađenja sheme izvoditi migracijama bez nepotrebnog gubitka podataka. | Dogovor tima (22. 10. 2026.) | Usporediti trenutačni `db/schema.sql` s planom (npr. polje `max_applications`) i izraditi migracijski plan. |
 | C-04 | Ograničenje | Za demonstraciju se koristi jedan zajednički administratorski račun; pristupni podaci nisu dio repozitorija. | Dogovor tima | Ograničiti ovlasti i čuvanje tajni; provjeriti postupak demo prijave. |
-| C-05 | Otvoreno ograničenje | Nastavni plan za 6. tjedan navodi OpenID Connect/OAuth 2.0 prijavu putem vanjskog pružatelja identiteta, a tim je planirao vlastitu prijavu. | Plan rada kolegija, 6. tjedan; Plan razvoja tima | Prije konačne potvrde F-003 dogovoriti s asistentom: prilagoditi autentifikaciju ili dobiti izričitu odluku o odstupanju. Ovo se ne smatra riješenim. |
+| C-05 | Ograničenje | Za prijavu koristimo vanjskog pružatelja identiteta preko OAuth 2.0 / OpenID Connect, a ne vlastiti sustav lozinki. | Dogovor tima (28. 10. 2026.) i plan rada kolegija | Odabrati pružatelja identiteta, povezati prijavu s korisničkim ulogama i testirati uspješnu i neuspješnu prijavu. |
 | C-06 | Ograničenje | Nastavni plan predviđa domenski relevantnu integraciju s vanjskim sustavom/uslugom najkasnije u nastavku implementacije. | Plan rada kolegija, 10. tjedan; Plan razvoja tima | Potvrditi prihvaća li se e-pošta za audicije kao integracija i odabrati dobavljača; nakon odluke precizirati F-034. |
 | AS-01 | Pretpostavka | Pravila prikaza profila i portfolija poslodavcu ograničit će pristup na kandidata povezanog s odgovarajućom prijavom. | Procjena tima, potreban dogovor o privatnosti | Potvrditi s asistentom i u testovima provjeriti autorizaciju privatnih podataka. |
 | AS-02 | Pretpostavka | Otkazana audicija oslobađa mjesto, a status oglasa i rezervacije ažuriraju se dosljedno. | Plan razvoja tima | Precizirati statusne prijelaze i testirati otkazivanje, ponovno rezerviranje i konkurentne zahtjeve. |
 | AS-03 | Pretpostavka | Maksimalan broj prijava 1000 je početna vrijednost po oglasu, uz mogućnost manje vrijednosti. | Plan razvoja tima | Provjeriti točnu dopuštenu granicu (1–1000 u prototipu) i uskladiti frontend, API i bazu. |
 
-**Što trebamo pitati na M0:** (1) Je li vanjska prijava OpenID Connect/OAuth 2.0 obvezna umjesto vlastite prijave? (2) Koja vanjska domenski relevantna integracija se priznaje — e-pošta za audicije ili druga usluga? (3) Tko ima ovlast nepovratnog brisanja i kako postupati s obavijestima i datotekama? (4) Koji podaci profila postaju vidljivi poslodavcu i kada? (5) Koji su konačni statusni prijelazi oglasa, prijava i rezervacija? (6) Jesu li vrijednosti iz NF-05 prihvatljive i mjerljive?
+**Što još trebamo potvrditi na M0:** (1) Koji OAuth/OIDC pružatelj identiteta ćemo koristiti? (2) Je li e-pošta za audicije dovoljna kao vanjska integracija? (3) Tko smije trajno brisati oglase i koje podatke brišemo? (4) Koje podatke kandidata vidi poslodavac? (5) Koji su dopušteni statusi prijava i rezervacija? (6) Je li NF-05 prihvatljiv?
 
 ## 2.5 Značajne promjene zahtjeva
 
@@ -110,9 +110,9 @@ U ovu tablicu upisujemo veće promjene u dogovorima. Dopunit ćemo je nakon razg
 | 22. 10. 2026. | F-001–F-034; NF-01–NF-12 | Ponovni početak razvoja uz očuvanje baze; prethodni kod više se ne smatra dovršenim sustavom. Zahtjevi dokumentiraju ciljanu funkcionalnost, ne završenost. | Dogovori i zadaci tima |
 | Listopad 2026. (dan nije evidentiran) | F-019, F-030 | Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. | Dogovor tima |
 | Listopad 2026. (dan nije evidentiran) | F-025 | Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. | Dogovor tima |
-| 28. 10. 2026. — dokumentacijski nacrt | F-003; C-05 | Zabilježen nesklad između vlastite prijave iz plana tima i OIDC/OAuth prijave u nastavnom planu. Odluka još nije donesena. | Za raspravu s asistentom na M0 — nije odobrena promjena |
+| 28. 10. 2026. | F-001–F-003, F-005, NF-02, C-05 | Tim je odlučio koristiti OAuth 2.0 / OpenID Connect. Prilagođena je registracija i sigurnost, a F-005 (promjena lozinke u aplikaciji) je povučen jer lozinkama upravlja vanjski pružatelj. | Dogovor tima |
 
-„Dokumentacijski nacrt” znači da smo primijetili otvoreno pitanje, a ne da je asistent već odlučio. Nakon M0 ćemo upisati što smo stvarno dogovorili.
+Način prijave sada je dogovoren, a ostale važne promjene dodat ćemo nakon potvrde.
 
 ## 2.6 Sljedivost zahtjeva
 
@@ -120,7 +120,7 @@ U ovoj tablici povezujemo zahtjeve s dijelovima aplikacije i planiranim testovim
 
 | ID zahtjeva | Obrazac uporabe / modul | Arhitekturna realizacija | Ispitivanje ili provjera |
 | --- | --- | --- | --- |
-| F-001–F-005 | Registracija / autentifikacija / odjava | Planirani modul autentifikacije; postojeći UI: `Login.jsx`, `Register.jsx`, `EmployerLogin.jsx`, `EmployerRegister.jsx`. | Planirano: registracija 18+, duplikat, neispravni podaci, prava nakon odjave i promjena lozinke. |
+| F-001–F-004 | Registracija / OAuth/OIDC prijava / odjava | Planirana integracija s vanjskim pružateljem identiteta; postojeći frontend obrasci su prototip koji treba prilagoditi. | Planirano: prvi ulazak kandidata i poslodavca, dob 18+, odustajanje od prijave, odjava i provjera prava pristupa. |
 | F-006–F-008 | Korisnički profili i portfolio | Postojeći UI: `CandidateProfile.jsx`, `EmployerProfile.jsx`; planirani profilni API. | Planirano: spremanje nakon ponovne prijave, 5 slika, format datoteke, pristup tuđem profilu. |
 | F-009–F-010 | Zahtjev za verifikaciju / admin odluka | Planirani modul verifikacije i admin prikaz. | Planirano: valjan zahtjev, odbijanje s razlogom, ponovni zahtjev, neovlaštena odluka. |
 | F-011–F-013 | Pregled i pretraga javnih oglasa | Postojeći `Home.jsx` (ogledni podaci); backend `castingModel.js` (dohvat objavljenih); dorada , . | Planirano: javni popis, detalj, filtriranje, nepostojeći i nedostupni oglas. |
@@ -142,11 +142,11 @@ Ovdje ćemo nakon prezentacija upisati komentare asistenta i promjene koje dogov
 
 | Kontrolna točka | Povratna informacija ili nalaz | Odluka o zahtjevu ili opsegu |
 | --- | --- | --- |
-| M0 — 4. tjedan | Rasprava s asistentom tek predstoji: posebno F-003/C-05, F-034/C-06 i politika pristupa podacima. | Na čekanju — upisati isključivo stvarni dogovor nakon prezentacije. |
+| M0 — 4. tjedan | Tim je odlučio koristiti OAuth/OIDC; još trebamo odabrati pružatelja i razjasniti e-poštu i pristup podacima. | Na čekanju — nakon prezentacije upisati komentar asistenta. |
 | M1 — 7. tjedan | Još nije održano. | Na čekanju. |
 | M2 — 12. tjedan | Još nije održano. | Na čekanju. |
 | M3 — 14. tjedan | Još nije održano. | Na čekanju. |
 
 ---
 
-**Za M0:** Napisali smo 34 funkcijska i 12 nefunkcijskih zahtjeva te povezali uloge, pravila i načine provjere. Još trebamo s ekipom proći otvorena pitanja i uskladiti ih s [Obrascima uporabe](3-Obrasci-uporabe.md).
+**Za M0:** Napisali smo 33 aktivna funkcijska i 12 nefunkcijskih zahtjeva. F-005 je povučen nakon odluke o OAuth/OIDC prijavi. Otvorena pitanja i dalje trebamo provjeriti s ekipom i asistentom.
