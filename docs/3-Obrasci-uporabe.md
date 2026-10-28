@@ -8,9 +8,9 @@ U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, k
 
 Na dijagramu je prikazano tko koristi CastMeIfYouCan i koje su glavne radnje dostupne pojedinim korisnicima.
 
-**Glavni akteri:** Posjetitelj (A-01), kandidat (A-02), poslodavac (A-03) i administrator (A-04). Vanjska usluga e-pošte (A-05) služi kao pomoćni akter za obavijesti; ta je integracija zasad u planu.
+**Glavni akteri:** Posjetitelj (A-01), kandidat (A-02), poslodavac (A-03) i administrator (A-04). Usluga e-pošte (A-05) planirana je za obavijesti, a **OAuth/OIDC pružatelj identiteta (A-06)** sudjeluje u registraciji i prijavi. Konkretne pružatelje usluga još trebamo odabrati.
 
-![Dijagram obrazaca uporabe aplikacije CastMeIfYouCan](https://www.plantuml.com/plantuml/png/RPJ1Zjem48RlVeeHToH20WkthL1LLTMggsuvjCfbY8UiGx2HuqJgLds8FaBVfNslEjOcPfdSc7--tyoC9nRtZKFhsdCjQZewS0QiAfyTI6MfSCfeqPoKlg35CromE659J-v7JT2dKPSr2O65CnPcZwQfo2b7TJK3RE23QToG-uHQAeak98RWobWRYHqM8Ht30NWdpqghnbdqOM22CgJtJTsM23I_c7z_70NW_HbLBSHO9SnssBW7-dZyPjeTwXdy501jGmKsFhdVpHUB9DTVg0p_KwWAmpdxdTSPkSpre_L8Xw30IFyZqaj6fxdUM_hxMtMeAuABDKTLHqFA35b_FFcg9PYonYQo6MDNkVwEpwwY3buGEhBgg4vz_UreMZ7JEjUV3nRb6mEDXZKptENwoNLeGmCAp27qVbFS7RDjVESNYrrT1MFWrJawDionZPFL23xXb2v7VdlB9ujSFvX-gC4qjE1rHYQ-Pua7PU7qkdyuqWcZ_Gr_9Tkl7M0hrTK--1oZqtvpNiXss8E38rQJCaVMtm1s7l8TZbp6k5MO1v-spp1stSz2abNXccxvjVWbHFzDmdp-kjRNKIR4y5sE05EMJ4cPaZ5bUwia2wQaJCcOiX8YlWsnIAuj9xHqGiicjDM4TZUXRRYM91FQSaBZ_nkQ2uzQxE5DkBuAmsMAyCB54-z9o_uP_my0)
+![Dijagram obrazaca uporabe aplikacije CastMeIfYouCan](https://www.plantuml.com/plantuml/png/RLNBZjem5DtxAwxOes88hzsCQ5MXQWJgb4MhR2wn2Gx1HeuJgLFr8_e9_P6kElzLsvt4WBFBFVSSvzn7d8VAe3RrkIGbFnWm2hJ8ZmQOq3mpGabIdOIyeCOpN30xOSwVpVUIWqkZp4jE26P6QHXiLLLm8mmlYm5W1HzLPThS9vHCC3G-qGPNmb8nR33pwH2sX4Ts5b9KHgCDFSSZRNfNbNMEm8SNzVhRS4_uS4PHjeJDOssExpRhzokuwFhr3pgF81YNpgv1hrYpBI5TLJ1OOMMU-FhmLTKhb0FuGG3gYcTOsUHkDHoDQ2e_yzpxoaJn_vJTok8HSvpAhRQK1a60OkwXOuyZzYILEyt__X8Doe9Ro-eWoY2OH8B47S-jQmOgBx4At2JYJbFv3O-cu0sy83HSYuCuEVzr9vf6ebagDtkDx4R0Ey4i4inJ-MmQkpMk05lotjT-PsuUoHQsyel6fYoyqFF5EIWMaM8PEYiHRC88cNVyvJsVZbBvf7nJdQWhWOuYfftkXk5UQ3YzxMldWqOJfdR2NxXsQmfOCt6z3pIQC9supNdXkl6Bqog2csZ4D74JmCQIR8KTBneldOP-t7QRHbEbCzSBPWUgGxS3VqP-4kA-OHWEtzRwEae8QR_ZGBX7nX4oYP0aGfRtY9tEFHATGwDpRCKat2N1P8oDUx193vRqODCURDw3BMACzdYXFLveptjTSVuI33NSXBERq0wJ-1ind6Ylkz2Igs1C7hXaxeVm3m00)
 
 **Slika 3.1. Dijagram obrazaca uporabe — CastMeIfYouCan**
 
@@ -18,7 +18,7 @@ Na dijagramu je prikazano tko koristi CastMeIfYouCan i koje su glavne radnje dos
 
 Dijagram prikazuje 16 glavnih obrazaca uporabe: registraciju i prijavu, profile, oglase, prijave kandidata, audicije, obavijesti, verifikaciju i administraciju. Neke manje radnje nalaze se unutar tih obrazaca, zato ne crtamo poseban oval za svaku funkciju iz dokumenta 2.
 
-**Napomena:** U našem prvotnom planu prijava ide korisničkim imenom i lozinkom. U nastavnom planu kolegija spominje se i OpenID Connect / OAuth 2.0. Ako se dogovorimo za vanjsku prijavu, nadopunit ćemo dijagram i specifikaciju UC-002 vanjskim pružateljem identiteta.
+**Prijava:** Dogovorili smo da koristimo **OAuth 2.0 / OpenID Connect**. Vanjski pružatelj provjerava identitet, a CastMeIfYouCan zatim povezuje korisnika s ulogom kandidata, poslodavca ili administratora. Nećemo izrađivati vlastiti sustav lozinki.
 
 ## 3.2 Specifikacije obrazaca uporabe
 
@@ -30,10 +30,10 @@ Za svaki obrazac uporabe napisali smo tko ga pokreće, što treba biti ispunjeno
 | :--- | :--- |
 | **Primarni akter** | Posjetitelj (A-01) |
 | **Povezani zahtjevi** | F-001, F-002 |
-| **Preduvjeti** | Korisnik još nema račun. |
-| **Glavni uspješni tok** | 1. Korisnik otvara registraciju.<br>2. Odabire želi li se registrirati kao kandidat ili poslodavac.<br>3. Unosi podatke i šalje obrazac.<br>4. Aplikacija provjerava podatke i stvara račun.<br>5. Korisnik vidi potvrdu registracije. |
-| **Alternativni tokovi / Iznimke** | **3a – Nepotpuni ili neispravni podaci:** prikazuje se poruka i korisnik ih ispravlja.<br>**4a – Korisničko ime ili e-pošta već postoje:** račun se ne stvara.<br>**4b – Kandidat nema 18 godina:** registracija se odbija.<br>**4c – Poslodavac nema ispravan OIB:** traži se ispravak. |
-| **Posljedice (ishod)** | Račun je stvoren. Poslodavac prije objavljivanja oglasa mora proći verifikaciju. |
+| **Preduvjeti** | Korisnik još nema povezan profil u aplikaciji. Za prijavu koristi vanjskog OAuth/OIDC pružatelja identiteta. |
+| **Glavni uspješni tok** | 1. Korisnik odabire registraciju.<br>2. Aplikacija ga preusmjerava na vanjskog pružatelja identiteta.<br>3. Korisnik uspješno potvrđuje identitet i vraća se u aplikaciju.<br>4. Odabire ulogu kandidata ili poslodavca i unosi potrebne podatke profila odnosno tvrtke.<br>5. Aplikacija provjerava podatke i sprema račun povezan s vanjskim identitetom.<br>6. Prikazuje se potvrda. |
+| **Alternativni tokovi / Iznimke** | **3a – Korisnik odustane ili vanjska prijava ne uspije:** račun se ne stvara.<br>**4a – Nedostaju podaci:** korisnik ih mora dopuniti.<br>**5a – Kandidat nema 18 godina:** registracija se odbija.<br>**5b – Neispravan OIB poslodavca:** potrebno je ispraviti unos.<br>**5c – Vanjski identitet već je povezan s računom:** aplikacija ne stvara duplikat. |
+| **Posljedice (ishod)** | Korisnik ima profil povezan s vanjskom prijavom. Poslodavac mora proći verifikaciju prije objavljivanja oglasa. |
 
 ### UC-002: Prijava i odjava
 
@@ -41,20 +41,20 @@ Za svaki obrazac uporabe napisali smo tko ga pokreće, što treba biti ispunjeno
 | :--- | :--- |
 | **Primarni akter** | Kandidat (A-02), poslodavac (A-03), administrator (A-04) |
 | **Povezani zahtjevi** | F-003, F-004 |
-| **Preduvjeti** | Korisnik ima račun ili dodijeljen administratorski pristup. |
-| **Glavni uspješni tok** | 1. Korisnik otvara prijavu.<br>2. Unosi korisničko ime i lozinku.<br>3. Aplikacija provjerava podatke i ulogu.<br>4. Korisnik dobiva pristup dopuštenim funkcijama.<br>5. Na kraju odabire odjavu i aplikacija završava sesiju. |
-| **Alternativni tokovi / Iznimke** | **3a – Pogrešni podaci:** prijava se odbija i prikazuje se poruka.<br>**3b – Greška prilikom prijave:** korisnik dobiva obavijest da može pokušati ponovno.<br>**5a – Odjavljena sesija:** zaštićene funkcije više nisu dostupne. |
-| **Posljedice (ishod)** | Korisnik se uspješno prijavio ili odjavio. **Napomena:** način prijave (vlastita prijava ili OIDC/OAuth) još trebamo potvrditi s asistentom. |
+| **Preduvjeti** | Korisnik ima račun povezan s vanjskim identitetom ili dodijeljen administratorski pristup. |
+| **Glavni uspješni tok** | 1. Korisnik odabire Prijava.<br>2. Aplikacija ga preusmjerava na OAuth/OIDC pružatelja identiteta.<br>3. Korisnik se uspješno prijavi kod pružatelja i vraća u aplikaciju.<br>4. Aplikacija provjerava potvrđeni identitet i otvara sesiju s odgovarajućom korisničkom ulogom.<br>5. Kad završi, korisnik odabire Odjava i aplikacija završava njegovu sesiju. |
+| **Alternativni tokovi / Iznimke** | **3a – Korisnik odustane ili prijava ne uspije:** aplikacija ne otvara sesiju.<br>**4a – Nevaljan odgovor pružatelja:** prijava se odbija.<br>**4b – Korisnik još nema dovršen profil:** aplikacija ga vodi na dovršetak registracije.<br>**5a – Nakon odjave:** zaštićene funkcije više nisu dostupne. |
+| **Posljedice (ishod)** | Korisnik se prijavio preko vanjskog pružatelja i koristi funkcije svoje uloge ili se uspješno odjavio. |
 
 ### UC-003: Uređivanje profila
 
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Kandidat (A-02), poslodavac (A-03) |
-| **Povezani zahtjevi** | F-005, F-006, F-007, F-008 |
+| **Povezani zahtjevi** | F-006, F-007, F-008 |
 | **Preduvjeti** | Korisnik je prijavljen. |
 | **Glavni uspješni tok** | 1. Korisnik otvara svoj profil.<br>2. Aplikacija prikazuje postojeće podatke.<br>3. Kandidat mijenja podatke, iskustvo, vještine ili fotografije; poslodavac uređuje podatke tvrtke.<br>4. Korisnik odabire spremanje.<br>5. Aplikacija provjerava unos i sprema promjene. |
-| **Alternativni tokovi / Iznimke** | **3a – Previše fotografija:** kandidat ne može spremiti više od pet fotografija u portfoliju.<br>**3b – Pogrešan format fotografije:** dopušteni su JPG i PNG.<br>**5a – Neispravni podaci:** prikazuje se poruka bez spremanja.<br>**3c – Promjena lozinke:** kod vlastite prijave korisnik može zatražiti promjenu lozinke uz provjeru stare. |
+| **Alternativni tokovi / Iznimke** | **3a – Previše fotografija:** kandidat ne može spremiti više od pet fotografija u portfoliju.<br>**3b – Pogrešan format slike:** dopušteni su JPG i PNG.<br>**5a – Neispravni podaci:** aplikacija prikazuje poruku i ne sprema promjene. Lozinkom i vanjskim računom korisnik upravlja kod svog pružatelja identiteta. |
 | **Posljedice (ishod)** | Promjene su spremljene i vide se nakon ponovne prijave; tuđi profil ne može se uređivati. |
 
 ### UC-004: Pregled oglasa
@@ -214,11 +214,11 @@ Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz [2. Analize zahtjev
 | Usklađenost s implementacijom | Tijekom razvoja provjeravat ćemo odgovara li stvarni rad aplikacije ovim opisima. |
 | Testiranje | Konkretne testove i njihove rezultate dodat ćemo u [5. Ispitivanje](5-Ispitivanje.md) kada budu provedeni. |
 
-**Zahtjevi koje nismo izdvojili u zaseban oval:** F-005 (promjena lozinke) dio je uređivanja profila UC-003, a F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu 2. Povezivanje svih zahtjeva s modulima i budućim testovima vodit ćemo u tablici sljedivosti dokumenta 2, a ne u još jednoj zasebnoj tablici ovdje.
+**Zahtjevi koje nismo izdvojili u zaseban oval:** F-005 (promjena lozinke unutar aplikacije) povučen je nakon odluke o OAuth/OIDC prijavi. F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu 2. Sljedivost zahtjeva i testova vodit ćemo u Analizi zahtjeva.
 
 **Što još trebamo potvrditi na M0:**
 
-- Hoćemo li koristiti vlastitu prijavu ili OIDC/OAuth?
+- Kojeg OAuth/OIDC pružatelja identiteta ćemo koristiti?
 - Koju vanjsku uslugu ćemo koristiti za e-poštu i je li ona dovoljna kao vanjska integracija?
 - Tko točno smije trajno brisati oglase i koje sve povezane podatke brišemo?
 - Koje podatke kandidata smije vidjeti poslodavac?
