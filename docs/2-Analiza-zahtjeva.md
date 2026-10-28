@@ -1,212 +1,152 @@
-# 2. Analiza zahtjeva
+# 2. Analiza zahtjeva — CastMeIfYouCan
 
-**Cilj:** Iz odobrenog opsega projekta izvesti prepoznatljive, prioritetizirane i provjerljive zahtjeve. Zahtjevi se mogu mijenjati; pri završnoj predaji moraju odražavati dogovorenu aplikaciju. Izvori, odluke i poveznice u primjerima kolegija nastavni su scenariji, a ne projektni zapisi.
+**Stanje dokumenta:** Radna verzija za M0 (4. tjedan), 28. 10. 2026.  
+**Projekt:** CastMeIfYouCan — web-aplikacija koja povezuje kandidate za glumačke i srodne uloge s organizacijama koje objavljuju casting oglase.
 
-<details>
-<summary><strong>Održavanje zahtjeva ažurnima</strong></summary>
-
-Primjeri koriste temu projekta CrisisMap. Neki namjerno sadrže korisne nedostatke za raspravu. Izvori, odluke i poveznice na provjere u tim primjerima **nastavni su scenariji**, a ne zapisi rada stvarnog studentskog tima. Zamijenite ih zahtjevima i dokazima svojeg odobrenog projekta. Značajne promjene zabilježite u odjeljku 2.5.
-
-</details>
+**Kako čitati dokument:** Zahtjevi u odjeljcima 2.1 i 2.2 opisuju *očekivano ponašanje budućeg sustava*, a ne popis već implementiranih funkcija. Izvor „plan tima” odnosi se na stvarne GitHub zadatke, dok je „dogovor tima” odluka dosadašnjih projektnih razgovora. Stavke koje još zahtijevaju potvrdu označene su kao otvorene. U prototipu postoje prikazi i probni podaci, ali to nije dokaz end-to-end implementacije.
 
 ## 2.1 Funkcijski zahtjevi
 
-**Cilj:** Navesti što aplikacija mora omogućiti korisnicima, odakle pojedina mogućnost proizlazi i koji se opažljivi rezultat smatra prihvaćanjem.
+**Cilj:** Jednoznačno navesti što korisnik ili vanjski sustav može učiniti, uz stabilan identifikator, prioritet, izvor i opažljiv kriterij prihvaćanja. Prioriteti su: **Visok** (ključan za osnovni tijek), **Srednji** (važan za cjelovitu primjenu), **Nizak** (dodatna mogućnost).  
 
 | ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
 | --- | --- | --- | --- | --- |
-| F-001 | [Funkcijski zahtjev/ponašanje sustava] | [Visok/Srednji/Nizak] | [Odobreni zadatak / zahtjev dionika / povratna informacija] | [Opažljivi rezultat] |
-|  |  |  |  |  |
+| F-001 | Sustav omogućuje registraciju kandidata starijih od 18 godina pomoću jedinstvenog korisničkog imena, e-pošte i lozinke. | Visok | Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Za valjane podatke punoljetne osobe nastaje račun kandidata; duplikat korisničkog imena ili e-pošte, datum rođenja osobe mlađe od 18 godina i neispravna lozinka odbijaju se bez stvaranja računa. |
+| F-002 | Sustav omogućuje registraciju poslodavca s korisničkim računom i podacima o organizaciji. | Visok | Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Valjan naziv tvrtke, OIB, kontakt, sjedište, korisničko ime i lozinka stvaraju račun poslodavca; nepotpuni podaci i OIB bez 11 znamenki odbijaju se. Registracija sama po sebi ne daje ovlast objave oglasa. |
+| F-003 | Sustav omogućuje prijavu kandidata i poslodavca korisničkim imenom i lozinkom te dodjeljuje odgovarajuću ulogu. | Visok | Dogovor tima (listopad 2026.); Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) — **nije usklađeno s OIDC/OAuth obvezom iz plana kolegija** | Valjani podaci omogućuju autentificiranu sesiju s odgovarajućom ulogom; pogrešni podaci ne otvaraju sesiju i ne daju pristup zaštićenim funkcijama. Na M0 potvrditi način prijave. |
+| F-004 | Sustav omogućuje prijavljenom korisniku odjavu iz sustava. | Visok | Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Nakon odjave korisnik ne može izvršavati radnje koje zahtijevaju prijavu, čak ni izravnim slanjem API zahtjeva sa starom sesijom. |
+| F-005 | Sustav omogućuje prijavljenom korisniku promjenu vlastite lozinke. | Srednji | Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)); Plan tima ([#9](https://github.com/paolabbradaric/grupa122/issues/9)) | Korisnik koji je unio ispravnu postojeću lozinku i valjanu novu lozinku može se prijaviti novom, ali ne starom lozinkom; neispravna postojeća lozinka ne mijenja podatke. |
+| F-006 | Sustav omogućuje kandidatu pregled i uređivanje vlastitog profila, uključujući osnovne, kontaktne i glumački relevantne podatke. | Visok | Plan tima ([#9](https://github.com/paolabbradaric/grupa122/issues/9)); Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Kandidat može spremiti ime, prezime, grad, iskustvo, vještine te ponuđene fizičke karakteristike; izmjene se vide nakon ponovne prijave, a drugi kandidat ne može mijenjati taj profil. |
+| F-007 | Sustav omogućuje kandidatu dodavanje profilne fotografije i portfolija s najviše pet JPG/PNG fotografija. | Srednji | Plan tima ([#9](https://github.com/paolabbradaric/grupa122/issues/9)) | Kandidat može dodati i ukloniti fotografije te ih ponovno pregledati nakon prijave; više od pet fotografija ili nepodržan format odbijaju se bez neispravne pohrane. |
+| F-008 | Sustav omogućuje poslodavcu pregled i uređivanje profila organizacije. | Visok | Plan tima ([#9](https://github.com/paolabbradaric/grupa122/issues/9)); Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Vlasnik računa može spremiti i ponovno dohvatiti naziv tvrtke, OIB, kontakt, sjedište i logotip; podaci drugih poslodavaca nisu mu dostupni za uređivanje. |
+| F-009 | Sustav omogućuje poslodavcu slanje zahtjeva za verifikaciju tvrtke, pregled statusa i ponovni zahtjev nakon odbijanja. | Visok | Plan tima ([#14](https://github.com/paolabbradaric/grupa122/issues/14)) | Poslodavac s valjanim podacima može poslati zahtjev; status prelazi u na čekanju odnosno u pregledu, a nakon odluke u odobreno ili odbijeno. Odbijeni poslodavac vidi razlog i može podnijeti novi zahtjev. |
+| F-010 | Sustav omogućuje administratoru pregled zahtjeva za verifikaciju te odobravanje ili odbijanje s razlogom. | Visok | Plan tima ([#14](https://github.com/paolabbradaric/grupa122/issues/14)) | Administrator može obraditi zahtjev i zabilježiti odluku; kod odbijanja razlog je obvezan. Korisnik bez administratorske uloge ne može promijeniti status verifikacije. |
+| F-011 | Sustav svim posjetiteljima prikazuje javni popis objavljenih casting oglasa. | Visok | Plan tima ([#10](https://github.com/paolabbradaric/grupa122/issues/10)); Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Posjetitelj vidi samo oglase koji su javno objavljeni i dostupni za pregled; nacrti i otkazani oglasi ne pojavljuju se na popisu aktualnih oglasa. |
+| F-012 | Sustav omogućuje pregled detalja pojedinog javno objavljenog casting oglasa. | Visok | Plan tima ([#10](https://github.com/paolabbradaric/grupa122/issues/10)); Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Otvaranjem oglasa prikazuju se projekt, vrsta projekta, opis i uloga, uvjeti, lokacija, rok prijave i broj traženih kandidata; za nepostojeći oglas sustav prikazuje odgovarajuću poruku. |
+| F-013 | Sustav omogućuje pretraživanje i filtriranje javnih oglasa po nazivu, vrsti projekta, lokaciji, dobi i uvjetima uloge. | Srednji | Plan tima ([#10](https://github.com/paolabbradaric/grupa122/issues/10)) | Pretraga i filtri prikazuju samo oglase koji odgovaraju zadanim kriterijima; bez rezultata se prikazuje poruka, a čišćenjem filtara ponovno se vidi puni popis. |
+| F-014 | Sustav omogućuje prijavljenom kandidatu slanje prijave na javno objavljen oglas s otvorenim prijavama. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Kandidat može predati prijavu prije roka i prije dosezanja limita prijava; nastaje zapis povezan s kandidatom i oglasom te korisnik prima potvrdu. Gost se upućuje na prijavu u sustav. |
+| F-015 | Sustav sprječava višestruke ili nedopuštene prijave na isti casting oglas. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Druga prijava istog kandidata, prijava nakon roka, na zatvoren/otkazan/popunjen oglas ili nakon dosegnutog maksimalnog broja prijava odbija se uz razlog; provjera vrijedi i pri izravnom API zahtjevu. |
+| F-016 | Sustav omogućuje kandidatu pregled vlastitih prijava i njihova trenutačnog statusa. | Visok | Plan tima ([#10](https://github.com/paolabbradaric/grupa122/issues/10)) | Kandidat vidi samo svoje prijave s pripadajućim oglasom, datumom i statusom; ne vidi prijave drugih kandidata. |
+| F-017 | Sustav prikazuje korisniku obavijesti povezane s njegovim prijavama i audicijama te omogućuje označavanje pročitanima. | Srednji | Plan tima ([#13](https://github.com/paolabbradaric/grupa122/issues/13)) | Promjena relevantnog statusa ili termina stvara obavijest namijenjenu odgovarajućem korisniku; korisnik može obavijest označiti pročitanom, bez pristupa tuđim obavijestima. |
+| F-018 | Sustav omogućuje poslodavcu stvaranje i spremanje nacrta oglasa koji nije javno vidljiv. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Poslodavac može spremiti djelomično popunjen nacrt; nacrt ostaje dostupan u Mojim oglasima nakon ponovne prijave, a ne pojavljuje se među javnim oglasima. Nacrt može spremiti i poslodavac koji nije verificiran. |
+| F-019 | Sustav omogućuje objavu oglasa samo verificiranom poslodavcu nakon provjere obveznih podataka. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)); Plan tima ([#11](https://github.com/paolabbradaric/grupa122/issues/11)) | Objava zahtijeva naziv i tip projekta, opis, ulogu, lokaciju, budući rok, pozitivan cijeli broj traženih kandidata te dopušten maksimalan broj prijava (početno 1000). Sustav odbija nepotpune podatke i neverificiranog poslodavca. |
+| F-020 | Sustav omogućuje poslodavcu uređivanje vlastitih oglasa uz poštovanje statusnih pravila. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Vlasnik može izmijeniti dopuštena polja svog nacrta ili oglasa i ponovno vidjeti promjene; ne može uređivati tuđi oglas ili zaobići pravila statusa. |
+| F-021 | Sustav omogućuje poslodavcu pregled, pretragu i filtriranje vlastitih oglasa prema statusu. | Srednji | Plan tima ([#11](https://github.com/paolabbradaric/grupa122/issues/11)); Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Poslodavac vidi svoje nacrte, objavljene, zatvorene, popunjene i otkazane oglase; pretraga i statusni filtar mijenjaju prikaz, a oglasi drugog poslodavca nisu prikazani. |
+| F-022 | Sustav omogućuje poslodavcu zatvaranje prijava i otkazivanje vlastitog oglasa. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Ovlašteni poslodavac može potvrditi promjenu statusa; nakon zatvaranja ili otkazivanja nove prijave nisu moguće, a otkazivanje obrađuje i povezane buduće audicije te obavijesti. |
+| F-023 | Sustav omogućuje poslodavcu pregled pristiglih prijava i podataka kandidata potrebnih za odabir na vlastitim oglasima. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Poslodavac vidi prijave vezane uz vlastiti oglas, uz prikladne podatke kandidata, ali ne može dohvatiti prijave na tuđi oglas; administrator pristupa samo u okviru dodijeljenih ovlasti. |
+| F-024 | Sustav omogućuje poslodavcu obradu prijava kroz dogovorene statuse i bilježenje razloga odbijanja. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Ovlašteni poslodavac može mijenjati stanje prijave kroz predana, u pregledu, uži izbor, pozvan na audiciju, audicija održana i odabran/odbijen; odbijanje sadrži razlog, a nevaljani prijelazi i tuđe prijave su odbijeni. |
+| F-025 | Sustav omogućuje ovlaštenom administratoru nepovratno uklanjanje oglasa i svih podataka vezanih uz oglas. | Visok | Dogovor tima (listopad 2026.); Plan tima ([#14](https://github.com/paolabbradaric/grupa122/issues/14)) | Nakon izričite potvrde administrator uklanja oglas te vezane prijave, termine, rezervacije i odnosne datoteke/zapise prema pravilima brisanja; oglas više nije dohvatljiv. Korisnik bez ovlasti ne može obrisati oglas. Opseg vlasničkog brisanja razjasniti. |
+| F-026 | Sustav omogućuje kandidatu povlačenje vlastite prijave. | Srednji | Plan tima ([#10](https://github.com/paolabbradaric/grupa122/issues/10)); Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Kandidat može povući vlastitu prijavu dok je povlačenje dopušteno; status se ažurira, povezane rezervacije obrađuju se prema pravilima i povučena se prijava ne smatra aktivnom. |
+| F-027 | Sustav omogućuje poslodavcu stvaranje i otkazivanje termina audicije s datumom, mjestom i kapacitetom. | Visok | Plan tima ([#13](https://github.com/paolabbradaric/grupa122/issues/13)) | Ovlašteni vlasnik oglasa može spremiti termin s početkom, završetkom, lokacijom i pozitivnim kapacitetom; neispravni datumi se odbijaju. Otkazivanje mijenja status termina i pokreće obavijesti rezerviranima. |
+| F-028 | Sustav omogućuje isključivo pozvanom kandidatu rezervaciju slobodnog termina audicije. | Visok | Plan tima ([#13](https://github.com/paolabbradaric/grupa122/issues/13)) | Pozvani kandidat može rezervirati jedan raspoloživ termin za svoju prijavu; nepozvan korisnik ili drugi kandidat to ne može. Istodobni zahtjevi ne mogu prekoračiti kapacitet ni stvoriti dvije aktivne rezervacije. |
+| F-029 | Sustav omogućuje otkazivanje/promjenu rezervacije audicije i evidentiranje dolaska ili nedolaska. | Srednji | Plan tima ([#13](https://github.com/paolabbradaric/grupa122/issues/13)) | Kandidat može otkazati i, kada je dopušteno, odabrati drugi slobodan termin. Poslodavac može evidentirati dolazak ili nedolazak; oslobođeno mjesto ponovno je dostupno i promjene se prikazuju sudionicima. |
+| F-030 | Sustav automatski označava oglas popunjenim kada broj odabranih kandidata dosegne traženi broj. | Visok | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Kad se odabere točno onoliko kandidata koliko je navedeno u polju broj traženih kandidata, oglas se zatvara za prijave, označava popunjenim i obrađuje preostale prijave/rezervacije; nije moguće odabrati više kandidata od traženog broja. |
+| F-031 | Sustav omogućuje prijavu neprimjerenog sadržaja objavljenog oglasa administratoru. | Srednji | Plan tima ([#14](https://github.com/paolabbradaric/grupa122/issues/14)) | Korisnik može označiti oglas i poslati prijavu s razlogom; prijava je dostupna administratoru za obradu i ne mijenja automatski status oglasa. |
+| F-032 | Sustav omogućuje administratoru pregled i obradu prijava neprimjerenih oglasa. | Srednji | Plan tima ([#14](https://github.com/paolabbradaric/grupa122/issues/14)) | Administrator može pregledati prijavu, zabilježiti odluku i poduzeti dopuštenu moderatorsku radnju; korisnik bez administratorskih ovlasti to ne može. |
+| F-033 | Sustav omogućuje administratoru pregled sažetih statistika korisnika, verifikacija, oglasa i prijava. | Nizak | Plan tima ([#14](https://github.com/paolabbradaric/grupa122/issues/14)) | Administratorski prikaz pokazuje brojeve usklađene sa zapisima u bazi; neovlašteni korisnik nema pristup administrativnoj statistici. |
+| F-034 | Sustav šalje važne obavijesti povezane s prijavom ili audicijom e-poštom putem vanjske usluge. | Srednji | Plan tima ([#13](https://github.com/paolabbradaric/grupa122/issues/13)); nastavni plan — **pružatelj usluge nije odabran** | Nakon dogovorenog događaja sustav pokušava dostaviti obavijest na adresu korisnika putem konfigurirane vanjske usluge; uspjeh ili neuspjeh dostave može se provjeriti u zapisima. Odabir usluge i točne vrste poruka treba potvrditi. |
 
-<details>
-<summary><strong>Izvori zahtjeva i kriteriji prihvaćanja</strong></summary>
-
-Svaki zahtjev treba imati stabilan ID. **Izvor označava odakle zahtjev potječe**, primjerice iz odobrenog projektnog zadatka, zahtjeva dionika ili povratne informacije koja je promijenila zahtjev. Opišite opažljivo ponašanje umjesto naziva zaslona ili programskog okvira. U cijeloj dokumentaciji koristite istu ljestvicu prioriteta. Složenu korisničku interakciju objasnite u odgovarajućem obrascu uporabe umjesto kopiranja cijelog tijeka u ovu tablicu.
-
-**Primjer — funkcijski zahtjevi za aplikaciju CrisisMap:**
-
-Kategorije izvora pokazuju različite načine na koje zahtjev može nastati.
-
-| ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
-| --- | --- | --- | --- | --- |
-| F-001 | Sustav omogućuje korisniku registraciju računa pomoću adrese e-pošte. | Visok | Zahtjev dionika | Korisnik se može registrirati adresom e-pošte, primiti poruku za potvrdu i aktivirati račun slijedeći poveznicu. |
-| F-002 | Sustav omogućuje oporavak lozinke putem e-pošte. | Srednji | Zahtjev dionika | Korisnik može zatražiti ponovno postavljanje lozinke, primiti poveznicu i uspješno postaviti novu lozinku. |
-| F-003 | Sustav prikazuje popis dostupnih resursa povezanih s kriznim događajima. | Visok | Postojeći sustav | Korisnik može pregledati ažurirani popis resursa relevantnih za vrstu kriznog događaja, lokaciju i raspoloživost. |
-| F-004 | Sustav omogućuje korisnicima podnošenje prijave kriznog događaja s lokacijom. | Visok | Dokument sa zahtjevima | Korisnik može podnijeti prijavu s vrstom kriznog događaja, razinom ozbiljnosti i lokacijom te dobiti potvrdu o zaprimanju. Ako odbije pristup geolokaciji preglednika, može lokaciju odabrati ručno.|
-| F-005 | Sustav šalje korisnicima obavijesti o relevantnim promjenama u njihovoj blizini. | Visok | Povratna informacija korisnika | Korisnici dobivaju obavijest unutar jedne minute od relevantne promjene za njihovu lokaciju. |
-| F-006 | Sustav prikazuje dostupne resurse prema lokaciji. | Visok | Analiza dokumentacije | Prikazuje se ažurirani popis resursa prilagođen vrsti kriznog događaja, lokaciji i raspoloživosti. |
-| F-007 | Sustav prikazuje prijave kriznih događaja s lokacijom kao oznake na karti. | Visok | Odobreni zadatak | Prijava s valjanom lokacijom prikazuje se kao oznaka na karti; odabirom oznake korisnik može otvoriti pripadajuću prijavu. |
-| F-008 | Sustav omogućuje moderatoru odobravanje ili odbijanje podnesenih prijava. | Visok | Zahtjev dionika | Moderator može odobriti ili odbiti prijavu koja čeka pregled; korisnik bez moderatorskih ovlasti ne može izvršiti te radnje. |
-
-**Kriteriji prihvaćanja i podrijetlo zahtjeva:** Primjer prikazuje registraciju, oporavak lozinke, resurse, prijavu kriznog događaja i obavijesti te nekoliko vrsta izvora i opažljivih kriterija. Istodobno otvara korisna pitanja: opisuju li F-003 i F-006 istu funkcionalnost resursa? Je li obećanje od jedne minute u F-005 dogovoreno i moguće ispitati? Treba li aplikaciji koja koristi isključivo OAuth uopće F-001 i F-002? Retke koristite kao materijal za analizu; u svojem projektu navedite vlastite zahtjeve. U stvarnom projektu stupac Izvor bilježi odakle su doista potekli njegovi zahtjevi.
-
-**Primjer prilagodbe kada odobreni zadatak koristi OAuth i kartu:** Umjesto kopiranja registracije e-poštom i oporavka lozinke formulirajte relevantni zahtjev za prijavu, primjerice: „F-001: Korisnici se prijavljuju putem odobrenog OAuth pružatelja identiteta; uspješna prijava omogućuje radnje rezervirane za prijavljene korisnike, a odustajanje od prijave ostavlja te radnje nedostupnima.” Zaseban zahtjev za kartu može glasiti: „F-007 : Prijave s lokacijom prikazuju se kao oznake na karti; odabirom oznake otvara se pripadajuća prijava.” Izvor treba biti stvarni odobreni zadatak ili dogovoreni zahtjev dionika. Ova je prilagodba zamjena za neodgovarajuće retke, a ne dodatna tablica koju svaki tim mora ispuniti.
-
-Za složenu interakciju kratak scenarij *Given / When / Then* može pojasniti kriterij. Primjerice: *Given* prijava bez lokacije, *when* građanin je podnese, *then* sustav objašnjava da lokacija nedostaje i ne pohranjuje prijavu. Nemojte jednostavan kriterij ponavljati i u prozi i u Gherkinu niti pisati Gherkin za svaki zahtjev.
-
-</details>
-
+**Važne napomene:** F-003 opisuje trenutačni dogovor o vlastitoj prijavi, ali se **ne smije smatrati konačno odobrenim** dok se ne riješi uvjet OIDC/OAuth prijave iz nastavnog plana (C-05). F-034 opisuje planirani vanjski kanal e-pošte; konkretan pružatelj i prihvatljivost kao obvezne domenske integracije nisu potvrđeni. Granice vlasničkog prava na nepovratno brisanje i detaljni dopušteni prijelazi statusa također trebaju potvrdu. Pravila se provjeravaju na backendu, ne samo u sučelju.
 
 ## 2.2 Nefunkcijski zahtjevi
 
-**Cilj:** Odrediti važna svojstva kvalitete i uvjete rada odobrene aplikacije na način koji tim može razumno provjeriti.
+**Cilj:** Navesti provjerljiva svojstva kvalitete, sigurnosti i rada sustava, a ne obećanja ili rezultate koji još nisu izmjereni.
 
 | ID | Opis | Prioritet | Izvor | Način provjere |
 | --- | --- | --- | --- | --- |
-| NF-01 | [Konkretan zahtjev (npr. odziv, sigurnost, pristupačnost)] | Visok / Srednji / Nizak | [Sigurnost / Uputa / SLA] | [Mjerenje / Testni scenarij / Pregled] |
-|  |  |  |  |  |
+| NF-01 | Ovlasti pristupa moraju se provjeravati na poslužitelju prema ulozi korisnika i vlasništvu nad sadržajem. | Visok | Sigurnost; odvojene uloge u planu tima | Izravnim API zahtjevima pokušati pristupiti tuđim profilima, oglasima i prijavama te administratorskim radnjama; neovlaštene radnje moraju biti odbijene. |
+| NF-02 | Kod prijave vlastitom lozinkom lozinke se ne smiju pohranjivati u čitljivom obliku, već kao siguran hash sa soli. | Visok | Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)); sigurnost — **ovisno o rješenju prijave** | Pregledati tablice i kod za registraciju i provjeriti sigurno hashiranje lozinki (npr. Argon2id) te da se izvorna lozinka ne zapisuje ni šalje u odgovoru API-ja. |
+| NF-03 | Javno dostupna aplikacija mora koristiti HTTPS za prijavu, profilne podatke i ostale zaštićene radnje. | Visok | Sigurnost i javno postavljanje | Na javno postavljenoj aplikaciji provjeriti valjani HTTPS te spriječiti slanje osjetljivih podataka nezaštićenom vezom. |
+| NF-04 | Sustav mora provjeravati sve ulazne podatke na poslužitelju, neovisno o provjeri u pregledniku. | Visok | Integritet oglasa, profila i prijava | Izravno poslati nevaljane vrijednosti, npr. negativan broj kandidata, pogrešan OIB, istekao rok ili prekoračen kapacitet; baza se ne smije mijenjati i mora se vratiti razumljiva pogreška. |
+| NF-05 | U dogovorenoj testnoj okolini najmanje 95 % dohvata popisa i detalja oglasa pri 20 istodobnih virtualnih korisnika mora završiti unutar 3 sekunde. | Srednji | Predloženi mjerljivi cilj tima — **potvrditi na M0** | Izvesti test opterećenja s 20 istodobnih korisnika, izmjeriti 95. percentil i zapisati okolinu i rezultate; brojke nisu mjerene ni unaprijed odobrene. |
+| NF-06 | Trajno spremljeni profili, oglasi, prijave i rezervacije moraju ostati dostupni nakon osvježavanja preglednika i ponovnog pokretanja aplikacije. | Visok | Pouzdanost; svrha aplikacije | Spremiti testne podatke, osvježiti stranicu i ponovno pokrenuti aplikaciju; provjeriti ponovni dohvat iz baze, a ne samo iz stanja u pregledniku. |
+| NF-07 | Ključni korisnički tijekovi moraju biti prilagođeni uskim i širokim zaslonima. | Srednji | Predloženi cilj uporabljivosti | Na širinama 360 px, 768 px i 1440 px provjeriti prijavu, profile, pregled i predaju prijave te stvaranje oglasa; ne smiju nestajati obavezne kontrole. |
+| NF-08 | Osnovna navigacija i obrasci moraju se moći koristiti tipkovnicom uz vidljiv fokus i čitljive poruke pogreške. | Srednji | Predloženi cilj pristupačnosti | Proći prijavu, registraciju, pretragu oglasa i obrazac prijave bez miša; provjeriti oznake polja, redoslijed fokusa i poruke. |
+| NF-09 | Osnovne funkcionalnosti moraju raditi u aktualnim stabilnim inačicama Chromea i Firefoxa. | Srednji | Predloženi cilj kompatibilnosti | Izvršiti isti osnovni scenarij registracije, pregleda oglasa i prijave na oglas u oba preglednika te zabilježiti razlike. |
+| NF-10 | Glavne oznake, statusi, potvrde i poruke korisničkog sučelja moraju biti razumljivi i dosljedni na hrvatskom jeziku. | Nizak | Postojeće sučelje tima | Proći tipične tijekove kandidata, poslodavca i administratora te pregledati tekstualnu dosljednost. |
+| NF-11 | U slučaju greške sustav mora vratiti jasnu poruku bez izlaganja tajni, lozinki, SQL upita ili internih detalja poslužitelja. | Visok | Sigurnost i pouzdanost | Simulirati pogrešnu prijavu, nepostojeći oglas i grešku baze te pregledati odgovore i korisničke poruke. |
+| NF-12 | Privatni podaci kandidata, fotografije, prijave i ostale osobne datoteke smiju biti dostupni samo ovlaštenim korisnicima. | Visok | Privatnost i pristup temeljen na ulozi | Pokušati dohvatiti privatne podatke kao gost i drugi korisnik; provjeriti odbijanje, kontrolu pristupa datotekama i prikaz samo dopuštenih podataka poslodavcu. |
 
-<details>
-<summary><strong>Nefunkcijski zahtjevi za analizu</strong></summary>
-
-Relevantna svojstva mogu se odnositi na uporabljivost, pristupačnost, sigurnost, performanse ili pouzdanost. Odaberite svojstva specifična za projekt i opišite kako ih je moguće provjeriti. Zahtjev navodi što se očekuje; stvarna opažanja i dokazi pripadaju rezultatima ispitivanja, a ne drugom stupcu s rezultatima u ovoj tablici.
-
-**Primjer — nefunkcijski zahtjevi za aplikaciju CrisisMap:**
-
-| ID | Opis | Prioritet | Izvor |
-| --- | --- | --- | --- |
-| NF-1.1 | Sustav mora podržati 1.000 istodobnih korisnika uz vrijeme odziva kraće od 1 s. | Visok | SLA | Opteretiti sustav zadanim brojem istodobnih korisnika i izmjeriti vrijeme odziva. |
-| NF-1.2 | Svi osjetljivi podaci moraju biti šifrirani algoritmom AES-256. | Visok | Sigurnosna politika | Pregledati način pohrane i konfiguraciju šifriranja za podatke na koje se zahtjev odnosi. |
-| NF-1.3 | Korisničko sučelje mora podržavati engleski i španjolski jezik. | Srednji | Povratna informacija dionika | Pregledati reprezentativne korisničke tijekove u oba jezika. |
-| NF-1.4 | Dostupnost sustava mora iznositi najmanje 99,5 % mjesečno. | Visok | SLA | Izračunati mjesečnu dostupnost iz zapisa sustava za nadzor, ako takvi podaci postoje.|
-| NF-3.1.7 | Sustav treba imati odgovarajuću dokumentaciju. | Visok | Pravila dokumentiranja | Pregledati zahtijevane dokumentaciju prema obavezama.|
-| NF-3.1.7.1 | Kod sustava treba biti dokumentiran prema „Code Conventions for the Java Programming Language”. | Visok | Pravila dokumentiranja | Pregledati kod. |
-| NF-3.1.7.2 | Sustav treba biti opisan projektnim dokumentom/SRS-om. | Visok | Pravila dokumentiranja | Pregledati strukturu dokumenta  |
-| NF-3.1.7.3 | Sustav treba imati „Operativni priručnik” koji opisuje pravilnu uporabu. | Visok | Pravila dokumentiranja | Pregledati postoji li priručnik i mogu li se prema njemu izvršiti opisane radnje. |
-| NF-3.1.7.4 | Sustav treba imati „Plan implementacije” za pravilno postavljanje. | Visok | Smjernice za postavljanje | Pregledati odgovara li opisani postupak stvarnom postupku postavljanja.|
-
-**Provjerljivost i opseg:** Primjer uvodi performanse, sigurnost, lokalizaciju, dostupnost i dokumentaciju, uključujući hijerarhijski ID zahtjeva. Navedeni izvori primjeri su podrijetla zahtjeva, a ne dokaz da za studentski projekt stvarno postoji SLA ili sigurnosna politika. Vrijednosti poput 1.000 korisnika, 99,5 % mjesečne dostupnosti i AES-256 moraju imati odobren izvor i izvediv način provjere prije nego što postanu zahtjevi tima. Skup zahtjeva o dokumentaciji ilustrira razlaganje zahtjeva, ali zahtjevi za izradu *ove dokumentacije kolegija* u pravilu pripadaju uputama zadatka, a ne zahtjevima kvalitete web-aplikacije.
-
-**Primjer prilagodbe:** Ako je pristupačnost zahtjevana za  projekt, projektno specifičan zahtjev može glasiti: „NF-01: Sve obavezne radnje u obrascu za podnošenje prijave moguće je izvršiti samo tipkovnicom, uz vidljiv fokus na aktivnoj kontroli.” Provjera: navigirati kroz obrazac bez pokazivačkog uređaja, odabrati ili unijeti lokaciju, poslati prijavu i provjeriti može li se pročitati rezultat. To je provjerljivo svojstvo kvalitete, a ne dodatna funkcionalnost koju svaki projekt mora implementirati.
-
-</details>
+**Napomena:** Brojčani cilj NF-05 i ciljevi NF-07–NF-09 predloženi su za provjeru s timom/asistentom; nisu mjerene činjenice ni ugovoreni SLA. NF-02 vrijedi ako se zadrži autentifikacija vlastitim lozinkama. Ako se prijeđe isključivo na vanjsku prijavu, taj se zahtjev uklanja ili preoblikuje u zahtjev za sigurnu obradu tokena/sesija.
 
 ## 2.3 Dionici i akteri
 
-**Cilj:** Utvrditi uloge koje utječu na zahtjeve i razlikovati dionike od aktera koji komuniciraju s aplikacijom.
+**Cilj:** Razlikovati korisnike i vanjske sustave koji izravno komuniciraju s aplikacijom od zainteresiranih dionika.
 
-| ID uloge ili aktera | Odnos prema sustavu | Relevantni zahtjevi |
-| --- | --- | --- |
-|  |  |  |
+| ID aktera | Uloga i odnos prema sustavu | Korisnički ciljevi | Relevantni zahtjevi |
+| --- | --- | --- | --- |
+| A-01 | Posjetitelj (neprijavljeni korisnik) | Pregled javnih oglasa i detalja; odlazak na prijavu/registraciju. | F-001–F-003, F-011–F-013 |
+| A-02 | Kandidat (registrirani korisnik) | Uređuje profil i portfolio, pregledava i predaje/povlači prijave, rezervira audicije i prima obavijesti. | F-001, F-003–F-007, F-011–F-017, F-026, F-028–F-029, F-034 |
+| A-03 | Poslodavac (predstavnik organizacije) | Uređuje organizaciju, traži verifikaciju, upravlja oglasima i odabirom, terminima i prijavama. | F-002–F-005, F-008–F-009, F-018–F-024, F-027, F-029–F-030 |
+| A-04 | Administrator (zajednički demo račun) | Provjerava organizacije, obrađuje prijavljeni sadržaj i uklanja oglase; pregledava statistike. | F-010, F-025, F-031–F-033 |
+| A-05 | Vanjska usluga e-pošte (sekundarni akter, planirano) | Sudjeluje pri dostavi važnih obavijesti; konkretan pružatelj nije odabran. | F-034 |
 
-<details>
-<summary><strong>Akteri i povezani zahtjevi</strong></summary>
-
-**Primjer — akteri aplikacije CrisisMap:**
-
-| ID aktera | Uloga | Obuhvaćeni funkcijski zahtjevi |
-| --- | --- | --- |
-| A-01 | Koordinator pomoći | F-003: Pregled resursa; F-004: Podnošenje prijave kriznog događaja. |
-| A-02 | Građanin | F-001: Izrada računa; F-005: Primanje obavijesti. |
-| A-03 | Administrator sustava | NF-1.2: Provođenje sigurnosnih pravila; upravljanje korisnicima. |
-| A-04 | Posjetitelj | F-007: Pregled prijava na karti. |
-| A-05 | Moderator | F-008: Odobravanje ili odbijanje prijava. |
-
-**Odgovornosti aktera:** Uloga aktera treba biti povezana s interakcijom, a ne samo s nazivom. Provjerite podnosi li koordinator pomoći u odobrenom zadatku doista prijave kriznih događaja. Poveznica administratora s NF-1.2 navodi sigurnosni aspekt, ali sama po sebi ne opisuje obrazac uporabe; navedite stvarnu radnju administratora ili izostavite ulogu ako je nema. Nastavnici zainteresirani za rezultat mogu biti dionici, a da nisu akteri aplikacije. Tablica je polazište za razmišljanje, a ne potvrđen opis ovlasti u CrisisMapu.
-
-</details>
-
----
+**Dionici koji nisu nužno akteri:** članovi razvojnog tima (razvoj i održavanje), asistent i nastavnik kolegija (pregled zahtjeva i demonstracije), osobe čiji se osobni podaci obrađuju (privatnost i kontrola pristupa). Ako se potvrdi vanjski pružatelj identiteta, treba ga dodati kao zasebnog sekundarnog aktera.
 
 ## 2.4 Ograničenja i pretpostavke
 
-**Cilj:** Zabilježiti projektno specifične granice i pretpostavke koje utječu na zahtjeve ili oblikovanje, zajedno s njihovim izvorom i praktičnom posljedicom. Ovo je njihovo mjerodavno mjesto u dokumentaciji.
+**Cilj:** Zabilježiti obvezujuća projektna pravila i još nepotvrđene pretpostavke koje utječu na buduću arhitekturu.
 
 | ID | Tip | Opis ograničenja ili pretpostavke | Izvor | Inženjerska posljedica / Provjera |
 | --- | --- | --- | --- | --- |
-| C-01 | Ograničenje | [Fiksni tehnički ili procesni uvjet] | [Zadatak / Pravila] | [Utjecaj na arhitekturu i oblikovanje] |
-| AS-01 | Pretpostavka | [Očekivani uvjet, npr. o podacima ili okolini] | [Procjena tima] | [Kako i kada će se provjeriti valjanost] |
-|  |  |  |  |  |
-<details>
-<summary><strong>Ograničenja nasuprot pretpostavkama</strong></summary>
+| C-01 | Ograničenje | Jedan casting oglas predstavlja jedan zaseban projekt i jednu ulogu; broj traženih kandidata i maksimalni broj prijava odvojena su polja (početni maksimum prijava 1000). | Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Uskladiti bazu, API i obrazac oglasa te testirati pravila za oba broja. |
+| C-02 | Ograničenje | Registracija kandidata predviđena je za punoljetne osobe (18+). | Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Sustav provjerava datum rođenja pri registraciji i ne dopušta maloljetnički račun. |
+| C-03 | Ograničenje | Postojeću PostgreSQL bazu treba sačuvati; usklađenja sheme izvoditi migracijama bez nepotrebnog gubitka podataka. | Dogovor restarta projekta 22. 10. 2026.; Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Usporediti trenutačni `db/schema.sql` s planom (npr. polje `max_applications`) i izraditi migracijski plan. |
+| C-04 | Ograničenje | Za demonstraciju se koristi jedan zajednički administratorski račun; pristupni podaci nisu dio repozitorija. | Dogovor tima (listopad 2026.); Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Ograničiti ovlasti i čuvanje tajni; provjeriti postupak demo prijave. |
+| C-05 | Otvoreno ograničenje | Nastavni plan za 6. tjedan navodi OpenID Connect/OAuth 2.0 prijavu putem vanjskog pružatelja identiteta, a tim je planirao vlastitu prijavu. | Plan rada kolegija, 6. tjedan; Plan tima ([#12](https://github.com/paolabbradaric/grupa122/issues/12)) | Prije konačne potvrde F-003 dogovoriti s asistentom: prilagoditi autentifikaciju ili dobiti izričitu odluku o odstupanju. Ovo se ne smatra riješenim. |
+| C-06 | Ograničenje | Nastavni plan predviđa domenski relevantnu integraciju s vanjskim sustavom/uslugom najkasnije u nastavku implementacije. | Plan rada kolegija, 10. tjedan; Plan tima ([#13](https://github.com/paolabbradaric/grupa122/issues/13)) | Potvrditi prihvaća li se e-pošta za audicije kao integracija i odabrati dobavljača; nakon odluke precizirati F-034. |
+| AS-01 | Pretpostavka | Pravila prikaza profila i portfolija poslodavcu ograničit će pristup na kandidata povezanog s odgovarajućom prijavom. | Procjena tima, potreban dogovor o privatnosti | Potvrditi s asistentom i u testovima provjeriti autorizaciju privatnih podataka. |
+| AS-02 | Pretpostavka | Otkazana audicija oslobađa mjesto, a status oglasa i rezervacije ažuriraju se dosljedno. | Radni dogovor iz Plan tima ([#13](https://github.com/paolabbradaric/grupa122/issues/13)) | Precizirati statusne prijelaze i testirati otkazivanje, ponovno rezerviranje i konkurentne zahtjeve. |
+| AS-03 | Pretpostavka | Maksimalan broj prijava 1000 je početna vrijednost po oglasu, uz mogućnost manje vrijednosti. | Radni dogovor iz Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) | Provjeriti točnu dopuštenu granicu (1–1000 u prototipu) i uskladiti frontend, API i bazu. |
 
-Ograničenje je uvjet koji tim mora poštovati; pretpostavka je uvjet na koji se tim oslanja i koji treba ponovno provjeravati.
-
-**Primjer — projektni kontekst CrisisMapa:**
-
-| ID | Ograničenje ili pretpostavka | Izvor | Posljedica ili način provjere |
-| --- | --- | --- | --- |
-| C-01 | Odobreni zadatak zahtijeva OAuth prijavu u sustav za uređivanje vlastitih prijava korisnika. | Odobreni zadatak  | Zaštićeno uređivanje projektirati oko odabranog pružatelja identiteta; provjeriti autorizirane i neautorizirane zahtjeve. |
-| AS-01 | Prijave koje se prikazuju na karti imaju uporabive koordinate. | Pretpostavka o podacima  | Pregledati ogledne i uvezene prijave; planirati prikaz prijava bez valjanih koordinata. |
-
-**Ograničenje nasuprot pretpostavci:** C-01 navodi obvezujuću odluku i njezin arhitekturni učinak; AS-01 je moguće provjeriti i može se pokazati netočnim. Nemojte kopirati C-01 ako OAuth nije dio stvarnog odobrenog zadatka. Projektni odgovor objasnite u arhitekturi bez prepisivanja ove tablice.
-
-</details>
-
----
+**Pitanja za M0:** (1) Je li vanjska prijava OpenID Connect/OAuth 2.0 obvezna umjesto vlastite prijave? (2) Koja vanjska domenski relevantna integracija se priznaje — e-pošta za audicije ili druga usluga? (3) Tko ima ovlast nepovratnog brisanja i kako postupati s obavijestima i datotekama? (4) Koji podaci profila postaju vidljivi poslodavcu i kada? (5) Koji su konačni statusni prijelazi oglasa, prijava i rezervacija? (6) Jesu li vrijednosti iz NF-05 prihvatljive i mjerljive?
 
 ## 2.5 Značajne promjene zahtjeva
 
-**Cilj:** Sačuvati razlog promjena koje mijenjaju dogovoreni opseg, prioritet ili kriterije prihvaćanja, uz istodobno održavanje prethodnih zahtjeva ažurnima.
+**Cilj:** Evidentirati samo stvarne odluke koje su promijenile ili razjasnile opseg; zapis se dopunjava nakon rasprave na M0.
 
 | Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
 | --- | --- | --- | --- |
-|  |  |  |  |
+| 22. 10. 2026. | F-001–F-034; NF-01–NF-12 | Ponovni početak razvoja uz očuvanje baze; prethodni kod više se ne smatra dovršenim sustavom. Zahtjevi dokumentiraju ciljanu funkcionalnost, ne završenost. | GitHub Issues [#9](https://github.com/paolabbradaric/grupa122/issues/9)–[#16](https://github.com/paolabbradaric/grupa122/issues/16) |
+| Listopad 2026. (dan nije evidentiran) | F-019, F-030 | Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. | Dogovor tima (listopad 2026.); Plan tima ([#16](https://github.com/paolabbradaric/grupa122/issues/16)) |
+| Listopad 2026. (dan nije evidentiran) | F-025 | Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. | Dogovor tima (listopad 2026.); Plan tima ([#14](https://github.com/paolabbradaric/grupa122/issues/14)) |
+| 28. 10. 2026. — dokumentacijski nacrt | F-003; C-05 | Zabilježen nesklad između vlastite prijave iz plana tima i OIDC/OAuth prijave u nastavnom planu. Odluka još nije donesena. | Za raspravu s asistentom na M0 — nije odobrena promjena |
 
-<details>
-<summary><strong>Primjer značajne promjene</strong></summary>
-
-**Primjer scenarija — odluka tijekom pregleda CrisisMapa:**
-
-| Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
-| --- | --- | --- | --- |
-| [Datum pregleda] | F-004, NF-01 | Dodati ručni odabir lokacije kada korisnik odbije geolokaciju preglednika; bez toga građanin ne može podnijeti prijavu kriznog događaja s lokacijom. | [Poveznica na stvarnu bilješku pregleda ili zadatak tima] |
-
-**Razlog promjene:** Zapis navodi zahvaćene stavke i objašnjava razlog iz perspektive korisnika, a zatim upućuje na dokaz odluke.  Nakon stvarne odluke ažurirajte trenutačne zahtjeve; stilska izmjena teksta ne zahtijeva zapis u dnevniku promjena. Trenutačni red zadataka držite u alatu za praćenje zadataka.
-
-</details>
-
----
+Zapis s oznakom „dokumentacijski nacrt” označava *uočeni problem*, ne tvrdnju da je asistent donio odluku. Nakon M0 upisati točan datum, dogovorenu odluku i poveznicu na zapis ili Issue.
 
 ## 2.6 Sljedivost zahtjeva
 
-**Cilj:** Osigurati dvosmjernu sljedivost — povezati zahtjeve s opisanim ponašanjem, dijelovima sustava koji ih ostvaruju te ispitivanjem ili drugom provjerom. 
+**Cilj:** Povezati definirane zahtjeve s tijekovima, stvarnim ili planiranim modulima i budućim ispitivanjima. Tablica je **radno mapiranje**, a ne tvrdnja da su testovi provedeni. Oznake obrazaca uporabe (UC) treba dodijeliti tek pri usklađenju datoteke [3-Obrasci-uporabe.md](3-Obrasci-uporabe.md).
 
 | ID zahtjeva | Obrazac uporabe / modul | Arhitekturna realizacija | Ispitivanje ili provjera |
 | --- | --- | --- | --- |
-| F-001 | [UC-001] | [Komponenta, modul ili drugo mjesto realizacije] | [ST-01, CT-01 ili druga provjera] |
-|  |  |  |  |
+| F-001–F-005 | Registracija / autentifikacija / odjava | Planirani modul autentifikacije (#12); postojeći UI: `Login.jsx`, `Register.jsx`, `EmployerLogin.jsx`, `EmployerRegister.jsx`. | Planirano: registracija 18+, duplikat, neispravni podaci, prava nakon odjave i promjena lozinke. |
+| F-006–F-008 | Korisnički profili i portfolio | Postojeći UI: `CandidateProfile.jsx`, `EmployerProfile.jsx`; planirani profilni API (#9, #12). | Planirano: spremanje nakon ponovne prijave, 5 slika, format datoteke, pristup tuđem profilu. |
+| F-009–F-010 | Zahtjev za verifikaciju / admin odluka | Planirani modul verifikacije i admin prikaz (#14, #11). | Planirano: valjan zahtjev, odbijanje s razlogom, ponovni zahtjev, neovlaštena odluka. |
+| F-011–F-013 | Pregled i pretraga javnih oglasa | Postojeći `Home.jsx` (ogledni podaci); backend `castingModel.js` (dohvat objavljenih); dorada #10, #16. | Planirano: javni popis, detalj, filtriranje, nepostojeći i nedostupni oglas. |
+| F-014–F-016; F-026 | Predaja, provjera i povlačenje prijave; Moje prijave | Planirani API oglasa/prijava (#16) i frontend (#10). | Planirano: valjana prijava, duplikat, istek, maksimum, tuđe prijave, povlačenje. |
+| F-017; F-034 | Obavijesti u aplikaciji i putem e-pošte | Postojeći `CandidateNotifications.jsx` (prikaz); planirane usluge (#13). | Planirano: ispravan primatelj, označavanje pročitanim, dostava/greška vanjske usluge. |
+| F-018–F-022 | Nacrti, objava, uređivanje i stanja oglasa | Postojeći UI: `NoviOglas.jsx`, `MojiOglasi.jsx`; planirani API i statusna pravila (#16). | Planirano: nacrt, objava verificiranog korisnika, broj kandidata, rok, vlasništvo, otkaz. |
+| F-023–F-024; F-030 | Pregled prijava, statusi i odabir kandidata | Planirani modul prijava i odabira (#16), sučelje poslodavca (#11). | Planirano: pristup samo vlastitom oglasu, prijelazi statusa, razlog odbijanja, popunjavanje. |
+| F-025 | Administratorsko brisanje oglasa | Planirana admin API/DB logika (#14); izravno povezani zapisi u bazi. | Planirano: potvrda brisanja, kaskadno uklanjanje, odbijanje neovlaštenog zahtjeva. |
+| F-027–F-029 | Termini i rezervacije audicija | Planirani API i model rezervacija (#13), prikaz prijava i audicija (#10, #11). | Planirano: kapacitet, poziv, zabrana duple rezervacije, otkazivanje, promjena termina, dolazak. |
+| F-031–F-033 | Prijava sadržaja, moderacija i statistika | Planirani administracijski modul (#14) i panel (#11). | Planirano: prijava, administratorska odluka, autorizacija i usklađen broj statistika. |
+| NF-01–NF-04; NF-11–NF-12 | Sigurnost i privatnost | Autentifikacija i ovlasti (#12); zaštita pristupa u API-ju; plan implementacije. | Planirano: autorizacijski, validacijski, privatnosni i sigurnosni testovi. |
+| NF-05–NF-10 | Performanse, pouzdanost, responzivnost i pristupačnost | Web-klijent, API i PostgreSQL, nakon povezivanja modula. | Planirano: mjerenje p95, ponovno pokretanje, responzivne veličine, tipkovnica i preglednici. |
 
-<details>
-<summary><strong>Sljedivost zahtjeva do obrazaca uporabe i ispitivanja</strong></summary>
-
-**Primjer — poveznice zahtjeva CrisisMapa:**
-
-| ID zahtjeva | Obrazac uporabe / ponašanje | Arhitekturna realizacija | Ispitivanje / provjera |
-| --- | --- | --- | --- |
-| F-004 | UC-002 Podnošenje prijave kriznog događaja | Web-klijent; API za prijave; usluga za prijave | ST-01 Valjano podnošenje prijave; ST-02 Nedostaje obavezna lokacija; ST-03 Dopuštenje geolokacije odbijeno |
-| F-005 | Odabir primatelja obavijesti | Proces za obavijesti | CT-06 Primatelji obavijesti; potpuna dostava obavijesti nije pokrivena ovom provjerom |
-
-**Pokrivenost i dokazi:** CT-06 provjerava odabir primatelja za F-005, ali sam po sebi ne dokazuje da je obavijest stvarno dostavljena; ako projekt zahtijeva potpunu dostavu od početka do kraja, za taj dio treba postojati zasebna provjera. Svaki redak pokazuje gdje je zahtjev opisan kao ponašanje, gdje je ostvaren u sustavu i gdje se nalazi dokaz njegove provjere. Zahtjev ne mora imati zaseban obrazac uporabe ako ne opisuje korisničku interakciju; tada navedite relevantno ponašanje, arhitekturni element ili drugi prikladan način realizacije. U svojem projektu koristite stvarne nazive komponenata, modula i provjera iz dokumentacije i implementacije. Nedostajuću poveznicu ostavite praznom ili označite kao *na čekanju* uz kratak razlog. Stvarni rezultati ispitivanja bilježe se uz ispitne slučajeve; ova tablica pokazuje gdje ih pronaći.
-
-</details>
-
----
+**Status sljedivosti na M0:** Oznaka „planirano” znači da funkcionalnost ili test tek treba realizirati. U daljnjim iteracijama zamijeniti planirane provjere stvarnim ID-ovima testnih slučajeva iz [5-Ispitivanje.md](5-Ispitivanje.md). Prototipna komponenta nije dokaz da su API, trajna pohrana i ovlasti dovršeni.
 
 ## 2.7 Pregled zahtjeva
 
-**Cilj:** Zabilježiti važne povratne informacije o zahtjevima i odluke koje iz njih proizlaze na dvije formalne kontrolne točke projekta, u 7. i 14. tjednu.
+**Cilj:** Nakon stvarnih kontrolnih točaka zabilježiti nalaze i odluke o zahtjevima.
 
 | Kontrolna točka | Povratna informacija ili nalaz | Odluka o zahtjevu ili opsegu |
 | --- | --- | --- |
-| Iteracija 1 | [Povratna informacija] | [Odluka; vidi odjeljak 2.5] |
-| Demo 2  | [Povratna informacija] | [Odluka; vidi odjeljak 2.5] |
-| Završni pregled | [Povratna informacija] | [Odluka; vidi odjeljak 2.5] |
-
-<details>
-<summary><strong>Odluke o zahtjevima nakon pregleda</strong></summary>
-
-**Primjer scenarija — pregled zahtjeva CrisisMapa:**
-
-| Kontrolna točka | Povratna informacija ili nalaz | Odluka o zahtjevu ili opsegu |
-| --- | --- | --- |
-| Iteracija 1 | Demonstracija pokazuje da odbijanje pristupa lokaciji preglednika onemogućuje podnošenje prijave. | Dogovoriti ručni odabir lokacije; ažurirati F-004 i primjer NF-01 te razlog zabilježiti u odjeljku 2.5. |
-
-**Odluka povezana s povratnom informacijom:** Zapis povezuje opaženo ponašanje s konkretnom promjenom zahtjeva i izbjegava zapisnik cijelog sastanka. Zapišite samo stvarne povratne informacije i odluke za kontrolne točke. Konzultacije u nekom drugom tjednu ne stvaraju dodatnu obaveznu predaju.
-
-</details>
+| M0 — 4. tjedan | Rasprava s asistentom tek predstoji: posebno F-003/C-05, F-034/C-06 i politika pristupa podacima. | Na čekanju — upisati isključivo stvarni dogovor nakon prezentacije. |
+| M1 — 7. tjedan | Još nije održano. | Na čekanju. |
+| M2 — 12. tjedan | Još nije održano. | Na čekanju. |
+| M3 — 14. tjedan | Još nije održano. | Na čekanju. |
 
 ---
 
->**Završna provjera:** Zahtjevi su aktualni, provjerljivi i povezani. Svaki važan zahtjev moguće je pratiti od njegova opisa i ponašanja preko mjesta realizacije u sustavu do odgovarajućeg ispitivanja ili druge provjere. Poveznice koriste stvarne identifikatore i nazive iz projektne dokumentacije.
-
+**Završna provjera za M0:** Dokument sadrži 34 funkcijskih i 12 nefunkcijskih zahtjeva, povezane aktere, izvore u projektnim Issues, provjerljive kriterije, ograničenja, otvorene odluke i radnu sljedivost. Prije konačne predaje tim treba pregledati opseg, potvrditi otvorene odluke i uskladiti identifikatore s [3. Obrascima uporabe](3-Obrasci-uporabe.md) i budućim ispitivanjima.
