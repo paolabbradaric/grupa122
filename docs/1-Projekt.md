@@ -35,7 +35,7 @@ U ovom dijelu navodimo što želimo imati u aplikaciji, što zasad ne planiramo 
 
 ### Uključeno u projekt
 
-- **Korisnički računi i profili:** registracija i prijava kandidata i poslodavaca, uređivanje profila, osnovni podaci o iskustvu i vještinama kandidata te portfolio s najviše pet fotografija.
+- **Korisnički računi i profili:** prijava putem vanjskog pružatelja identiteta (OAuth 2.0 / OpenID Connect), odabir uloge kandidata ili poslodavca pri prvom korištenju, dopunjavanje profila te portfolio s najviše pet fotografija. Lozinke ne spremamo u vlastitoj aplikaciji.
 - **Verifikacija poslodavaca:** poslodavac može poslati zahtjev za verifikaciju, a administrator ga može odobriti ili odbiti uz razlog. Samo verificirani poslodavac može objaviti oglas.
 - **Casting oglasi:** javni pregled, detalji i pretraživanje oglasa te stvaranje, spremanje nacrta i uređivanje vlastitih oglasa. Prema dogovoru, **jedan oglas predstavlja jedan projekt i jednu ulogu**.
 - **Prijave kandidata:** kandidat se može prijaviti dok je oglas otvoren, pogledati svoje prijave i njihove statuse te povući prijavu kada je to dopušteno. Na isti oglas ne može poslati više prijava.
@@ -59,7 +59,7 @@ Ove granice postavili smo da se prvo možemo usredotočiti na objavu oglasa, pri
 - **PostgreSQL baza podataka:** koristimo je za spremanje korisnika, oglasa, prijava, audicija i drugih podataka. Postojeću bazu čuvamo i po potrebi je mijenjamo migracijama.
 - **Usluga za javno postavljanje aplikacije:** za kasniju demonstraciju aplikacija mora biti dostupna putem interneta; konkretan pružatelj još nije naveden u ovom dokumentu.
 - **Vanjska usluga za slanje e-pošte:** planiramo je za važnije obavijesti o prijavama i audicijama, ali još trebamo dogovoriti koju ćemo uslugu koristiti i hoće li ona zadovoljiti zahtjev kolegija za vanjskom integracijom.
-- **Prijava putem vanjskog pružatelja identiteta:** naš prvotni dogovor bio je vlastita prijava korisničkim imenom i lozinkom. U planu kolegija za 6. tjedan navodi se OpenID Connect / OAuth 2.0, pa taj dio moramo razjasniti s asistentom prije konačne odluke.
+- **Prijava putem vanjskog pružatelja identiteta:** dogovorili smo da ćemo koristiti **OAuth 2.0 / OpenID Connect (OIDC)** za prijavu. Vanjski pružatelj potvrđuje identitet korisnika, a u našoj aplikaciji spremamo korisnički profil i ulogu (kandidat ili poslodavac). Konkretni pružatelj identiteta još nije odabran.
 
 ## 1.4 Postojeći pristupi i opravdanost projekta
 
@@ -69,4 +69,4 @@ Ovo je primjer problema koji želimo riješiti, a ne rezultat provedenog istraž
 
 ---
 
-**Napomena za M0:** Opis odgovara trenutačnom dogovoru tima i dokumentu **2. Analiza zahtjeva**. Prije konačne potvrde s asistentom trebamo razjasniti način prijave (vlastita prijava ili OIDC/OAuth), obveznu vanjsku integraciju i detalje ovlasti za brisanje i pristup podacima. Ovaj dokument opisuje plan projekta, a ne završene funkcionalnosti.
+**Napomena za M0:** Tim je odlučio koristiti **OAuth 2.0 / OpenID Connect** za prijavu. Još trebamo odabrati pružatelja identiteta, potvrditi vanjsku integraciju za obavijesti te dogovoriti detalje brisanja oglasa i pristupa osobnim podacima. Ovaj dokument opisuje plan, a ne već dovršene funkcionalnosti.
