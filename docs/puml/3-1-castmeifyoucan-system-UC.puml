@@ -1,0 +1,60 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Posjetitelj" as Gost
+actor "Kandidat" as Kandidat
+actor "Poslodavac" as Poslodavac
+actor "Administrator" as Admin
+actor "Usluga e-pošte" as Email
+
+rectangle "CastMeIfYouCan" {
+  usecase "UC-001\nRegistracija" as UC001
+  usecase "UC-002\nPrijava i odjava" as UC002
+  usecase "UC-003\nUređivanje profila" as UC003
+  usecase "UC-004\nPregled oglasa" as UC004
+  usecase "UC-005\nZahtjev za verifikaciju" as UC005
+  usecase "UC-006\nObrada verifikacije" as UC006
+  usecase "UC-007\nStvaranje i objava oglasa" as UC007
+  usecase "UC-008\nUpravljanje oglasima" as UC008
+  usecase "UC-009\nPrijava na casting" as UC009
+  usecase "UC-010\nMoje prijave" as UC010
+  usecase "UC-011\nOdabir kandidata" as UC011
+  usecase "UC-012\nTermini audicija" as UC012
+  usecase "UC-013\nRezervacija audicije" as UC013
+  usecase "UC-014\nObavijesti" as UC014
+  usecase "UC-015\nPrijava oglasa" as UC015
+  usecase "UC-016\nModeriranje oglasa" as UC016
+}
+
+Gost -- UC001
+Gost -- UC004
+
+Kandidat -- UC001
+Kandidat -- UC002
+Kandidat -- UC003
+Kandidat -- UC004
+Kandidat -- UC009
+Kandidat -- UC010
+Kandidat -- UC013
+Kandidat -- UC014
+Kandidat -- UC015
+
+Poslodavac -- UC001
+Poslodavac -- UC002
+Poslodavac -- UC003
+Poslodavac -- UC004
+Poslodavac -- UC005
+Poslodavac -- UC007
+Poslodavac -- UC008
+Poslodavac -- UC011
+Poslodavac -- UC012
+Poslodavac -- UC014
+Poslodavac -- UC015
+
+Admin -- UC002
+Admin -- UC006
+Admin -- UC016
+
+Email -- UC014
+@enduml
