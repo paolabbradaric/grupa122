@@ -40,10 +40,10 @@ Za svaki obrazac uporabe napisali smo tko ga pokreće, što treba biti ispunjeno
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Kandidat (A-02), poslodavac (A-03), administrator (A-04) |
-| **Povezani zahtjevi** | F-003, F-004 |
+| **Povezani zahtjevi** | F-003, F-004, F-005 |
 | **Preduvjeti** | Korisnik ima račun povezan s vanjskim identitetom ili dodijeljen administratorski pristup. |
-| **Glavni uspješni tok** | 1. Korisnik odabire Prijava.<br>2. Aplikacija ga preusmjerava na OAuth/OIDC pružatelja identiteta.<br>3. Korisnik se uspješno prijavi kod pružatelja i vraća u aplikaciju.<br>4. Aplikacija provjerava potvrđeni identitet i otvara sesiju s odgovarajućom korisničkom ulogom.<br>5. Kad završi, korisnik odabire Odjava i aplikacija završava njegovu sesiju. |
-| **Alternativni tokovi / Iznimke** | **3a – Korisnik odustane ili prijava ne uspije:** aplikacija ne otvara sesiju.<br>**4a – Nevaljan odgovor pružatelja:** prijava se odbija.<br>**4b – Korisnik još nema dovršen profil:** aplikacija ga vodi na dovršetak registracije.<br>**5a – Nakon odjave:** zaštićene funkcije više nisu dostupne. |
+| **Glavni uspješni tok** | 1. Korisnik odabire Prijava.<br>2. Aplikacija ga preusmjerava na OAuth/OIDC pružatelja identiteta.<br>3. Korisnik se uspješno prijavi kod pružatelja i vraća u aplikaciju.<br>4. Aplikacija prepoznaje povezani vanjski identitet i otvara postojeći korisnički profil i sesiju s odgovarajućom ulogom, bez stvaranja novog računa.<br>5. Kad završi, korisnik odabire Odjava i aplikacija završava njegovu sesiju. |
+| **Alternativni tokovi / Iznimke** | **3a – Korisnik odustane ili prijava ne uspije:** aplikacija ne otvara sesiju.<br>**4a – Nevaljan odgovor pružatelja:** prijava se odbija.<br>**4c – Identitet nije povezan s računom:** aplikacija vodi korisnika na dovršetak registracije i ne daje mu pristup tuđem profilu.<br>**4b – Korisnik još nema dovršen profil:** aplikacija ga vodi na dovršetak registracije.<br>**5a – Nakon odjave:** zaštićene funkcije više nisu dostupne. |
 | **Posljedice (ishod)** | Korisnik se prijavio preko vanjskog pružatelja i koristi funkcije svoje uloge ili se uspješno odjavio. |
 
 ### UC-003: Uređivanje profila
@@ -214,7 +214,7 @@ Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz [2. Analize zahtjev
 | Usklađenost s implementacijom | Tijekom razvoja provjeravat ćemo odgovara li stvarni rad aplikacije ovim opisima. |
 | Testiranje | Konkretne testove i njihove rezultate dodat ćemo u [5. Ispitivanje](5-Ispitivanje.md) kada budu provedeni. |
 
-**Zahtjevi koje nismo izdvojili u zaseban oval:** F-005 (promjena lozinke unutar aplikacije) povučen je nakon odluke o OAuth/OIDC prijavi. F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu 2. Sljedivost zahtjeva i testova vodit ćemo u Analizi zahtjeva.
+**Zahtjevi koje nismo izdvojili u zaseban oval:** F-005 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u UC-002. F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu 2. Sljedivost zahtjeva i testova vodit ćemo u Analizi zahtjeva.
 
 **Što još trebamo potvrditi na M0:**
 
