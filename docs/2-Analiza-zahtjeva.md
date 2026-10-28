@@ -15,6 +15,7 @@ Ovo su funkcije koje naša aplikacija treba imati. Svaka ima oznaku, prioritet, 
 | F-002 | Poslodavac se prvi put prijavljuje putem OAuth 2.0 / OpenID Connect i unosi podatke svoje tvrtke. | Visok | Dogovor tima o OAuth/OIDC prijavi | Nakon vanjske prijave poslodavac odabire ulogu i upisuje naziv tvrtke, OIB, kontakt i sjedište. Neispravni podaci odbijaju se; račun nije automatski verificiran. |
 | F-003 | Korisnici se prijavljuju putem vanjskog OAuth 2.0 / OpenID Connect pružatelja identiteta. | Visok | Dogovor tima (28. 10. 2026.) | Korisnik se preusmjerava pružatelju identiteta. Uspješna prijava otvara korisničku sesiju s njegovom ulogom, a neuspjela ili otkazana prijava ne dopušta zaštićene funkcije. |
 | F-004 | Prijavljeni korisnik može se odjaviti iz aplikacije. | Visok | Plan razvoja tima | Nakon odjave korisnik ne može izvršavati radnje koje zahtijevaju prijavu, čak ni izravnim slanjem API zahtjeva sa starom sesijom. |
+| F-005 | Aplikacija prepoznaje korisnika pri ponovnoj OAuth/OIDC prijavi i povezuje ga s njegovim postojećim profilom. | Visok | Razrada dogovorene OAuth/OIDC prijave | Kada se korisnik drugi put prijavi preko istog vanjskog identiteta, otvara mu se postojeći profil sa spremljenim podacima. Ne stvara se novi račun i drugi vanjski identitet ne može preuzeti taj profil. |
 | F-006 | Kandidat može pregledavati i uređivati svoj profil, iskustvo i vještine. | Visok | Plan razvoja tima | Kandidat može spremiti ime, prezime, grad, iskustvo, vještine te ponuđene fizičke karakteristike; izmjene se vide nakon ponovne prijave, a drugi kandidat ne može mijenjati taj profil. |
 | F-007 | Kandidat može dodati profilnu sliku i najviše pet JPG/PNG slika u portfolio. | Srednji | Plan razvoja tima | Kandidat može dodati i ukloniti fotografije te ih ponovno pregledati nakon prijave; više od pet fotografija ili nepodržan format odbijaju se bez neispravne pohrane. |
 | F-008 | Poslodavac može pregledavati i uređivati podatke o svojoj tvrtki. | Visok | Plan razvoja tima | Vlasnik računa može spremiti i ponovno dohvatiti naziv tvrtke, OIB, kontakt, sjedište i logotip; podaci drugih poslodavaca nisu mu dostupni za uređivanje. |
@@ -45,7 +46,7 @@ Ovo su funkcije koje naša aplikacija treba imati. Svaka ima oznaku, prioritet, 
 | F-033 | Administrator može vidjeti osnovnu statistiku korisnika, verifikacija, oglasa i prijava. | Nizak | Plan razvoja tima | Administratorski prikaz pokazuje brojeve usklađene sa zapisima u bazi; neovlašteni korisnik nema pristup administrativnoj statistici. |
 | F-034 | Aplikacija šalje važne obavijesti o prijavama i audicijama putem e-pošte. | Srednji | Plan tima i upute kolegija (usluga nije odabrana) | Nakon dogovorenog događaja sustav pokušava dostaviti obavijest na adresu korisnika putem konfigurirane vanjske usluge; uspjeh ili neuspjeh dostave može se provjeriti u zapisima. Odabir usluge i točne vrste poruka treba potvrditi. |
 
-**Dogovorena prijava:** Koristit ćemo **OAuth 2.0 / OpenID Connect** preko vanjskog pružatelja identiteta. Ne spremamo vlastite lozinke niti izrađujemo njihovu promjenu, pa je F-005 povučen. Još trebamo odabrati pružatelja identiteta, uslugu za e-poštu (F-034) i potvrditi pravila brisanja i statusa.
+**Dogovorena prijava:** Koristit ćemo **OAuth 2.0 / OpenID Connect** preko vanjskog pružatelja identiteta. Ne spremamo vlastite lozinke niti izrađujemo njihovu promjenu. F-005 sada opisuje siguran povratak na postojeći profil nakon ponovne OAuth/OIDC prijave. Još trebamo odabrati pružatelja identiteta, uslugu za e-poštu (F-034) i potvrditi pravila brisanja i statusa.
 
 ## 2.2 Nefunkcijski zahtjevi
 
@@ -110,7 +111,7 @@ U ovu tablicu upisujemo veće promjene u dogovorima. Dopunit ćemo je nakon razg
 | 22. 10. 2026. | F-001–F-034; NF-01–NF-12 | Ponovni početak razvoja uz očuvanje baze; prethodni kod više se ne smatra dovršenim sustavom. Zahtjevi dokumentiraju ciljanu funkcionalnost, ne završenost. | Dogovori i zadaci tima |
 | Listopad 2026. (dan nije evidentiran) | F-019, F-030 | Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. | Dogovor tima |
 | Listopad 2026. (dan nije evidentiran) | F-025 | Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. | Dogovor tima |
-| 28. 10. 2026. | F-001–F-003, F-005, NF-02, C-05 | Tim je odlučio koristiti OAuth 2.0 / OpenID Connect. Prilagođena je registracija i sigurnost, a F-005 (promjena lozinke u aplikaciji) je povučen jer lozinkama upravlja vanjski pružatelj. | Dogovor tima |
+| 28. 10. 2026. | F-001–F-003, F-005, NF-02, C-05 | Tim je odlučio koristiti OAuth 2.0 / OpenID Connect. Prilagođena je registracija i sigurnost, a F-005 smo prilagodili ponovnoj prijavi i povezivanju s postojećim profilom jer lozinkama upravlja vanjski pružatelj. | Dogovor tima |
 
 Način prijave sada je dogovoren, a ostale važne promjene dodat ćemo nakon potvrde.
 
@@ -120,7 +121,7 @@ U ovoj tablici povezujemo zahtjeve s dijelovima aplikacije i planiranim testovim
 
 | ID zahtjeva | Obrazac uporabe / modul | Arhitekturna realizacija | Ispitivanje ili provjera |
 | --- | --- | --- | --- |
-| F-001–F-004 | Registracija / OAuth/OIDC prijava / odjava | Planirana integracija s vanjskim pružateljem identiteta; postojeći frontend obrasci su prototip koji treba prilagoditi. | Planirano: prvi ulazak kandidata i poslodavca, dob 18+, odustajanje od prijave, odjava i provjera prava pristupa. |
+| F-001–F-005 | Registracija / OAuth/OIDC prijava / odjava | Planirana integracija s vanjskim pružateljem identiteta; postojeći frontend obrasci su prototip koji treba prilagoditi. | Planirano: prvi ulazak kandidata i poslodavca, dob 18+, ponovna prijava bez duplog računa, odustajanje od prijave, odjava i provjera prava pristupa. |
 | F-006–F-008 | Korisnički profili i portfolio | Postojeći UI: `CandidateProfile.jsx`, `EmployerProfile.jsx`; planirani profilni API. | Planirano: spremanje nakon ponovne prijave, 5 slika, format datoteke, pristup tuđem profilu. |
 | F-009–F-010 | Zahtjev za verifikaciju / admin odluka | Planirani modul verifikacije i admin prikaz. | Planirano: valjan zahtjev, odbijanje s razlogom, ponovni zahtjev, neovlaštena odluka. |
 | F-011–F-013 | Pregled i pretraga javnih oglasa | Postojeći `Home.jsx` (ogledni podaci); backend `castingModel.js` (dohvat objavljenih); dorada , . | Planirano: javni popis, detalj, filtriranje, nepostojeći i nedostupni oglas. |
@@ -149,4 +150,4 @@ Ovdje ćemo nakon prezentacija upisati komentare asistenta i promjene koje dogov
 
 ---
 
-**Za M0:** Napisali smo 33 aktivna funkcijska i 12 nefunkcijskih zahtjeva. F-005 je povučen nakon odluke o OAuth/OIDC prijavi. Otvorena pitanja i dalje trebamo provjeriti s ekipom i asistentom.
+**Za M0:** Napisali smo 34 funkcijska i 12 nefunkcijskih zahtjeva. F-005 je prilagođen OAuth/OIDC prijavi. Otvorena pitanja i dalje trebamo provjeriti s ekipom i asistentom.
