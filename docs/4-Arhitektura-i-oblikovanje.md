@@ -14,7 +14,7 @@
 
 ---
 
-Za svaki UML dijagram čuvajte čitljivu sliku i PlantUML izvor, kako je opisano na stranici [Home](./Home.md). U dovršenoj stranici koristite vlastite projektne odluke i modele.
+Za svaki UML dijagram čuvajte čitljivu sliku i PlantUML izvor, kako je opisano na stranici Home. U dovršenoj stranici koristite vlastite projektne odluke i modele.
 
 ## 4.1 Ključne arhitekturne odluke
 
@@ -62,7 +62,7 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 **Slika 4.1. Dijagram komponenata sustava CrisisMap**
 
-**PlantUML izvor:** [izvor](./puml/4-1-crisismap-system-CMP.puml)
+**PlantUML izvor:** izvor
 
 | Dio | Odgovornost | Razlog za ovu granicu |
 | --- | --- | --- |
@@ -96,7 +96,7 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 **Slika 4.2. ER dijagram podataka sustava CrisisMap**
 
-**PlantUML izvor:** [izvor](./puml/4-2-crisismap-data-ERD.puml)
+**PlantUML izvor:** izvor
 
 **Analiza primjera:** `R-104` ima jednog autora i jednu kategoriju; Ana i kategorija *Poplava* mogu biti povezane s više prijava. Dijagram prikazuje veze bez prepisivanja svih stupaca baze podataka ili pisanja drugog tabličnog opisa za svaki entitet. Ako aplikacija prihvaća i **anonimne** prijave, tu mogućnost prikažite u vezi s entitetom `Citizen`. Ako su kategorije fiksne vrijednosti, a ne pohranjeni zapisi, nemojte izmišljati tablicu kategorija. Završni ER dijagram usporedite s modelom trajne pohrane i objasnite samo razlike važne za razumijevanje projekta.
 
@@ -119,7 +119,7 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 **Slika 4.3. Dijagram razreda za obradu prijava kriznih događaja**
 
-**PlantUML izvor:** [izvor](./puml/4-3-crisismap-domain-CD.puml)
+**PlantUML izvor:** izvor
 
 **Analiza primjera:** `DisasterReport` sadrži dopuštena pravila promjene stanja pa tijek rada ne može prešutno odobriti već odbijenu prijavu. `ReportWorkflow` koordinira operaciju bez preuzimanja pravila prijelaza stanja same prijave; `ReportRepository` definira potrebne operacije pohrane. Kompozicija `Location` i odabrani tipovi prikazuju veze korisne za oblikovanje. Dijagram namjerno izostavlja stupce baze podataka i nepovezane razrede: ER model objašnjava pohranjene podatke, dok ovaj dijagram dodjeljuje programske odgovornosti i operacije. Ti su razredi odluka oblikovanja, a ne obavezni slojevi za svaki tim. Završnu implementaciju usporedite s početnim oblikovanjem i ažurirajte dijagram tamo gdje su se odluke promijenile; generiranje dijagrama iz koda tek na kraju ne može zamijeniti ovo početno modeliranje.
 
@@ -146,7 +146,7 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 **Slika 4.4. Sekvencijski dijagram podnošenja prijave kriznog događaja**
 
-**PlantUML izvor:** [izvor](./puml/4-4-crisismap-report-submission-SD.puml)
+**PlantUML izvor:** izvor
 
 **Analiza primjera:** Dva načina odabira lokacije te alternative provjere i pohrane imaju različite posljedice za korisnika; usporedite ih s odgovarajućim obrascem uporabe i njegovim alternativnim tijekovima. API preglednika za lokaciju mogućnost je preglednika; web-klijent, API, usluga i pohrana odgovaraju prikazu komponenata. Odaberite grane koje pomažu objasniti scenarij vašeg projekta i završni dijagram uskladite s implementiranom interakcijom.
 
@@ -169,7 +169,7 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 **Slika 4.5. Dijagram stanja sustava s ortogonalnim regijama**
 
-**PlantUML izvor:** [izvor](./puml/4-5-crisismap-system-SM.puml)
+**PlantUML izvor:** izvor
 
 **Analiza primjera:** Vlasnik stanja u ovom je primjeru sustav CrisisMap, a ne pojedinačna prijava kriznog događaja. Dvije ortogonalne regije opisuju stanja koja vrijede istodobno: način koordinacije kriznog događaja i dostupnost usluge. Promjena stanja u jednoj regiji ne mora promijeniti stanje u drugoj; primjerice, aktivni krizni događaj može postojati dok je usluga potpuno ili djelomično dostupna.
 
