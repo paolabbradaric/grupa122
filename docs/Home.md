@@ -1,6 +1,6 @@
 # [Naziv aplikacije] — Projektna dokumentacija
 
-**Kolegij:** [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz), Fakultet elektrotehnike i računarstva Sveučilišta u Zagrebu  
+**Kolegij:** Programsko inženjerstvo, Fakultet elektrotehnike i računarstva Sveučilišta u Zagrebu  
 **Akademska godina:** [20XX./20XX.]  
 **Tim:** [Oznaka i naziv tima]  
 **Nastavnik:** Vlado Sruk  
@@ -19,25 +19,25 @@ Za projekt na temu CrisisMap sažet pregled može navesti građane kojima trebaj
 
 </details>
 
-**Aplikacija i osnovno postavljanje:** [README repozitorija](../README_PREDLOZAK.md#quick-start)  
-**Javno dostupna aplikacija:** pogledajte [README – Postavljanje](../README_PREDLOZAK.md#deployment)
+**Aplikacija i osnovno postavljanje:** README repozitorija  
+**Javno dostupna aplikacija:** pogledajte README – Postavljanje
 
 ## Članovi tima i uloge
 
-Ažurirani popis članova, njihovih GitHub profila i glavnih uloga ili doprinosa nalazi se u [README-u repozitoriju](../README_PREDLOZAK.md#team-members).
+Ažurirani popis članova, njihovih GitHub profila i glavnih uloga ili doprinosa nalazi se u README-u repozitoriju.
 
 ## Kazalo dokumentacije
 
 | Stranica | Svrha |
 | --- | --- |
-| [1. Opseg projekta](1-Projekt.md) | Problem, cilj i granice projekta |
-| [2. Analiza zahtjeva](2-Analiza-zahtjeva.md) | Zahtjevi, ograničenja i sljedivost |
-| [3. Obrasci uporabe](3-Obrasci-uporabe.md) | Akteri i reprezentativne interakcije korisnika |
-| [4. Arhitektura i oblikovanje](4-Arhitektura-i-oblikovanje.md) | Glavne odluke oblikovanja, struktura, podaci i ponašanje |
-| [5. Ispitivanje](5-Ispitivanje.md) | Pristup ispitivanju, stvarni rezultati i poznati nedostaci |
-| [6. Postavljanje, instalacija i konfiguracija](6-Postavljanje-instalacija-i-konfiguracija.md) | Lokalna instalacija, konfiguracija, javno postavljanje i administracija |
-| [7. Zaključak i budući rad](7-Zakljucak-i-buduci-rad.md) | Zaključak i moguća daljnja poboljšanja |
-| [A. Pregled aktivnosti grupe](A-Pregled-aktivnosti-grupe.md) | Aktivnosti tima, doprinosi i izazovi |
+| 1. Opseg projekta | Problem, cilj i granice projekta |
+| 2. Analiza zahtjeva | Zahtjevi, ograničenja i sljedivost |
+| 3. Obrasci uporabe | Akteri i reprezentativne interakcije korisnika |
+| 4. Arhitektura i oblikovanje | Glavne odluke oblikovanja, struktura, podaci i ponašanje |
+| 5. Ispitivanje | Pristup ispitivanju, stvarni rezultati i poznati nedostaci |
+| 6. Postavljanje, instalacija i konfiguracija | Lokalna instalacija, konfiguracija, javno postavljanje i administracija |
+| 7. Zaključak i budući rad | Zaključak i moguća daljnja poboljšanja |
+| A. Pregled aktivnosti grupe | Aktivnosti tima, doprinosi i izazovi |
 
 ## Ključne točke projekta
 
@@ -77,13 +77,13 @@ Za obrazac uporabe podnošenja prijave kriznog događaja u CrisisMapu tim može 
 
 ## Akademski integritet, ponašanje i licenciranje
 
-README repozitorija sadrži projektnu [izjavu o uporabi umjetne inteligencije](../README_PREDLOZAK.md#ai-usage), [informacije o kodeksu ponašanja i podršci](../README_PREDLOZAK.md#code-of-conduct-and-support) te [status licence ili ponovne uporabe](../README_PREDLOZAK.md#license). Pristupni podaci i druge tajne nikada se ne objavljuju u dokumentaciji niti dijele u običnim porukama.
+README repozitorija sadrži projektnu izjavu o uporabi umjetne inteligencije, informacije o kodeksu ponašanja i podršci te status licence ili ponovne uporabe. Pristupni podaci i druge tajne nikada se ne objavljuju u dokumentaciji niti dijele u običnim porukama.
 
 ## Izjava o uporabi umjetne inteligencije
 
 <!-- UPUTA: Ovo je detaljan zapis uporabe umjetne inteligencije; README sadrži kratak sažetak i poveznicu na ovaj odjeljak. Unesite samo ono što se stvarno dogodilo i uklonite neupotrijebljene retke. Ako nije korišten nijedan alat generativne umjetne inteligencije, zamijenite cijeli odjeljak jednom rečenicom koja to jasno navodi. Svaki redak mora upućivati na stranicu, datoteku, zahtjev za uključivanje promjena (PR) ili zadatak. Nikada ne unosite pristupne podatke, osobne podatke ni tuđi zaštićeni sadržaj u alate umjetne inteligencije. -->
 
-Kratak sažetak: [README – Uporaba umjetne inteligencije](../README_PREDLOZAK.md#ai-usage). Ovaj odjeljak bilježi koji su alati korišteni, za koju dokumentaciju ili kod te kako je tim provjerio rezultat. Slijedi FER-ova [pravila o primjerenoj uporabi umjetne inteligencije](https://www.fer.unizg.hr/_download/repository/Policy%20on%20the%20appropriate%20use%20of%20artificial%20intelligence%20at%20the%20faculty%20of%20electrical%20engineering%20and%20computing%5B1%5D.pdf).
+Kratak sažetak: README – Uporaba umjetne inteligencije. Ovaj odjeljak bilježi koji su alati korišteni, za koju dokumentaciju ili kod te kako je tim provjerio rezultat. Slijedi FER-ova pravila o primjerenoj uporabi umjetne inteligencije.
 
 ### Korišteni alati
 
