@@ -210,12 +210,30 @@ async function createApplicationTransaction(candidateId, castingId, coverLetter,
       allowed: true,
       application: result.rows[0]
     };
-  } catch (error) {
+  
+
+} catch (error) {
+  try {
     await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
+  } catch (rollbackError) {
+    console.error('Greška pri poništavanju transakcije:', rollbackError);
   }
+
+  if (
+    error.code === '23505' &&
+    error.constraint === 'application_unique'
+  ) {
+    return {
+      allowed: false,
+      message: 'Već ste prijavljeni na ovaj casting.'
+    };
+  }
+
+  throw error;
+} finally {
+  client.release();
+}
+
 }
 
 
