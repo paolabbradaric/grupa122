@@ -2,7 +2,7 @@
 
 **Cilj:** Prikazati kako tim provjerava važno ponašanje aplikacije, što je stvarno ispitano, što rezultati pokazuju i koji poznati nedostaci ostaju. Planirano ispitivanje nije dokaz uspješnog izvođenja.
 
-Proširivi primjeri CrisisMapa prikazuju oblikovanje ispitivanja i izvještavanje o rezultatima. Povezivanje zahtjev → obrazac uporabe → ispitivanje održavajte u [tablici sljedivosti zahtjeva](2-Analiza-zahtjeva.md); specifikacije ispitivanja i dokaze izvođenja zabilježite ovdje ili povežite s ispitivanjima u repozitoriju.
+Proširivi primjeri CrisisMapa prikazuju oblikovanje ispitivanja i izvještavanje o rezultatima. Povezivanje zahtjev → obrazac uporabe → ispitivanje održavajte u tablici sljedivosti zahtjeva; specifikacije ispitivanja i dokaze izvođenja zabilježite ovdje ili povežite s ispitivanjima u repozitoriju.
 
 ## 5.1 Pristup ispitivanju
 
