@@ -119,6 +119,105 @@ async function validateApplication(candidateId, castingId) {
 
 
 
+async function getCandidateProfileByUserId(userId) {
+  const result = await pool.query(
+    `SELECT id
+     FROM candidate_profiles
+     WHERE user_id = $1`,
+    [userId]
+  );
+
+  return result.rows[0] || null;
+}
+
+
+async function insertApplication(candidateId, castingId, coverLetter, videoUrl) {
+  const result = await pool.query(
+    `INSERT INTO applications
+       (candidate_id, casting_call_id, cover_letter, video_url, status)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, candidate_id, casting_call_id, status, submitted_at`,
+    [candidateId, castingId, coverLetter || null, videoUrl || null, 'SUBMITTED']
+  );
+
+  return result.rows[0];
+}
+
+
+async function createApplicationTransaction(candidateId, castingId, coverLetter, videoUrl) {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Zaključavamo oglas dok obrađujemo prijavu.
+    const castingResult = await client.query(
+      `SELECT id, status, application_deadline, max_applications
+       FROM casting_calls
+       WHERE id = $1
+       FOR UPDATE`,
+      [castingId]
+    );
+
+    const casting = castingResult.rows[0] || null;
+    const check = canApplyToCasting(casting);
+
+    if (!check.allowed) {
+      await client.query('ROLLBACK');
+      return check;
+    }
+
+    const duplicateResult = await client.query(
+      `SELECT id FROM applications
+       WHERE candidate_id = $1 AND casting_call_id = $2`,
+      [candidateId, castingId]
+    );
+
+    if (duplicateResult.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return {
+        allowed: false,
+        message: 'Već ste prijavljeni na ovaj casting.'
+      };
+    }
+
+    const countResult = await client.query(
+      `SELECT COUNT(*)::int AS total
+       FROM applications
+       WHERE casting_call_id = $1`,
+      [castingId]
+    );
+
+    if (countResult.rows[0].total >= casting.max_applications) {
+      await client.query('ROLLBACK');
+      return {
+        allowed: false,
+        message: 'Dosegnut je maksimalan broj prijava.'
+      };
+    }
+
+    const result = await client.query(
+      `INSERT INTO applications
+         (candidate_id, casting_call_id, cover_letter, video_url, status)
+       VALUES ($1, $2, $3, $4, 'SUBMITTED')
+       RETURNING id, candidate_id, casting_call_id, status, submitted_at`,
+      [candidateId, castingId, coverLetter || null, videoUrl || null]
+    );
+
+    await client.query('COMMIT');
+
+    return {
+      allowed: true,
+      application: result.rows[0]
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 
 
 module.exports = {
@@ -127,6 +226,10 @@ module.exports = {
   hasCandidateApplied,
   getApplicationCount,
   hasAvailableApplicationSlots,
-  validateApplication
+  validateApplication,
+  getCandidateProfileByUserId,
+  insertApplication,
+  createApplicationTransaction
 };
+
 
