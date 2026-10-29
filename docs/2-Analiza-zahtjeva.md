@@ -108,7 +108,6 @@ U ovu tablicu upisujemo veće promjene u dogovorima. Dopunit ćemo je nakon razg
 
 | Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
 | --- | --- | --- | --- |
-| 22. 10. 2026. | F-001–F-034; NF-01–NF-12 | Ponovni početak razvoja uz očuvanje baze; prethodni kod više se ne smatra dovršenim sustavom. Zahtjevi dokumentiraju ciljanu funkcionalnost, ne završenost. | Dogovori i zadaci tima |
 | Listopad 2026. (dan nije evidentiran) | F-019, F-030 | Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. | Dogovor tima |
 | Listopad 2026. (dan nije evidentiran) | F-025 | Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. | Dogovor tima |
 | 28. 10. 2026. | F-001–F-003, F-005, NF-02, C-05 | Tim je odlučio koristiti OAuth 2.0 / OpenID Connect. Prilagođena je registracija i sigurnost, a F-005 smo prilagodili ponovnoj prijavi i povezivanju s postojećim profilom jer lozinkama upravlja vanjski pružatelj. | Dogovor tima |
@@ -117,25 +116,25 @@ Način prijave sada je dogovoren, a ostale važne promjene dodat ćemo nakon pot
 
 ## 2.6 Sljedivost zahtjeva
 
-U ovoj tablici povezujemo zahtjeve s dijelovima aplikacije i planiranim testovima. **Testovi još nisu provedeni.** Oznake obrazaca uporabe dodat ćemo kada uskladimo dokument [3-Obrasci-uporabe.md](3-Obrasci-uporabe.md).
+Ovdje smo povezali zahtjeve s dijelovima aplikacije i provjerama koje planiramo napraviti. Testove još nismo proveli. Obrasci uporabe detaljnije su opisani u dokumentu 3-Obrasci-uporabe.md.
 
-| ID zahtjeva | Obrazac uporabe / modul | Arhitekturna realizacija | Ispitivanje ili provjera |
-| --- | --- | --- | --- |
-| F-001–F-005 | Registracija / OAuth/OIDC prijava / odjava | Planirana integracija s vanjskim pružateljem identiteta; postojeći frontend obrasci su prototip koji treba prilagoditi. | Planirano: prvi ulazak kandidata i poslodavca, dob 18+, ponovna prijava bez duplog računa, odustajanje od prijave, odjava i provjera prava pristupa. |
-| F-006–F-008 | Korisnički profili i portfolio | Postojeći UI: `CandidateProfile.jsx`, `EmployerProfile.jsx`; planirani profilni API. | Planirano: spremanje nakon ponovne prijave, 5 slika, format datoteke, pristup tuđem profilu. |
-| F-009–F-010 | Zahtjev za verifikaciju / admin odluka | Planirani modul verifikacije i admin prikaz. | Planirano: valjan zahtjev, odbijanje s razlogom, ponovni zahtjev, neovlaštena odluka. |
-| F-011–F-013 | Pregled i pretraga javnih oglasa | Postojeći `Home.jsx` (ogledni podaci); backend `castingModel.js` (dohvat objavljenih); dorada , . | Planirano: javni popis, detalj, filtriranje, nepostojeći i nedostupni oglas. |
-| F-014–F-016; F-026 | Predaja, provjera i povlačenje prijave; Moje prijave | Planirani API oglasa/prijava i frontend. | Planirano: valjana prijava, duplikat, istek, maksimum, tuđe prijave, povlačenje. |
-| F-017; F-034 | Obavijesti u aplikaciji i putem e-pošte | Postojeći `CandidateNotifications.jsx` (prikaz); planirane usluge. | Planirano: ispravan primatelj, označavanje pročitanim, dostava/greška vanjske usluge. |
-| F-018–F-022 | Nacrti, objava, uređivanje i stanja oglasa | Postojeći UI: `NoviOglas.jsx`, `MojiOglasi.jsx`; planirani API i statusna pravila. | Planirano: nacrt, objava verificiranog korisnika, broj kandidata, rok, vlasništvo, otkaz. |
-| F-023–F-024; F-030 | Pregled prijava, statusi i odabir kandidata | Planirani modul prijava i odabira, sučelje poslodavca. | Planirano: pristup samo vlastitom oglasu, prijelazi statusa, razlog odbijanja, popunjavanje. |
-| F-025 | Administratorsko brisanje oglasa | Planirana admin API/DB logika; izravno povezani zapisi u bazi. | Planirano: potvrda brisanja, kaskadno uklanjanje, odbijanje neovlaštenog zahtjeva. |
-| F-027–F-029 | Termini i rezervacije audicija | Planirani API i model rezervacija, prikaz prijava i audicija. | Planirano: kapacitet, poziv, zabrana duple rezervacije, otkazivanje, promjena termina, dolazak. |
-| F-031–F-033 | Prijava sadržaja, moderacija i statistika | Planirani administracijski modul i panel. | Planirano: prijava, administratorska odluka, autorizacija i usklađen broj statistika. |
-| NF-01–NF-04; NF-11–NF-12 | Sigurnost i privatnost | Autentifikacija i ovlasti; zaštita pristupa u API-ju; plan implementacije. | Planirano: autorizacijski, validacijski, privatnosni i sigurnosni testovi. |
-| NF-05–NF-10 | Performanse, pouzdanost, responzivnost i pristupačnost | Web-klijent, API i PostgreSQL, nakon povezivanja modula. | Planirano: mjerenje p95, ponovno pokretanje, responzivne veličine, tipkovnica i preglednici. |
+| Zahtjevi | Dio aplikacije | Što trebamo provjeriti |
+| --- | --- | --- |
+| F-001–F-005 | Prijava, odjava i korisnički računi | Radi li OAuth/OIDC prijava i odjava, prepoznaje li se postojeći korisnik i jesu li podaci zaštićeni. |
+| F-006–F-008 | Profili kandidata i poslodavaca | Mogu li korisnici spremati svoje podatke, dodati do pet fotografija i uređivati samo vlastiti profil. |
+| F-009–F-010 | Verifikacija poslodavaca | Može li poslodavac poslati zahtjev, a administrator odobriti ili odbiti verifikaciju. |
+| F-011–F-013 | Pregled i pretraga oglasa | Prikazuju li se javni oglasi, detalji i rezultati pretrage. |
+| F-014–F-016, F-026 | Prijave kandidata | Mogu li se kandidati prijaviti i povući prijavu te jesu li spriječene dvostruke i zakašnjele prijave. |
+| F-017, F-034 | Obavijesti | Prikazuju li se obavijesti pravim korisnicima i radi li planirano slanje e-pošte. |
+| F-018–F-022 | Izrada i upravljanje oglasima | Mogu li poslodavci spremiti nacrt, objaviti, urediti ili zatvoriti vlastiti oglas. |
+| F-023–F-024, F-030 | Pregled prijava i odabir kandidata | Može li poslodavac obraditi prijave i označiti oglas popunjenim kada odabere dovoljan broj kandidata. |
+| F-025 | Brisanje oglasa | Može li administrator obrisati oglas i povezane podatke te je li brisanje zabranjeno ostalima. |
+| F-027–F-029 | Audicije i rezervacije | Mogu li se dodavati termini, rezervirati slobodna mjesta i otkazivati rezervacije. |
+| F-031–F-033 | Administracija | Može li se prijaviti neprimjeren oglas, obraditi prijava i pregledati statistika. |
+| NF-01–NF-04, NF-11–NF-12 | Sigurnost i privatnost | Jesu li podaci i korisničke ovlasti zaštićeni i prikazuju li se razumljive pogreške. |
+| NF-05–NF-10 | Brzina i jednostavnost korištenja | Radi li aplikacija dovoljno brzo, pamti li podatke i može li se koristiti na različitim uređajima i preglednicima. |
 
-**Trenutačno stanje:** Ako piše „planirano”, taj dio ili test još trebamo završiti. Kasnije ćemo dodati stvarne testove iz [5-Ispitivanje.md](5-Ispitivanje.md). Neke stranice već imamo, ali nisu sve povezane.
+**Napomena:** Ovo su planirane provjere. Rezultate ćemo upisati u dokument 5-Ispitivanje.md kada stvarno testiramo aplikaciju.
 
 ## 2.7 Pregled zahtjeva
 
