@@ -2,7 +2,7 @@
 
 **Verzija:** Priprema za M0 (4. tjedan), listopad 2026.
 
-U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, koji su koraci i što se događa ako nešto ne uspije. Koristimo iste oznake funkcijskih zahtjeva kao u [2. Analizi zahtjeva](2-Analiza-zahtjeva.md). Ovo je **planirano ponašanje aplikacije** — ne znači da su sve funkcije već gotove.
+U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, koji su koraci i što se događa ako nešto ne uspije. Koristimo iste oznake funkcijskih zahtjeva kao u 2. Analizi zahtjeva. Ovo je **planirano ponašanje aplikacije** — ne znači da su sve funkcije već gotove.
 
 ## 3.1 Dijagram obrazaca uporabe
 
@@ -14,7 +14,7 @@ Na dijagramu je prikazano tko koristi CastMeIfYouCan i koje su glavne radnje dos
 
 **Slika 3.1. Dijagram obrazaca uporabe — CastMeIfYouCan**
 
-**PlantUML izvor:** [3-1-castmeifyoucan-system-UC.puml](puml/3-1-castmeifyoucan-system-UC.puml). Za sliku smo upotrijebili PlantUML prikaz dijagrama koji smo odabrali za projekt.
+**PlantUML izvor:** 3-1-castmeifyoucan-system-UC.puml. Za sliku smo upotrijebili PlantUML prikaz dijagrama koji smo odabrali za projekt.
 
 Dijagram prikazuje 16 glavnih obrazaca uporabe: registraciju i prijavu, profile, oglase, prijave kandidata, audicije, obavijesti, verifikaciju i administraciju. Neke manje radnje nalaze se unutar tih obrazaca, zato ne crtamo poseban oval za svaku funkciju iz dokumenta 2.
 
@@ -203,7 +203,7 @@ Za svaki obrazac uporabe napisali smo tko ga pokreće, što treba biti ispunjeno
 
 ## 3.3 Provjera dosljednosti obrazaca uporabe
 
-Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz [2. Analize zahtjeva](2-Analiza-zahtjeva.md).
+Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz 2. Analize zahtjeva.
 
 | Provjera | Kako ćemo provjeriti |
 | --- | --- |
@@ -212,7 +212,7 @@ Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz [2. Analize zahtjev
 | Glavni tijek | Svaki opisani postupak treba imati jasan početak, korake i rezultat. |
 | Alternativni tijekovi | Obrađujemo važne slučajeve: krive podatke, istek roka, duple prijave, popunjene termine i radnje bez ovlasti. |
 | Usklađenost s implementacijom | Tijekom razvoja provjeravat ćemo odgovara li stvarni rad aplikacije ovim opisima. |
-| Testiranje | Konkretne testove i njihove rezultate dodat ćemo u [5. Ispitivanje](5-Ispitivanje.md) kada budu provedeni. |
+| Testiranje | Konkretne testove i njihove rezultate dodat ćemo u 5. Ispitivanje kada budu provedeni. |
 
 **Zahtjevi koje nismo izdvojili u zaseban oval:** F-005 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u UC-002. F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu 2. Sljedivost zahtjeva i testova vodit ćemo u Analizi zahtjeva.
 
