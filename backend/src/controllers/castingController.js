@@ -5,7 +5,12 @@ const castingModel = require('../models/castingModel');
 async function getAllCastings(req, res) {
   try {
     // Tražimo od modela da dohvati oglase iz baze.
-    const castings = await castingModel.getPublishedCastings();
+// Čitamo lokaciju iz URL-a, npr. ?location=Zagreb
+    
+    const location = req.query.location;
+    const search = req.query.search;
+
+    const castings = await castingModel.getPublishedCastings(location, search);
 
     // Šaljemo rezultate korisniku u JSON formatu.
     res.json(castings);
