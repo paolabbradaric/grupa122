@@ -14,7 +14,23 @@ async function getPublishedCastings() {
   return result.rows;
 }
 
+
+ // Dohvaća jedan objavljeni casting oglas prema ID-u.
+async function getCastingById(id) {
+  const result = await pool.query(
+    `SELECT id, title, description, location,
+            positions_count, application_deadline
+     FROM casting_calls
+     WHERE id = $1 AND status = 'published'`,
+    [id]
+  );
+
+  return result.rows[0] || null;
+}
+
+
 // Omogućuje controlleru korištenje ove funkcije.
 module.exports = {
-  getPublishedCastings
+  getPublishedCastings,
+  getCastingById
 };
