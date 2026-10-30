@@ -4,6 +4,7 @@ function Navbar({
   onPrijava,
   onPocetna,
   onRegistracija,
+  onMojiOglasi,
   onProfilKandidata,
   onProfilPoslodavca,
   onObavijestiKandidata,
@@ -42,6 +43,10 @@ function Navbar({
 
     if (stavka === "Moje prijave" && uloga === "kandidat") {
       onPrijaveKandidata();
+    }
+
+    if (stavka === "Moji oglasi" && uloga === "poslodavac") {
+      onMojiOglasi();
     }
 
     if (stavka === "Odjavi se") {

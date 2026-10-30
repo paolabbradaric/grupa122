@@ -1,7 +1,7 @@
 # Cast me if you can — razvojni plan grupe 12.2
 
 ## Potvrđene odluke
-- Vlastita prijava korisničkim imenom i lozinkom; siguran hash i sesije.
+- Prijava putem OAuth 2.0 / OpenID Connect pružatelja identiteta; vlastite korisničke lozinke ne pohranjujemo.
 - Uloge: kandidat, poslodavac, admin. Jedan zajednički admin račun samo za demo.
 - Gosti vide javne oglase; prijavljeni poslodavac vidi samo svoje oglase.
 - Svaki oglas je zaseban projekt s jednom ulogom.
