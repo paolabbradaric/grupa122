@@ -25,4 +25,4 @@
 
 ---
 
->**Završna provjera:** Tvrdnje o dovršenim funkcionalnostima podudaraju se s postavljenom aplikacijom i rezultatima ispitivanja. Nedovršen rad jasno je naveden; planovi za budući rad ne prikazuju se kao dovršene funkcionalnosti. Utrošeno vrijeme i pojedinačni doprinosi dokumentirani su u dokumentu [A. Pregled aktivnosti grupe](A-Pregled-aktivnosti-grupe.md).
+>**Završna provjera:** Tvrdnje o dovršenim funkcionalnostima podudaraju se s postavljenom aplikacijom i rezultatima ispitivanja. Nedovršen rad jasno je naveden; planovi za budući rad ne prikazuju se kao dovršene funkcionalnosti. Utrošeno vrijeme i pojedinačni doprinosi dokumentirani su u dokumentu A. Pregled aktivnosti grupe.

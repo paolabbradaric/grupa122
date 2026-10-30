@@ -4,7 +4,10 @@ const castingController = require('../controllers/castingController');
 
 const router = express.Router();
 
-// GET zahtjev prosljeđujemo controlleru.
+// Dohvat svih objavljenih oglasa.
 router.get('/', castingController.getAllCastings);
+
+// Dohvat jednog objavljenog oglasa prema ID-u.
+router.get('/:id', castingController.getCastingById);
 
 module.exports = router;
