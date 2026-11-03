@@ -5,7 +5,8 @@ const path = require('path');
 
 // Učitavamo postavke iz backend/.env
 require('dotenv').config({
-  path: path.resolve(__dirname, '../../.env')
+  path: path.resolve(__dirname, '../../.env'),
+  quiet: true
 });
 
 // Stvaramo skup veza prema PostgreSQL bazi.
