@@ -1,131 +1,42 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-function Navbar({
-  onPrijava,
-  onPocetna,
-  onRegistracija,
-  onMojiOglasi,
-  onProfilKandidata,
-  onProfilPoslodavca,
-  onObavijestiKandidata,
-  onPrijaveKandidata,
-}) {
-  const [uloga, setUloga] = useState("gost");
-  const [izbornikOtvoren, setIzbornikOtvoren] = useState(false);
-
-  const izbornici = {
-    kandidat: ["Moj profil", "Moje prijave", "Moje obavijesti", "Odjavi se"],
-    poslodavac: ["Moj profil", "Moji oglasi", "Moje obavijesti", "Odjavi se"],
-    admin: [
-      "Moj profil",
-      "Zahtjevi",
-      "Odbijeni",
-      "Prijavljeni",
-      "Statistika",
-      "Odjavi se",
-    ],
-  };
-
-  function handleStavka(stavka) {
-    if (stavka === "Moj profil") {
-      if (uloga === "kandidat") {
-        onProfilKandidata();
-      }
-
-      if (uloga === "poslodavac") {
-        onProfilPoslodavca();
-      }
-    }
-
-    if (stavka === "Moje obavijesti" && uloga === "kandidat") {
-      onObavijestiKandidata();
-    }
-
-    if (stavka === "Moje prijave" && uloga === "kandidat") {
-      onPrijaveKandidata();
-    }
-
-    if (stavka === "Moji oglasi" && uloga === "poslodavac") {
-      onMojiOglasi();
-    }
-
-    if (stavka === "Odjavi se") {
-      setUloga("gost");
-      onPocetna();
-    }
-
-    setIzbornikOtvoren(false);
+export default function Navbar({ user, onPrijava, onPocetna, onRegistracija,
+  onProfilKandidata, onProfilPoslodavca, onObavijestiKandidata, onPrijaveKandidata, onMojiOglasi, onOdjava }) {
+  const [open, setOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  function navigate(action) { setOpen(false); action(); }
+  async function logout() {
+    setLoggingOut(true);
+    try { await onOdjava(); setOpen(false); }
+    finally { setLoggingOut(false); }
   }
-
   return (
     <nav className="navbar">
-      <button type="button" className="navbar-logo" onClick={onPocetna}>
-        🎬 Cast Me If You Can
-      </button>
-
-      <input
-        type="search"
-        placeholder={
-          uloga === "poslodavac"
-            ? "Pretraži moje oglase..."
-            : "Pretraži oglase..."
-        }
-        aria-label="Pretraži oglase"
-      />
-
+      <button type="button" className="navbar-logo" onClick={onPocetna}>🎬 Cast Me If You Can</button>
+      <input type="search" placeholder={user?.role === 'employer' ? 'Pretraži moje oglase...' : 'Pretraži oglase...'} aria-label="Pretraži oglase" />
       <div>
-        <select
-          value={uloga}
-          onChange={(e) => {
-            setUloga(e.target.value);
-            setIzbornikOtvoren(false);
-          }}
-        >
-          <option value="gost">Gost</option>
-          <option value="kandidat">Kandidat</option>
-          <option value="poslodavac">Poslodavac</option>
-          <option value="admin">Admin</option>
-        </select>
-
-        {uloga === "gost" ? (
-          <div>
-            <button type="button" onClick={onPrijava}>
-              Prijava
-            </button>
-
-            <button type="button" onClick={onRegistracija}>
-              Registracija
-            </button>
+        {!user ? <>
+          <button type="button" onClick={onPrijava}>Prijava</button>
+          <button type="button" onClick={onRegistracija}>Registracija</button>
+        </> : <>
+          <span>{user.firstName} · {({ candidate: 'Kandidat', employer: 'Poslodavac', admin: 'Administrator' })[user.role] || 'Korisnik'}</span>
+          <div style={{ position: 'relative' }}>
+            <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Korisnički izbornik">•••</button>
+            {open && <div className="user-menu">
+              {user.role === 'candidate' && <>
+                <button type="button" onClick={() => navigate(onProfilKandidata)}>Moj profil</button>
+                <button type="button" onClick={() => navigate(onPrijaveKandidata)}>Moje prijave</button>
+                <button type="button" onClick={() => navigate(onObavijestiKandidata)}>Moje obavijesti</button>
+              </>}
+              {user.role === 'employer' && <>
+                <button type="button" onClick={() => navigate(onProfilPoslodavca)}>Moj profil</button>
+                <button type="button" onClick={() => navigate(onMojiOglasi)}>Moji oglasi</button>
+              </>}
+              <button type="button" disabled={loggingOut} onClick={logout}>{loggingOut ? 'Odjava…' : 'Odjavi se'}</button>
+            </div>}
           </div>
-        ) : (
-          <div style={{ position: "relative" }}>
-            <button
-              type="button"
-              onClick={() => setIzbornikOtvoren(!izbornikOtvoren)}
-              aria-expanded={izbornikOtvoren}
-              aria-label="Korisnički izbornik"
-            >
-              •••
-            </button>
-
-            {izbornikOtvoren && (
-              <div className="user-menu">
-                {izbornici[uloga].map((stavka) => (
-                  <button
-                    type="button"
-                    key={stavka}
-                    onClick={() => handleStavka(stavka)}
-                  >
-                    {stavka}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        </>}
       </div>
     </nav>
   );
 }
-
-export default Navbar;

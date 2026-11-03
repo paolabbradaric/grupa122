@@ -1,18 +1,19 @@
 import { useState } from "react";
 import ChangePassword from "../components/ChangePassword";
 
-function EmployerProfile() {
+function EmployerProfile({ user }) {
+  const storageKey = `demoProfilPoslodavca:${user.id}`;
   const [podaci, setPodaci] = useState(() => {
-    const spremljeno = localStorage.getItem("demoProfilPoslodavca");
+    const spremljeno = localStorage.getItem(storageKey);
 
     return spremljeno
       ? JSON.parse(spremljeno)
       : {
-          nazivTvrtke: "",
-          oib: "",
-          email: "",
-          telefon: "",
-          sjediste: "",
+          nazivTvrtke: user.organization?.company_name || "",
+          oib: user.organization?.reg_num || "",
+          email: user.organization?.contact_email || user.email,
+          telefon: user.organization?.phone || "",
+          sjediste: user.organization?.location || "",
         };
   });
   const [logo, setLogo] = useState(null);
@@ -46,7 +47,7 @@ function EmployerProfile() {
       return;
     }
 
-    localStorage.setItem("demoProfilPoslodavca", JSON.stringify(podaci));
+    localStorage.setItem(storageKey, JSON.stringify(podaci));
 
     alert("Podaci poslodavca privremeno su spremljeni.");
   }
@@ -172,7 +173,7 @@ function EmployerProfile() {
       <h2>Sigurnost računa</h2>
 
       <button type="button" onClick={() => setPrikaziLozinku(!prikaziLozinku)}>
-        Promijeni lozinku
+        Sigurnost Google računa
       </button>
 
       {prikaziLozinku && (

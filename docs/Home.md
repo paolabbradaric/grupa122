@@ -38,6 +38,7 @@ Ažurirani popis članova, njihovih GitHub profila i glavnih uloga ili doprinosa
 | 6. Postavljanje, instalacija i konfiguracija | Lokalna instalacija, konfiguracija, javno postavljanje i administracija |
 | 7. Zaključak i budući rad | Zaključak i moguća daljnja poboljšanja |
 | A. Pregled aktivnosti grupe | Aktivnosti tima, doprinosi i izazovi |
+| [Autentifikacija](AUTENTIFIKACIJA.md) | Google prijava, registracija, sesije, API ugovor i konfiguracija |
 
 ## Ključne točke projekta
 
