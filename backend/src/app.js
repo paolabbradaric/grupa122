@@ -19,6 +19,12 @@ function createApp(options = {}) {
   const users = options.users || createUserModel(pool);
   const passport = options.passport || createPassport(config, users);
 
+  // Testovi mogu koristiti lažni controller.
+  // Stvarna aplikacija koristi postojeći controller.
+  const applicationHandler =
+    options.applicationHandler ||
+    applicationController.createApplication;
+
   const app = express();
 
   app.disable('x-powered-by');
@@ -26,42 +32,48 @@ function createApp(options = {}) {
   app.use(express.json({ limit: '16kb' }));
 
   // JAVNE CASTING RUTE
-  // Oglase mogu pregledavati i neprijavljeni korisnici.
   app.use('/api/castings', castingRoutes);
 
-  // KORISNICKE SESIJE I PASSPORT
-  app.use('/api', session({
-    name: config.cookieName,
-    secret: config.secret,
-    resave: false,
-    saveUninitialized: false,
-    store: options.store || new PgStore({
-      pool,
-      schemaName: 'app_private',
-      tableName: 'sessions',
-      createTableIfMissing: false
+  // KORISNIČKE SESIJE I PASSPORT
+  app.use(
+    '/api',
+    session({
+      name: config.cookieName,
+      secret: config.secret,
+      resave: false,
+      saveUninitialized: false,
+      store: options.store || new PgStore({
+        pool,
+        schemaName: 'app_private',
+        tableName: 'sessions',
+        createTableIfMissing: false
+      }),
+      cookie: config.cookie
     }),
-    cookie: config.cookie,
-  }), passport.initialize(), passport.session());
+    passport.initialize(),
+    passport.session()
+  );
 
   // GOOGLE OAUTH RUTE
-  app.use('/api/auth', createAuthRouter({
-    config,
-    users,
-    passport,
-    authLimiter: options.authLimiter
-  }));
+  app.use(
+    '/api/auth',
+    createAuthRouter({
+      config,
+      users,
+      passport,
+      authLimiter: options.authLimiter
+    })
+  );
 
   // PRIJAVA KANDIDATA NA CASTING
-  // Samo prijavljeni kandidati s valjanim CSRF tokenom.
   app.post(
     '/api/castings/:id/applications',
     requireRole('candidate'),
     protectMutation(config),
-    applicationController.createApplication
+    applicationHandler
   );
 
-  // OBRADA GRESAKA
+  // OBRADA GREŠAKA
   app.use((error, req, res, _next) => {
     if (error instanceof AuthError) {
       return res.status(error.status).json({
