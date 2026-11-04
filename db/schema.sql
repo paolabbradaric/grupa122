@@ -36,6 +36,7 @@ CREATE TABLE organisations
   contact_email VARCHAR(255) NOT NULL,
   phone VARCHAR(30),
   website VARCHAR(255),
+  location VARCHAR(255),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   owner_id INT NOT NULL,
@@ -242,3 +243,19 @@ ALTER TABLE casting_calls
 ALTER TABLE audition_slots
   ADD CONSTRAINT slot_capacity_positive CHECK (capacity > 0),
   ADD CONSTRAINT slot_time_range CHECK (ends_at > starts_at);
+
+-- Serverske sesije nisu dio javnog Supabase Data API-ja.
+CREATE SCHEMA IF NOT EXISTS app_private;
+REVOKE ALL ON SCHEMA app_private FROM PUBLIC;
+CREATE TABLE app_private.sessions (
+  sid VARCHAR NOT NULL PRIMARY KEY,
+  sess JSON NOT NULL,
+  expire TIMESTAMP(6) NOT NULL
+);
+CREATE INDEX sessions_expire_idx ON app_private.sessions (expire);
+ALTER TABLE app_private.sessions ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON app_private.sessions FROM PUBLIC;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE candidate_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organisations ENABLE ROW LEVEL SECURITY;
+CREATE INDEX organisations_owner_id_idx ON organisations (owner_id);

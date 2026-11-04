@@ -13,13 +13,24 @@ const pocetniPodaci = {
   bojaKose: "",
 };
 
-function CandidateProfile() {
+function PortfolioImage({ file, index }) {
+  const imageRef = useRef(null);
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    imageRef.current.src = url;
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  return <img ref={imageRef} alt={`Portfolio fotografija ${index + 1}`} width="150" />;
+}
+
+function CandidateProfile({ user }) {
+  const storageKey = `demoProfilKandidata:${user.id}`;
   const [podaci, setPodaci] = useState(() => {
     try {
-      const spremljeno = localStorage.getItem("demoProfilKandidata");
+      const spremljeno = localStorage.getItem(storageKey);
       return spremljeno
         ? { ...pocetniPodaci, ...JSON.parse(spremljeno) }
-        : pocetniPodaci;
+        : { ...pocetniPodaci, ime: user.firstName, prezime: user.lastName, datumRodenja: user.birthDate };
     } catch {
       return pocetniPodaci;
     }
@@ -30,23 +41,6 @@ function CandidateProfile() {
   const [prikaziLozinku, setPrikaziLozinku] = useState(false);
 
   const portfolioInputRef = useRef(null);
-
-  const [portfolioPregledi, setPortfolioPregledi] = useState([]);
-
-  useEffect(() => {
-    const pregledi = portfolio.map((file) => ({
-      naziv: file.name,
-      url: URL.createObjectURL(file),
-    }));
-
-    setPortfolioPregledi(pregledi);
-
-    return () => {
-      pregledi.forEach((pregled) => {
-        URL.revokeObjectURL(pregled.url);
-      });
-    };
-  }, [portfolio]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -102,7 +96,7 @@ function CandidateProfile() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    localStorage.setItem("demoProfilKandidata", JSON.stringify(podaci));
+    localStorage.setItem(storageKey, JSON.stringify(podaci));
 
     alert("Podaci profila privremeno su spremljeni u preglednik.");
   }
@@ -253,15 +247,11 @@ function CandidateProfile() {
 
           <p>Odabrano fotografija: {portfolio.length}/5</p>
 
-          {portfolioPregledi.map((pregled, index) => (
-            <div key={pregled.url}>
-              <img
-                src={pregled.url}
-                alt={`Portfolio fotografija ${index + 1}`}
-                width="150"
-              />
+          {portfolio.map((file, index) => (
+            <div key={`${file.name}:${file.lastModified}:${file.size}`}>
+              <PortfolioImage file={file} index={index} />
 
-              <p>{pregled.naziv}</p>
+              <p>{file.name}</p>
 
               <button type="button" onClick={() => ukloniFotografiju(index)}>
                 Ukloni fotografiju
@@ -274,7 +264,7 @@ function CandidateProfile() {
       </form>
 
       <button type="button" onClick={() => setPrikaziLozinku(!prikaziLozinku)}>
-        Promijeni lozinku
+        Sigurnost Google računa
       </button>
 
       {prikaziLozinku && (
