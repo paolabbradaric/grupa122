@@ -27,7 +27,7 @@ function getApplicationWritesEnabled(env = process.env) {
     throw new Error('Spremanje prijava je blokirano: dopuÅ¡tena je samo lokalna baza castme_test bez dodatne potvrde za udaljenu bazu.');
   }
   if (env.APPLICATION_WRITES_CONFIRMED !== 'true') {
-    throw new Error('Spremanje prijava nije potvrÄ‘eno. Potrebna je izriÄita potvrda konfiguracije.');
+    throw new Error('Spremanje prijava nije potvrdeno. Potrebna je izrazita potvrda konfiguracije.');
   }
   return true;
 }
@@ -37,7 +37,7 @@ function getApplicationWritesEnabled(env = process.env) {
 function getEmployerCastingWritesEnabled(env = process.env) {
   if (env.EMPLOYER_CASTING_WRITES_ENABLED !== 'true') return false;
   if (!isLocalTestDatabase(env) || env.EMPLOYER_CASTING_WRITES_CONFIRMED !== 'true') {
-    throw new Error('Spremanje nacrta dopuÅ¡teno je samo na potvrÄ‘enoj lokalnoj bazi castme_test.');
+    throw new Error('Spremanje nacrta dopusteno je samo na potvrdenoj lokalnoj bazi castme_test.');
   }
   return true;
 }
@@ -100,7 +100,7 @@ function createApp(options = {}) {
       return res.status(413).json({ error: 'Zahtjev je prevelik.' });
     }
     console.error('API zahtjev nije uspio:', error.code || 'INTERNAL_ERROR');
-    return res.status(500).json({ error: 'Zahtjev nije moguÄ‡e obraditi. PokuÅ¡aj ponovno.' });
+    return res.status(500).json({ error: 'Zahtjev nije moguÄ‡e obraditi. Pokusaj ponovno.' });
   });
   return app;
 }
