@@ -78,6 +78,33 @@ function createEmployerCastingController({ model = createEmployerCastingModel(),
         return res.status(201).json({ id: result.id, status: 'draft' });
       } catch (error) { return next(error); }
     },
+    async publish(req, res, next) {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(400).json({ error: 'Neispravan ID oglasa.' });
+      }
+      if (!writesEnabled) {
+        return res.status(503).json({ error: 'Objavljivanje oglasa još nije omogućeno.' });
+      }
+      try {
+        const result = await model.publishDraft(req.user.id, id);
+        if (result.outcome === 'not_found') {
+          return res.status(404).json({ error: 'Oglas nije pronađen.' });
+        }
+        if (result.outcome === 'not_draft') {
+          return res.status(409).json({ error: 'Objaviti se može samo nacrt.' });
+        }
+        if (result.outcome === 'not_verified') {
+          return res.status(403).json({ error: 'Organizacija nije verificirana.' });
+        }
+        if (result.outcome === 'incomplete') {
+          return res.status(400).json({ error: 'Za objavu popuni sva obavezna polja i postavi budući rok.' });
+        }
+        return res.json({ id, status: 'published', published: true });
+      } catch (error) {
+        return next(error);
+      }
+    },
     async update(req, res, next) {
       const id = Number(req.params.id);
       if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ error: 'Neispravan ID oglasa.' });

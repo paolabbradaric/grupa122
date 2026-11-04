@@ -64,6 +64,73 @@ function createEmployerCastingModel(database = pool) {
       }
     },
 
+    async publishDraft(userId, castingId) {
+      const client = await database.connect();
+      try {
+        await client.query('BEGIN');
+        // Zaključavanje oglasa sprječava istodobnu objavu/uređivanje istog nacrta.
+        const { rows: [casting] } = await client.query(`
+          SELECT c.id, c.status, c.title, c.description, c.positions_count,
+                 c.max_applications, c.min_age, c.max_age, c.location,
+                 c.application_deadline, p.title AS project_title,
+                 p.project_type, p.description AS project_description, o.id AS org_id
+          FROM casting_calls c
+          JOIN projects p ON p.id = c.project_id
+          JOIN organisations o ON o.id = p.org_id
+          WHERE c.id = $1 AND o.owner_id = $2
+          FOR UPDATE OF c, p`, [castingId, userId]);
+        if (!casting) {
+          await client.query('ROLLBACK');
+          return { outcome: 'not_found' };
+        }
+        if (casting.status !== 'draft') {
+          await client.query('ROLLBACK');
+          return { outcome: 'not_draft' };
+        }
+
+        // Samo posljednja odluka o verifikaciji organizacije vrijedi.
+        const { rows: [verification] } = await client.query(`
+          SELECT status FROM verification
+          WHERE org_id = $1
+          ORDER BY submitted_at DESC, id DESC
+          LIMIT 1`, [casting.org_id]);
+        if (verification?.status !== 'approved') {
+          await client.query('ROLLBACK');
+          return { outcome: 'not_verified' };
+        }
+
+        const nonBlank = value => typeof value === 'string' && value.trim().length > 0;
+        const positiveInt = value => Number.isSafeInteger(value) && value > 0;
+        const deadline = casting.application_deadline && new Date(casting.application_deadline);
+        const complete =
+          nonBlank(casting.project_title) && nonBlank(casting.project_type) &&
+          nonBlank(casting.project_description) &&
+          nonBlank(casting.title) && nonBlank(casting.description) &&
+          nonBlank(casting.location) && positiveInt(casting.positions_count) &&
+          positiveInt(casting.max_applications) && casting.max_applications <= 1000 &&
+          Number.isSafeInteger(casting.min_age) && casting.min_age >= 18 &&
+          Number.isSafeInteger(casting.max_age) && casting.max_age >= casting.min_age &&
+          deadline instanceof Date && Number.isFinite(deadline.getTime()) &&
+          deadline.getTime() > Date.now();
+        if (!complete) {
+          await client.query('ROLLBACK');
+          return { outcome: 'incomplete' };
+        }
+
+        await client.query(`
+          UPDATE casting_calls
+          SET status = 'published', published_at = NOW(), updated_at = NOW()
+          WHERE id = $1`, [castingId]);
+        await client.query('COMMIT');
+        return { outcome: 'published', id: castingId };
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+
     async updateDraft(userId, castingId, patch) {
       const client = await database.connect();
       try {
