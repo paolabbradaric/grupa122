@@ -21,9 +21,46 @@ function createApp(options = {}) {
 
   // Testovi mogu koristiti lažni controller.
   // Stvarna aplikacija koristi postojeći controller.
-  const applicationHandler =
-    options.applicationHandler ||
-    applicationController.createApplication;
+  
+
+
+const applicationWritesRequested =
+  process.env.APPLICATION_WRITES_ENABLED === 'true';
+
+const isLocalTestDatabase =
+  ['localhost', '127.0.0.1'].includes(process.env.PGHOST) &&
+  process.env.PGPORT === '5432' &&
+  process.env.PGDATABASE === 'castme_test';
+
+const applicationWritesEnabled =
+  applicationWritesRequested && isLocalTestDatabase;
+
+if (applicationWritesRequested && !isLocalTestDatabase) {
+  throw new Error(
+    'Spremanje prijava je blokirano: ' +
+    'dopuštena je samo lokalna baza castme_test.'
+  );
+}
+
+
+if (
+  applicationWritesEnabled &&
+  process.env.NODE_ENV !== 'test' &&
+  process.env.APPLICATION_WRITES_CONFIRMED !== 'true'
+) {
+  throw new Error(
+    'Spremanje prijava nije potvrđeno. ' +
+    'Potrebna je izričita potvrda konfiguracije.'
+  );
+}
+
+const applicationHandler =
+  options.applicationHandler ||
+  applicationController.createApplicationHandler({
+    writesEnabled: applicationWritesEnabled
+  });
+
+
 
   const app = express();
 
