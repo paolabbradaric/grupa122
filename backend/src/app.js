@@ -14,61 +14,71 @@ const { createAuthRouter } = require('./auth/routes');
 const { AuthError } = require('./auth/errors');
 const { requireRole, protectMutation } = require('./auth/middleware');
 
+// Provjera je li uključeno spremanje prijava.
+function getApplicationWritesEnabled(env = process.env) {
+  const requested =
+    env.APPLICATION_WRITES_ENABLED === 'true';
+
+  // Spremanje je po zadanim postavkama isključeno.
+  if (!requested) {
+    return false;
+  }
+
+  const isLocalTestDatabase =
+    ['localhost', '127.0.0.1'].includes(env.PGHOST) &&
+    Number(env.PGPORT) === 5432 &&
+    env.PGDATABASE === 'castme_test';
+
+  const allowRemote =
+    env.APPLICATION_WRITES_ALLOW_REMOTE === 'true';
+
+  // Udaljena baza zahtijeva dodatnu dozvolu.
+  if (!isLocalTestDatabase && !allowRemote) {
+    throw new Error(
+      'Spremanje prijava je blokirano: ' +
+      'dopuštena je samo lokalna baza castme_test ' +
+      'bez dodatne potvrde za udaljenu bazu.'
+    );
+  }
+
+  // Obavezna potvrda u svakom okruženju.
+  if (env.APPLICATION_WRITES_CONFIRMED !== 'true') {
+    throw new Error(
+      'Spremanje prijava nije potvrđeno. ' +
+      'Potrebna je izričita potvrda konfiguracije.'
+    );
+  }
+
+  return true;
+}
+
 function createApp(options = {}) {
   const config = options.config || loadAuthConfig();
   const users = options.users || createUserModel(pool);
   const passport = options.passport || createPassport(config, users);
 
-  // Testovi mogu koristiti lažni controller.
-  // Stvarna aplikacija koristi postojeći controller.
-  
+  const applicationWritesEnabled =
+    getApplicationWritesEnabled();
 
-
-const applicationWritesRequested =
-  process.env.APPLICATION_WRITES_ENABLED === 'true';
-
-const isLocalTestDatabase =
-  ['localhost', '127.0.0.1'].includes(process.env.PGHOST) &&
-  process.env.PGPORT === '5432' &&
-  process.env.PGDATABASE === 'castme_test';
-
-const applicationWritesEnabled =
-  applicationWritesRequested && isLocalTestDatabase;
-
-if (applicationWritesRequested && !isLocalTestDatabase) {
-  throw new Error(
-    'Spremanje prijava je blokirano: ' +
-    'dopuštena je samo lokalna baza castme_test.'
-  );
-}
-
-
-if (
-  applicationWritesEnabled &&
-  process.env.NODE_ENV !== 'test' &&
-  process.env.APPLICATION_WRITES_CONFIRMED !== 'true'
-) {
-  throw new Error(
-    'Spremanje prijava nije potvrđeno. ' +
-    'Potrebna je izričita potvrda konfiguracije.'
-  );
-}
-
-const applicationHandler =
-  options.applicationHandler ||
-  applicationController.createApplicationHandler({
-    writesEnabled: applicationWritesEnabled
-  });
-
-
+  // Testovi mogu zamijeniti controller lažnim.
+  // U stvarnoj aplikaciji koristi se pravi controller.
+  const applicationHandler =
+    options.applicationHandler ||
+    applicationController.createApplicationHandler({
+      writesEnabled: applicationWritesEnabled
+    });
 
   const app = express();
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
-  app.use(express.json({ limit: '16kb' }));
+
+  app.use(express.json({
+    limit: '16kb'
+  }));
 
   // JAVNE CASTING RUTE
+  // Pregled oglasa dopušten je svim korisnicima.
   app.use('/api/castings', castingRoutes);
 
   // KORISNIČKE SESIJE I PASSPORT
@@ -103,6 +113,10 @@ const applicationHandler =
   );
 
   // PRIJAVA KANDIDATA NA CASTING
+  // 1. Korisnik mora biti kandidat.
+  // 2. Mora poslati ispravan CSRF token.
+  // 3. Controller provjerava podatke i profil.
+  // 4. Spremanje ovisi o konfiguraciji.
   app.post(
     '/api/castings/:id/applications',
     requireRole('candidate'),
@@ -144,12 +158,18 @@ const applicationHandler =
   return app;
 }
 
+// Pokretanje servera
 if (require.main === module) {
   const port = Number(process.env.PORT || 3000);
 
   createApp().listen(port, () => {
-    console.log(`Server radi na http://localhost:${port}`);
+    console.log(
+      `Server radi na http://localhost:${port}`
+    );
   });
 }
 
-module.exports = { createApp };
+module.exports = {
+  createApp,
+  getApplicationWritesEnabled
+};
