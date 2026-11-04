@@ -30,8 +30,10 @@
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
     "db:migrate:auth": "node scripts/migrate-auth.js",
+    "db:migrate:casting-drafts": "node scripts/migrate-casting-drafts.js",
     "test": "node --test",
-    "test:db": "node scripts/check-database.js"
+    "test:db": "node scripts/check-database.js",
+    "test:db:casting": "node scripts/check-casting-database.js"
   },
   "keywords": [],
   "author": "",
