@@ -9,6 +9,7 @@ function createEmployerCastingRouter({ config, writesEnabled = false, model } = 
   router.get('/castings', controller.list);
   router.post('/castings', protectMutation(config), controller.create);
   router.patch('/castings/:id', protectMutation(config), controller.update);
+  router.post('/castings/:id/publish', protectMutation(config), controller.publish);
   return router;
 }
 
