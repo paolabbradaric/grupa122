@@ -4,6 +4,7 @@ const PgStore = require('connect-pg-simple')(session);
 const pool = require('./config/db');
 
 const castingRoutes = require('./routes/castingRoutes');
+const { createAuditionRouter } = require('./routes/auditionRoutes');
 const applicationController = require('./controllers/applicationController');
 const { createEmployerCastingRouter } = require('./routes/employerCastingRoutes');
 
@@ -88,6 +89,8 @@ function createApp(options = {}) {
 
   app.post('/api/castings/:id/applications',
     requireRole('candidate'), protectMutation(config), applicationHandler);
+  // Rute za audicije.
+  app.use('/api/auditions', createAuditionRouter({ config, controller: options.auditionController }));
 
   app.use((error, req, res, _next) => {
     if (error instanceof AuthError) {
