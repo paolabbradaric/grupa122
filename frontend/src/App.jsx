@@ -12,6 +12,12 @@ import "./App.css";
 import Home from "./pages/Home";
 import MojiOglasi from "./pages/MojiOglasi"
 import NoviOglas from "./pages/NoviOglas";
+<<<<<<< Updated upstream
+=======
+import CompleteRegistration from "./pages/CompleteRegistration";
+import CastingCardDetails from "./pages/CastingCardDetails";
+import { useAuth } from "./services/useAuth";
+>>>>>>> Stashed changes
 
 function App() {
   const [stranica, setStranica] = useState("pocetna");
@@ -65,8 +71,15 @@ function App() {
           key={odabraniOglas?.id ?? "novi"}
           onMojiOglasi={() => setStranica("moji-oglasi")} 
           oglasZaUredivanje={odabraniOglas}/>
+      ) : page === "detalji" ? (
+        <CastingCardDetails id={odabraniOglas} />
       ) : (
-        <Home />
+        <Home 
+          CastingCardDetails={(id) =>{
+            setOdabraniOglas(id);
+            setStranica("detalji");
+          }}
+        />
       )}
     </>
   );
