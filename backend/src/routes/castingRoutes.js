@@ -4,7 +4,7 @@ const castingController = require('../controllers/castingController');
 
 const router = express.Router();
 
-// GET zahtjev prosljeđujemo controlleru.
 router.get('/', castingController.getAllCastings);
+router.get('/:id', castingController.getCastingById);
 
 module.exports = router;

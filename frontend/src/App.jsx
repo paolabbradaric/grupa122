@@ -12,20 +12,35 @@ import "./App.css";
 import Home from "./pages/Home";
 import MojiOglasi from "./pages/MojiOglasi"
 import NoviOglas from "./pages/NoviOglas";
-<<<<<<< Updated upstream
-=======
 import CompleteRegistration from "./pages/CompleteRegistration";
 import CastingCardDetails from "./pages/CastingCardDetails";
 import { useAuth } from "./services/useAuth";
->>>>>>> Stashed changes
 
 function App() {
   const [stranica, setStranica] = useState("pocetna");
   const [odabraniOglas, setOdabraniOglas] = useState(null);
+  const auth = useAuth();
+  const candidatePages = ['profil-kandidata', 'obavijesti-kandidata', 'prijave-kandidata'];
+  const employerPages = ['profil-poslodavca', 'moji-oglasi', 'novi-oglas'];
+  const allowed = (!candidatePages.includes(stranica) || auth.user?.role === 'candidate') &&
+    (!employerPages.includes(stranica) || auth.user?.role === 'employer');
+  const page = allowed ? stranica : 'prijava';
+
+  async function logout() {
+    try {
+      await auth.logout();
+      setStranica('pocetna');
+      setOdabraniOglas(null);
+    } catch (error) { auth.setError(error.message); }
+  }
+
+  if (auth.loading) return <main><p role="status">Provjeravam prijavu…</p></main>;
 
   return (
     <>
       <Navbar
+        user={auth.user}
+        onOdjava={logout}
         onPrijava={() => setStranica("prijava")}
         onRegistracija={() => setStranica("registracija")}
         onMojiOglasi={() => setStranica("moji-oglasi")}
@@ -36,29 +51,32 @@ function App() {
         onPrijaveKandidata={() => setStranica("prijave-kandidata")}
       />
 
-      {stranica === "prijava" ? (
+      {auth.error && <p role="alert">{auth.error}</p>}
+      {auth.onboardingRequired ? (
+        <CompleteRegistration identity={auth.identity} onComplete={auth.completeProfile} onCancel={logout} />
+      ) : page === "prijava" ? (
         <Login
           onPoslodavac={() => setStranica("prijava-poslodavac")}
           onRegistracija={() => setStranica("registracija")}
         />
-      ) : stranica === "prijava-poslodavac" ? (
+      ) : page === "prijava-poslodavac" ? (
         <EmployerLogin
           onKorisnik={() => setStranica("prijava")}
           onRegistracija={() => setStranica("registracija-poslodavac")}
         />
-      ) : stranica === "registracija" ? (
-        <Register onPrijava={() => setStranica("prijava")} />
-      ) : stranica === "registracija-poslodavac" ? (
-        <EmployerRegister onPrijava={() => setStranica("prijava-poslodavac")} />
-      ) : stranica === "profil-kandidata" ? (
-        <CandidateProfile />
-      ) : stranica === "profil-poslodavca" ? (
-        <EmployerProfile />
-      ) : stranica === "obavijesti-kandidata" ? (
+      ) : page === "registracija" ? (
+        <Register onPrijava={() => setStranica("prijava")} onPoslodavac={() => setStranica("registracija-poslodavac")} />
+      ) : page === "registracija-poslodavac" ? (
+        <EmployerRegister onPrijava={() => setStranica("prijava-poslodavac")} onKorisnik={() => setStranica("registracija")} />
+      ) : page === "profil-kandidata" ? (
+        <CandidateProfile key={auth.user.id} user={auth.user} />
+      ) : page === "profil-poslodavca" ? (
+        <EmployerProfile key={auth.user.id} user={auth.user} />
+      ) : page === "obavijesti-kandidata" ? (
         <CandidateNotifications />
-      ) : stranica === "prijave-kandidata" ? (
+      ) : page === "prijave-kandidata" ? (
         <CandidateApplications />
-      ) : stranica === "moji-oglasi" ? (
+      ) : page === "moji-oglasi" ? (
         <MojiOglasi onNoviOglas={() => {
           setOdabraniOglas(null);
           setStranica("novi-oglas");
@@ -66,7 +84,7 @@ function App() {
           setOdabraniOglas(oglas);
           setStranica("novi-oglas");
         }}/>
-      ) : stranica === "novi-oglas" ? (
+      ) : page === "novi-oglas" ? (
         <NoviOglas 
           key={odabraniOglas?.id ?? "novi"}
           onMojiOglasi={() => setStranica("moji-oglasi")} 
