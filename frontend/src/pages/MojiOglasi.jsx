@@ -1,54 +1,40 @@
 //prikaz oglasa poslodavaca na stranici moji oglasi
-import {useState} from "react"
+import { useEffect, useState } from "react";
+import { zahtjevPoslodavca } from "../services/poslodavac";
 
-function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
-    const oglasi = [
-        {
-        id: 1,
-        naziv: "Studentski kratkometražni film",
-        uloga: "Glavna ženska uloga",
-        rokPrijava: "2026-11-15",
-        brojKandidata: 2,
-        maxPrijava: 1000,
-        status: "nacrt"
-    },
-    {
-        id: 2,
-        naziv: "Reklama za sportski brend",
-        uloga: "Sportaš",
-        rokPrijava: "2026-12-01",
-        brojKandidata: 3,
-        maxPrijava: 500,
-        status: "objavljen"
-    },
-    {
-        id: 3,
-        naziv: "Kazališna predstava Hamlet",
-        uloga: "Hamlet",
-        rokPrijava: "2026-10-20",
-        brojKandidata: 1,
-        maxPrijava: 200,
-        status: "prijaveZatvorene"
-    },
-    {
-        id: 4,
-        naziv: "Televizijska serija",
-        uloga: "Sporedna muška uloga",
-        rokPrijava: "2026-09-30",
-        brojKandidata: 2,
-        maxPrijava: 300,
-        status: "popunjen"
-    },
-    {
-        id: 5,
-        naziv: "Glazbeni spot",
-        uloga: "Plesačica",
-        rokPrijava: "2026-11-10",
-        brojKandidata: 4,
-        maxPrijava: 150,
-        status: "otkazan"
-    }
-    ];
+const statusi = { draft: "nacrt", published: "objavljen", closed: "prijaveZatvorene", filled: "popunjen", cancelled: "otkazan" };
+
+function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava, csrfToken}) {
+    const [oglasi, setOglasi] = useState([]);
+    const [ucitavanje, setUcitavanje] = useState(true);
+    const [greska, setGreska] = useState("");
+    const [spremanje, setSpremanje] = useState(null);
+
+    useEffect(() => {
+        const kontroler = new AbortController();
+        async function ucitajOglase() {
+            try {
+                const podaci = await zahtjevPoslodavca("/castings", { signal: kontroler.signal });
+                if (!Array.isArray(podaci)) throw new Error("Primljen je neispravan popis oglasa.");
+                const popis = podaci.map((oglas) => ({
+                    ...oglas,
+                    naziv: oglas.projectTitle || "",
+                    uloga: oglas.roleTitle || "",
+                    rokPrijava: oglas.applicationDeadline ? oglas.applicationDeadline.slice(0, 10) : "",
+                    brojKandidata: oglas.positionsCount,
+                    maxPrijava: oglas.maxApplications,
+                    status: statusi[oglas.status] || oglas.status
+                }));
+                if (!kontroler.signal.aborted) setOglasi(popis);
+            } catch (x) {
+                if (!kontroler.signal.aborted) setGreska(x.message);
+            } finally {
+                if (!kontroler.signal.aborted) setUcitavanje(false);
+            }
+        }
+        ucitajOglase();
+        return () => kontroler.abort();
+    }, []);
 
     const [filter, setFilter] = useState("svi")
     const [pretraga, setPretraga] = useState("")
@@ -59,74 +45,40 @@ function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
         return odgovaraStatus && odgovaraNaziv
     });
 
-    function otkaziOglas(oglas) {
-        const potvrda = window.confirm(`Jeste li sigurni da želite otkazati oglas "${oglas.naziv}"?`);
-        if (!potvrda) {
+    async function promijeniStatus(oglas, radnja) {
+        if (spremanje !== null) return;
+        const pitanja = {
+            publish: `Želite li objaviti oglas "${oglas.naziv}"?`,
+            close: `Želite li zatvoriti prijave za "${oglas.naziv}"?`,
+            cancel: `Želite li otkazati oglas "${oglas.naziv}"?`
+        };
+        if (!window.confirm(pitanja[radnja])) return;
+        if (!csrfToken) {
+            setGreska("Nedostaje potvrda prijave. Osvježite stranicu.");
             return;
         }
-
-        console.log("Oglas za otkazivanje: ", oglas);
-    }
-
-    function zatvoriPrijave(oglas) {
-        if(oglas.status !== "objavljen") {
-            return;
+        setSpremanje(oglas.id);
+        setGreska("");
+        try {
+            const odgovor = await zahtjevPoslodavca(`/castings/${oglas.id}/${radnja}`, {
+                metoda: "POST", csrfToken
+            });
+            if (odgovor?.id !== oglas.id || typeof odgovor.status !== "string") {
+                throw new Error("Primljen je neočekivan odgovor. Osvježite popis.");
+            }
+            //Prikaz mijenjamo tek nakon potvrde backenda.
+            setOglasi((prethodniOglasi) => prethodniOglasi.map((trenutniOglas) => {
+                if (trenutniOglas.id === oglas.id) {
+                    return { ...trenutniOglas, status: statusi[odgovor.status] || odgovor.status };
+                }
+                return trenutniOglas;
+            }));
+        } catch (x) {
+            setGreska(x.message);
+        } finally {
+            setSpremanje(null);
         }
-
-        const potvrda = window.confirm(
-            `Jeste li sigurni da želite zatvoriti prijave za oglas "${oglas.naziv}"?`
-        );
-
-        if(!potvrda) {
-            return;
-        }
-
-        console.log("Zatvaranje prijava za oglas:", oglas.id);
     }
-
-    function objaviNacrt(oglas) {
-    // Objavljivati se mogu samo nacrti
-    if (oglas.status !== "nacrt") {
-        return;
-    }
-
-    // Provjera obaveznih polja
-    if (!oglas.naziv?.trim() || !oglas.uloga?.trim() ||
-        !oglas.rokPrijava || oglas.brojKandidata === "" ||
-        oglas.brojKandidata == null ||
-        oglas.maxPrijava === "" || oglas.maxPrijava == null) {
-        alert("Za objavu oglasa morate ispuniti sva polja!");
-        return;
-    }
-
-    // Provjera brojčanih vrijednosti
-    const broj = Number(oglas.brojKandidata);
-    const max = Number(oglas.maxPrijava);
-
-    if (!Number.isInteger(broj) || broj < 1 ||
-        !Number.isInteger(max) || max < 1 || max > 1000) {
-        alert("Provjerite broj kandidata i maksimalan broj prijava!");
-        return;
-    }
-
-    // Provjera roka prijave
-    const danas = new Date();
-    danas.setHours(0, 0, 0, 0);
-
-    const rok = new Date(oglas.rokPrijava);
-
-    if (!Number.isFinite(rok.getTime()) || rok <= danas) {
-        alert("Rok prijave mora biti budući datum!");
-        return;
-    }
-
-    const objavljeniOglas = {
-        ...oglas,
-        status: "objavljen"
-    };
-
-    console.log("Oglas spreman za objavu:", objavljeniOglas);
-}
 
     return (
         <main>
@@ -135,13 +87,16 @@ function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
             </h1>
 
             <p>
-            Ovdje možete pregledavati i 
+            Ovdje možete pregledavati i
             upravljati svojim casting oglasima.
             </p>
 
             <button type="button" onClick={onNoviOglas}>
                 + Novi oglas
             </button>
+
+            {greska && <p className="oglasi-greska">{greska}</p>}
+            {spremanje !== null && <p>Spremanje...</p>}
 
             {/* Pretraživanje oglasa prema nazivu */}
             <div>
@@ -177,9 +132,9 @@ function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
 
             </div>
 
-            {filtriraniOglasi.length === 0 ? (
+            {ucitavanje ? <p>Učitavanje oglasa...</p> : filtriraniOglasi.length === 0 ? (
                 <p>
-                    {filter === "svi" ? "Trenutno nemate oglasa." : "Nema oglasa koji odgovaraju pretraživanju ili odabranom statusu."}
+                    {greska ? "Popis oglasa nije moguće prikazati." : oglasi.length === 0 ? "Trenutno nemate oglasa." : "Nema oglasa koji odgovaraju pretraživanju ili odabranom statusu."}
                 </p>
             ) : (
                 <div>
@@ -191,13 +146,13 @@ function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
                             <p>Status: {oglas.status}</p>
                             <div>
                                 {/*jer prosljedujemo bas taj oglas, nova fja React poziva tek pritiskom na gumb*/}
-                                <button type="button" onClick={() => onUrediOglas(oglas)}> 
+                                {oglas.status === "nacrt" && <button type="button" disabled={spremanje !== null} onClick={() => onUrediOglas(oglas)}>
                                     Uredi
-                                </button>
+                                </button>}
 
                                 {/* Objavljivanje nacrta */}
                                 {oglas.status === "nacrt" && (
-                                    <button type="button" onClick={() => objaviNacrt(oglas)}>
+                                    <button type="button" disabled={spremanje !== null} onClick={() => promijeniStatus(oglas, "publish")}>
                                         Objavi oglas
                                     </button>
                                 )}
@@ -206,6 +161,7 @@ function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
                                     <button
                                         type="button"
                                         className="oglasi-gumb-prijave"
+                                        disabled={spremanje !== null}
                                         onClick={() => onPregledPrijava(oglas)}
                                     >
                                         Pregled prijava
@@ -213,19 +169,19 @@ function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
                                 )}
 
                                 {oglas.status === "objavljen" && (
-                                    <button type="button" onClick={() => zatvoriPrijave(oglas)}>
+                                    <button type="button" disabled={spremanje !== null} onClick={() => promijeniStatus(oglas, "close")}>
                                         Zatvori prijave
                                     </button>
                                 )}
-                                
+
                                 {oglas.status !== "otkazan" && oglas.status !== "popunjen" &&  oglas.status !== "nacrt" &&(
-                                    <button type="button" onClick={() => otkaziOglas(oglas)}>
+                                    <button type="button" disabled={spremanje !== null} onClick={() => promijeniStatus(oglas, "cancel")}>
                                         Otkaži oglas
                                     </button>
                                 )}
 
 
-                                
+
                             </div>
                         </div>
                     ))}
