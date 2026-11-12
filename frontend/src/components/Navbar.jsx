@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 export default function Navbar({ user, onPrijava, onPocetna, onRegistracija,
-  onProfilKandidata, onProfilPoslodavca, onObavijestiKandidata, onPrijaveKandidata, onMojiOglasi, onOdjava }) {
+  onProfilKandidata, onProfilPoslodavca, onObavijestiKandidata, onPrijaveKandidata, onMojiOglasi, onAdminPanel, onOdjava }) {
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   function navigate(action) { setOpen(false); action(); }
@@ -32,6 +32,15 @@ export default function Navbar({ user, onPrijava, onPocetna, onRegistracija,
                 <button type="button" onClick={() => navigate(onProfilPoslodavca)}>Moj profil</button>
                 <button type="button" onClick={() => navigate(onMojiOglasi)}>Moji oglasi</button>
               </>}
+              {user.role === 'admin' && (
+                <button
+                  type="button"
+                  className="navbar-admin-panel"
+                  onClick={() => navigate(onAdminPanel)}
+                >
+                  Administracijski panel
+                </button>
+              )}
               <button type="button" disabled={loggingOut} onClick={logout}>{loggingOut ? 'Odjava…' : 'Odjavi se'}</button>
             </div>}
           </div>
