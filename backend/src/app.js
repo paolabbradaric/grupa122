@@ -7,6 +7,7 @@ const castingRoutes = require('./routes/castingRoutes');
 const { createAuditionRouter } = require('./routes/auditionRoutes');
 const applicationController = require('./controllers/applicationController');
 const { createEmployerCastingRouter } = require('./routes/employerCastingRoutes');
+const { createCandidateApplicationsRouter } = require('./routes/candidateApplicationsRoutes');
 
 const { loadAuthConfig } = require('./auth/config');
 const { createUserModel } = require('./auth/userModel');
@@ -85,6 +86,10 @@ function createApp(options = {}) {
   app.use('/api/employer', createEmployerCastingRouter({
     config,
     writesEnabled: employerCastingWritesEnabled
+  }));
+
+  app.use('/api/candidate', createCandidateApplicationsRouter({
+    config, writesEnabled: applicationWritesEnabled, model: options.candidateApplicationsModel
   }));
 
   app.post('/api/castings/:id/applications',
