@@ -83,7 +83,7 @@ function App() {
       ) : page === "admin-panel" ? (
         <AdminPanel />
       ) : page === "moji-oglasi" ? (
-        <MojiOglasi onNoviOglas={() => {
+        <MojiOglasi csrfToken={auth.csrfToken} onNoviOglas={() => {
           setOdabraniOglas(null);
           setStranica("novi-oglas");
         }} onUrediOglas={(oglas) => {
@@ -102,6 +102,7 @@ function App() {
         <PregledPrijava
           key={odabraniOglas?.id}
           oglas={odabraniOglas}
+          csrfToken={auth.csrfToken}
           onMojiOglasi={() => setStranica("moji-oglasi")}
         />
       ) : page === "detalji" ? (
