@@ -5,7 +5,7 @@ const { createEmployerCandidateSelectionModel } = require('../src/models/employe
 const { createEmployerCandidateSelectionController } = require('../src/controllers/employerCandidateSelectionController');
 
 function mock({ casting = { id: 1, status: 'published', positions_count: 2 },
-                application = { id: 3, status: 'SUBMITTED' }, count = 0, failAt = '' } = {}) {
+                application = { id: 3, status: 'AUDITIONED' }, count = 0, failAt = '' } = {}) {
   const calls = [];
   let released = false;
   const client = {
@@ -23,17 +23,35 @@ function mock({ casting = { id: 1, status: 'published', positions_count: 2 },
 }
 const exec = (m) => createEmployerCandidateSelectionModel(m.database).select(7, 1, 3);
 const has = (m, s) => m.calls.some(c => c.sql.includes(s));
+function assertNoChanges(m) {
+  assert.equal(m.calls.some(c => /^\s*(UPDATE|INSERT)\b/.test(c.sql)), false);
+  assert.ok(has(m, 'ROLLBACK'));
+  assert.equal(has(m, 'COMMIT'), false);
+  assert.equal(m.released(), true);
+}
 function response() {
   return { statusCode: 200, status(n) { this.statusCode = n; return this; }, json(x) { this.body = x; return this; } };
 }
 
 test('odabir prvog kandidata ne popunjava oglas', async () => {
   const m = mock();
-  assert.deepEqual(await exec(m), { outcome: 'selected', id: 3, status: 'SELECTED',
+  assert.deepEqual(await exec(m), { outcome: 'selected', id: 3, status: 'ACCEPTED',
     castingStatus: 'published', selectedCount: 1, positionsCount: 2 });
-  assert.ok(has(m, 'FOR UPDATE OF c'));
-  assert.ok(has(m, 'UPDATE applications'));
-  assert.ok(has(m, 'INSERT INTO application_status_history'));
+  const casting = m.calls.find(c => c.sql.includes('FOR UPDATE OF c'));
+  assert.match(casting.sql, /o\.owner_id = \$2/);
+  assert.deepEqual(casting.values, [1, 7]);
+  const application = m.calls.find(c => c.sql.includes('FROM applications') && c.sql.includes('FOR UPDATE'));
+  assert.match(application.sql, /id = \$1 AND casting_call_id = \$2/);
+  assert.deepEqual(application.values, [3, 1]);
+  const update = m.calls.find(c => c.sql.includes('UPDATE applications'));
+  assert.match(update.sql, /SET status = 'ACCEPTED'/);
+  assert.deepEqual(update.values, [3]);
+  const history = m.calls.find(c => c.sql.includes('INSERT INTO application_status_history'));
+  assert.match(history.sql, /VALUES \(\$1, 'ACCEPTED'/);
+  assert.deepEqual(history.values, ['AUDITIONED', 'Kandidata odabrao poslodavac.', 3, 7]);
+  const count = m.calls.find(c => c.sql.includes('COUNT(*)::int'));
+  assert.match(count.sql, /status IN \('ACCEPTED', 'SELECTED'\)/);
+  assert.deepEqual(count.values, [1]);
   assert.equal(has(m, 'UPDATE casting_calls'), false);
   assert.ok(has(m, 'COMMIT'));
   assert.equal(m.released(), true);
@@ -55,47 +73,56 @@ test('odabir na closed oglasu radi i posljednji odabir ga popunjava', async () =
 test('tudi ili nepostojeci oglas ne moze se mijenjati', async () => {
   const m = mock({ casting: null });
   assert.equal((await exec(m)).outcome, 'not_found');
-  assert.equal(has(m, 'UPDATE applications'), false);
-  assert.ok(has(m, 'ROLLBACK'));
+  assertNoChanges(m);
 });
 
 test('zabranjen odabir na draft, filled i cancelled oglase', async () => {
   for (const status of ['draft', 'filled', 'cancelled']) {
     const m = mock({ casting: { id: 1, status, positions_count: 2 } });
     assert.equal((await exec(m)).outcome, 'invalid_status');
-    assert.equal(has(m, 'UPDATE applications'), false);
+    assertNoChanges(m);
   }
 });
 
 test('prijava iz drugog oglasa nije dostupna', async () => {
   const m = mock({ application: null });
   assert.equal((await exec(m)).outcome, 'application_not_found');
-  assert.equal(has(m, 'UPDATE applications'), false);
+  assertNoChanges(m);
 });
 
 test('isti kandidat ne moze biti ponovno odabran', async () => {
-  const m = mock({ application: { id: 3, status: 'SELECTED' } });
-  assert.equal((await exec(m)).outcome, 'already_selected');
-  assert.equal(has(m, 'UPDATE applications'), false);
+  for (const status of ['ACCEPTED', 'SELECTED']) {
+    const m = mock({ application: { id: 3, status } });
+    assert.equal((await exec(m)).outcome, 'already_selected');
+    assertNoChanges(m);
+  }
 });
 
 test('odbijene ili druge prijave nisu dostupne za odabir', async () => {
-  const m = mock({ application: { id: 3, status: 'REJECTED' } });
-  assert.equal((await exec(m)).outcome, 'invalid_application_status');
+  for (const status of ['SUBMITTED', 'UNDER_REVIEW', 'SHORTLISTED', 'INVITED', 'REJECTED', 'UNKNOWN']) {
+    const m = mock({ application: { id: 3, status } });
+    assert.equal((await exec(m)).outcome, 'invalid_application_status');
+    assertNoChanges(m);
+  }
 });
 
 test('ne moze se odabrati vise kandidata od positions_count', async () => {
-  const m = mock({ count: 2 });
-  assert.equal((await exec(m)).outcome, 'positions_filled');
-  assert.equal(has(m, 'UPDATE applications'), false);
+  for (const count of [2, 3]) {
+    const m = mock({ count });
+    assert.equal((await exec(m)).outcome, 'positions_filled');
+    assertNoChanges(m);
+  }
 });
 
 test('greska pri upisu povijesti radi rollback i release', async () => {
-  const m = mock({ failAt: 'INSERT INTO application_status_history' });
-  await assert.rejects(exec(m), /DB failure/);
-  assert.ok(has(m, 'ROLLBACK'));
-  assert.equal(has(m, 'COMMIT'), false);
-  assert.equal(m.released(), true);
+  for (const failAt of ['UPDATE applications', 'INSERT INTO application_status_history',
+    'UPDATE casting_calls', 'INSERT INTO casting_call_status_history']) {
+    const m = mock({ count: 1, failAt });
+    await assert.rejects(exec(m), /DB failure/);
+    assert.ok(has(m, 'ROLLBACK'));
+    assert.equal(has(m, 'COMMIT'), false);
+    assert.equal(m.released(), true);
+  }
 });
 
 test('neispravni ID-jevi i iskljuceni upisi su odbijeni', async () => {
@@ -125,12 +152,12 @@ test('controller vraca rezultat i prosljeduje korisnika', async () => {
   const c = createEmployerCandidateSelectionController({ writesEnabled: true, model: {
     select: async (u, casting, application) => {
       assert.deepEqual([u, casting, application], [7, 1, 3]);
-      return { outcome: 'selected', status: 'SELECTED', castingStatus: 'filled', selectedCount: 2, positionsCount: 2 };
+      return { outcome: 'selected', status: 'ACCEPTED', castingStatus: 'filled', selectedCount: 2, positionsCount: 2 };
     }
   } });
   const r = response();
   await c.select({ user: { id: 7 }, params: { id: '1', applicationId: '3' } }, r, assert.fail);
-  assert.deepEqual(r.body, { castingId: 1, applicationId: 3, applicationStatus: 'SELECTED',
+  assert.deepEqual(r.body, { castingId: 1, applicationId: 3, applicationStatus: 'ACCEPTED',
     castingStatus: 'filled', selectedCount: 2, positionsCount: 2 });
 });
 

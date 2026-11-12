@@ -79,7 +79,7 @@ test('Odabir kandidata: samo lokalni castme_test', {
     ids.castings.push(c.id);
     return c.id;
   }
-  async function apply(profileId, castingId, status = 'SUBMITTED') {
+  async function apply(profileId, castingId, status = 'AUDITIONED') {
     const { rows: [a] } = await db.query(`
       INSERT INTO applications(candidate_id,casting_call_id,status)
       VALUES($1,$2,$3) RETURNING id`, [profileId, castingId, status]);
@@ -88,15 +88,21 @@ test('Odabir kandidata: samo lokalni castme_test', {
   }
   const getStatus = async (table, id) => (await db.query(`SELECT status FROM ${table} WHERE id=$1`, [id])).rows[0].status;
 
+  const history = async id => (await db.query(
+    'SELECT old_status, new_status FROM application_status_history WHERE application_id = $1', [id])).rows;
+
   await t.test('prvi odabir ne popunjava oglas, drugi ga automatski popunjava', async () => {
     const id = await casting();
     const a1 = await apply(c1.profileId, id);
     const a2 = await apply(c2.profileId, id);
     const r1 = await model.select(employer.id, id, a1);
-    assert.equal(r1.castingStatus, 'published');
-    assert.equal(await getStatus('applications', a1), 'SELECTED');
+    assert.deepEqual(r1, { outcome: 'selected', id: a1, status: 'ACCEPTED',
+      castingStatus: 'published', selectedCount: 1, positionsCount: 2 });
+    assert.equal(await getStatus('applications', a1), 'ACCEPTED');
     const r2 = await model.select(employer.id, id, a2);
-    assert.equal(r2.castingStatus, 'filled');
+    assert.deepEqual(r2, { outcome: 'selected', id: a2, status: 'ACCEPTED',
+      castingStatus: 'filled', selectedCount: 2, positionsCount: 2 });
+    assert.equal(await getStatus('applications', a2), 'ACCEPTED');
     assert.equal(await getStatus('casting_calls', id), 'filled');
     const { rows: [h] } = await db.query(`
       SELECT old_status, new_status, changed_by FROM casting_call_status_history
@@ -106,7 +112,7 @@ test('Odabir kandidata: samo lokalni castme_test', {
       SELECT old_status, new_status FROM application_status_history
       WHERE application_id = ANY($1::int[])`, [[a1,a2]]);
     assert.equal(history.length, 2);
-    assert.ok(history.every(h => h.old_status === 'SUBMITTED' && h.new_status === 'SELECTED'));
+    assert.ok(history.every(h => h.old_status === 'AUDITIONED' && h.new_status === 'ACCEPTED'));
   });
 
   await t.test('tudi poslodavac i prijava s drugog oglasa nemaju pristup', async () => {
@@ -115,24 +121,54 @@ test('Odabir kandidata: samo lokalni castme_test', {
     const app = await apply(c1.profileId, otherCasting);
     assert.equal((await model.select(other.id, id, app)).outcome, 'not_found');
     assert.equal((await model.select(employer.id, id, app)).outcome, 'application_not_found');
-    assert.equal(await getStatus('applications', app), 'SUBMITTED');
+    assert.equal(await getStatus('applications', app), 'AUDITIONED');
   });
 
   await t.test('isti kandidat ne moze biti dva puta odabran', async () => {
     const id = await casting();
     const app = await apply(c1.profileId, id);
-    await model.select(employer.id, id, app);
+    assert.equal((await model.select(employer.id, id, app)).outcome, 'selected');
     assert.equal((await model.select(employer.id, id, app)).outcome, 'already_selected');
+    assert.equal(await getStatus('applications', app), 'ACCEPTED');
+    assert.equal((await history(app)).length, 1);
+    const legacy = await apply(c2.profileId, id, 'SELECTED');
+    assert.equal((await model.select(employer.id, id, legacy)).outcome, 'already_selected');
+    assert.equal(await getStatus('applications', legacy), 'SELECTED');
+    assert.deepEqual(await history(legacy), []);
   });
 
-  await t.test('nema odabira na otkazanom oglasu', async () => {
-    const id = await casting(1, 'cancelled');
-    const app = await apply(c1.profileId, id);
-    assert.equal((await model.select(employer.id, id, app)).outcome, 'invalid_status');
-    assert.equal(await getStatus('applications', app), 'SUBMITTED');
+  await t.test('nema odabira na draft, filled ili cancelled oglasu', async () => {
+    for (const status of ['draft', 'filled', 'cancelled']) {
+      const id = await casting(1, status);
+      const app = await apply(c1.profileId, id);
+      assert.equal((await model.select(employer.id, id, app)).outcome, 'invalid_status');
+      assert.equal(await getStatus('applications', app), 'AUDITIONED');
+      assert.equal(await getStatus('casting_calls', id), status);
+      assert.deepEqual(await history(app), []);
+    }
   });
 
-  await t.test('rollback vraca aplikaciju u SUBMITTED ako povijest ne uspije', async () => {
+  await t.test('samo AUDITIONED prijave mogu biti konacno odabrane', async () => {
+    for (const status of ['SUBMITTED', 'UNDER_REVIEW', 'SHORTLISTED', 'INVITED', 'REJECTED']) {
+      const id = await casting();
+      const app = await apply(c1.profileId, id, status);
+      assert.equal((await model.select(employer.id, id, app)).outcome, 'invalid_application_status');
+      assert.equal(await getStatus('applications', app), status);
+      assert.deepEqual(await history(app), []);
+    }
+  });
+
+  await t.test('ACCEPTED i stari SELECTED zapisi ubrajaju se u positions_count', async () => {
+    const id = await casting(2);
+    await apply(c1.profileId, id, 'ACCEPTED');
+    await apply(c2.profileId, id, 'SELECTED');
+    const app = await apply(c3.profileId, id);
+    assert.equal((await model.select(employer.id, id, app)).outcome, 'positions_filled');
+    assert.equal(await getStatus('applications', app), 'AUDITIONED');
+    assert.deepEqual(await history(app), []);
+  });
+
+  await t.test('rollback vraca prijavu u AUDITIONED ako povijest ne uspije', async () => {
     const id = await casting();
     const app = await apply(c3.profileId, id);
     const failing = {
@@ -148,6 +184,30 @@ test('Odabir kandidata: samo lokalni castme_test', {
       }
     };
     await assert.rejects(createEmployerCandidateSelectionModel(failing).select(employer.id,id,app), /History failure/);
-    assert.equal(await getStatus('applications', app), 'SUBMITTED');
+    assert.equal(await getStatus('applications', app), 'AUDITIONED');
+    assert.equal(await getStatus('casting_calls', id), 'published');
+    assert.deepEqual(await history(app), []);
+  });
+
+  await t.test('rollback vraca prijavu, oglas i povijest ako povijest popunjavanja ne uspije', async () => {
+    const id = await casting(1);
+    const app = await apply(c3.profileId, id);
+    const failing = {
+      async connect() {
+        const client = await db.connect();
+        return {
+          async query(sql, params) {
+            if (sql.includes('INSERT INTO casting_call_status_history')) throw new Error('Casting history failure');
+            return client.query(sql, params);
+          },
+          release() { client.release(); }
+        };
+      }
+    };
+    await assert.rejects(createEmployerCandidateSelectionModel(failing).select(employer.id, id, app), /Casting history failure/);
+    assert.equal(await getStatus('applications', app), 'AUDITIONED');
+    assert.equal(await getStatus('casting_calls', id), 'published');
+    assert.deepEqual(await history(app), []);
+    assert.deepEqual((await db.query('SELECT id FROM casting_call_status_history WHERE casting_call_id = $1', [id])).rows, []);
   });
 });
