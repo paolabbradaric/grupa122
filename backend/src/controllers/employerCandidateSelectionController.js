@@ -18,7 +18,7 @@ function createEmployerCandidateSelectionController({ model = createEmployerCand
           application_not_found: [404, 'Prijava nije pronadena na tom oglasu.'],
           invalid_status: [409, 'Oglas nije otvoren za odabir kandidata.'],
           already_selected: [409, 'Kandidat je vec odabran.'],
-          invalid_application_status: [409, 'Prijava nije u statusu SUBMITTED.'],
+          invalid_application_status: [409, 'Kandidat mora imati status AUDITIONED prije konačnog odabira.'],
           positions_filled: [409, 'Sva trazena mjesta vec su popunjena.']
         };
         if (errors[result.outcome]) {
