@@ -12,6 +12,8 @@ import "./App.css";
 import Home from "./pages/Home";
 import MojiOglasi from "./pages/MojiOglasi"
 import NoviOglas from "./pages/NoviOglas";
+import AdminPanel from "./pages/AdminPanel";
+import PregledPrijava from "./pages/PregledPrijava";
 import CompleteRegistration from "./pages/CompleteRegistration";
 import CastingCardDetails from "./pages/CastingCardDetails";
 import { useAuth } from "./services/useAuth";
@@ -21,9 +23,10 @@ function App() {
   const [odabraniOglas, setOdabraniOglas] = useState(null);
   const auth = useAuth();
   const candidatePages = ['profil-kandidata', 'obavijesti-kandidata', 'prijave-kandidata'];
-  const employerPages = ['profil-poslodavca', 'moji-oglasi', 'novi-oglas'];
-  const allowed = (!candidatePages.includes(stranica) || auth.user?.role === 'candidate') &&
-    (!employerPages.includes(stranica) || auth.user?.role === 'employer');
+  const employerPages = ['profil-poslodavca', 'moji-oglasi', 'novi-oglas', 'pregled-prijava'];
+  const allowed = (!candidatePages.includes(stranica) || auth.user?.role === "candidate") &&
+   (!employerPages.includes(stranica) || auth.user?.role === "employer") &&
+   (stranica !== "admin-panel" || auth.user?.role === "admin");
   const page = allowed ? stranica : 'prijava';
 
   async function logout() {
@@ -49,6 +52,7 @@ function App() {
         onProfilPoslodavca={() => setStranica("profil-poslodavca")}
         onObavijestiKandidata={() => setStranica("obavijesti-kandidata")}
         onPrijaveKandidata={() => setStranica("prijave-kandidata")}
+        onAdminPanel={() => setStranica("admin-panel")}
       />
 
       {auth.error && <p role="alert">{auth.error}</p>}
@@ -76,6 +80,8 @@ function App() {
         <CandidateNotifications />
       ) : page === "prijave-kandidata" ? (
         <CandidateApplications />
+      ) : page === "admin-panel" ? (
+        <AdminPanel />
       ) : page === "moji-oglasi" ? (
         <MojiOglasi onNoviOglas={() => {
           setOdabraniOglas(null);
@@ -83,12 +89,21 @@ function App() {
         }} onUrediOglas={(oglas) => {
           setOdabraniOglas(oglas);
           setStranica("novi-oglas");
+        }} onPregledPrijava={(oglas) => {
+          setOdabraniOglas(oglas);
+          setStranica("pregled-prijava");
         }}/>
       ) : page === "novi-oglas" ? (
         <NoviOglas 
           key={odabraniOglas?.id ?? "novi"}
           onMojiOglasi={() => setStranica("moji-oglasi")} 
           oglasZaUredivanje={odabraniOglas}/>
+      ) : page === "pregled-prijava" ? (
+        <PregledPrijava
+          key={odabraniOglas?.id}
+          oglas={odabraniOglas}
+          onMojiOglasi={() => setStranica("moji-oglasi")}
+        />
       ) : page === "detalji" ? (
         <CastingCardDetails id={odabraniOglas} />
       ) : (

@@ -1,7 +1,7 @@
 //prikaz oglasa poslodavaca na stranici moji oglasi
 import {useState} from "react"
 
-function MojiOglasi({onNoviOglas, onUrediOglas}) {
+function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava}) {
     const oglasi = [
         {
         id: 1,
@@ -203,7 +203,11 @@ function MojiOglasi({onNoviOglas, onUrediOglas}) {
                                 )}
 
                                 {oglas.status !== "nacrt" && (
-                                    <button type="button">
+                                    <button
+                                        type="button"
+                                        className="oglasi-gumb-prijave"
+                                        onClick={() => onPregledPrijava(oglas)}
+                                    >
                                         Pregled prijava
                                     </button>
                                 )}
