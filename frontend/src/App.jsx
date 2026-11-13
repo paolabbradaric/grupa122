@@ -14,6 +14,7 @@ import MojiOglasi from "./pages/MojiOglasi"
 import NoviOglas from "./pages/NoviOglas";
 import AdminPanel from "./pages/AdminPanel";
 import PregledPrijava from "./pages/PregledPrijava";
+import Audicije from "./pages/Audicije";
 import CompleteRegistration from "./pages/CompleteRegistration";
 import CastingCardDetails from "./pages/CastingCardDetails";
 import { useAuth } from "./services/useAuth";
@@ -23,7 +24,7 @@ function App() {
   const [odabraniOglas, setOdabraniOglas] = useState(null);
   const auth = useAuth();
   const candidatePages = ['profil-kandidata', 'obavijesti-kandidata', 'prijave-kandidata'];
-  const employerPages = ['profil-poslodavca', 'moji-oglasi', 'novi-oglas', 'pregled-prijava'];
+  const employerPages = ['profil-poslodavca', 'moji-oglasi', 'novi-oglas', 'pregled-prijava', 'audicije'];
   const allowed = (!candidatePages.includes(stranica) || auth.user?.role === "candidate") &&
    (!employerPages.includes(stranica) || auth.user?.role === "employer") &&
    (stranica !== "admin-panel" || auth.user?.role === "admin");
@@ -92,12 +93,17 @@ function App() {
         }} onPregledPrijava={(oglas) => {
           setOdabraniOglas(oglas);
           setStranica("pregled-prijava");
-        }}/>
+        }} onAudicije={(oglas) => {
+          setOdabraniOglas(oglas);
+          setStranica("audicije");
+        }} />
       ) : page === "novi-oglas" ? (
         <NoviOglas 
           key={odabraniOglas?.id ?? "novi"}
           onMojiOglasi={() => setStranica("moji-oglasi")} 
-          oglasZaUredivanje={odabraniOglas}/>
+          oglasZaUredivanje={odabraniOglas}
+          csrfToken={auth.csrfToken}
+        />
       ) : page === "pregled-prijava" ? (
         <PregledPrijava
           key={odabraniOglas?.id}
@@ -107,6 +113,13 @@ function App() {
         />
       ) : page === "detalji" ? (
         <CastingCardDetails id={odabraniOglas} />
+      ) : page === "audicije" ? (
+        <Audicije
+          key={odabraniOglas?.id}
+          oglas={odabraniOglas}
+          csrfToken={auth.csrfToken}
+          onMojiOglasi={() => setStranica("moji-oglasi")}
+        />
       ) : (
         <Home 
           CastingCardDetails={(id) =>{
