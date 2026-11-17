@@ -127,3 +127,7 @@ Registracijski podaci sada se spremaju u bazu. Postojeće naknadno uređivanje p
 - [Google: OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect) — autorizacijski tok, `state` i `sub`.
 - [connect-pg-simple](https://github.com/voxpelli/node-connect-pg-simple) — PostgreSQL store.
 - [Supabase: Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — zaštita pristupa tablicama.
+
+## Dopuna Google konfiguracije — 17. 11. 2026.
+
+Aktualni postupak postavljanja, pravila publike, povratak u aplikaciju pri nedostupnoj prijavi i provedene provjere opisani su u [Google prijavi — postavljanje i provjera](GOOGLE_PRIJAVA.md). Za te pojedinosti koristiti ovu dopunu ranijih uputa iznad. Stvarna prijava ostaje otvorena do privatnog unosa ključeva i provjere Google računa.
