@@ -58,7 +58,7 @@ test('provjera ovlasti vraća 401 gostu, 403 kandidatu i propušta poslodavca', 
   }
 });
 
-async function fixture(t, { existing = false, disabled = false, configured = true } = {}) {
+async function fixture(t, { existing = false, disabled = false, configured = true, role = 'candidate' } = {}) {
   const usersById = new Map();
   const authIds = new Map();
   let registrations = 0;
@@ -74,7 +74,7 @@ async function fixture(t, { existing = false, disabled = false, configured = tru
     },
   };
   if (existing) {
-    const user = { id: 1, email: 'candidate@example.test', ...candidate };
+    const user = { id: 1, email: 'candidate@example.test', ...candidate, role };
     usersById.set(1, user);
     authIds.set('google:google-subject', user);
   }
@@ -115,6 +115,10 @@ async function fixture(t, { existing = false, disabled = false, configured = tru
     assert.equal(start.status, 302);
     const url = new URL(start.headers.get('location'));
     assert.equal(url.origin, 'https://accounts.google.com');
+    assert.equal(url.searchParams.get('client_id'), config.googleClientId);
+    assert.equal(url.searchParams.get('redirect_uri'), config.callbackUrl);
+    assert.equal(url.searchParams.get('response_type'), 'code');
+    assert.deepEqual(url.searchParams.get('scope').split(' ').sort(), ['email', 'openid', 'profile']);
     assert.equal(url.searchParams.get('code_challenge_method'), 'S256');
     assert.ok(url.searchParams.get('state'));
     const callback = await request(`/api/auth/google/callback?code=test-code&state=${url.searchParams.get('state')}`);
@@ -164,6 +168,17 @@ test('ponovna prijava prepoznaje postojeći račun bez registracije', async t =>
   assert.equal(current.onboardingRequired, false);
   assert.equal(app.registrations(), 0);
   assert.equal(app.exchanges(), 1);
+  const again = await app.signIn();
+  assert.equal((await again.json()).user.id, current.user.id);
+  assert.equal(app.registrations(), 0);
+  assert.equal(app.exchanges(), 2);
+});
+
+test('postojeći poslodavac zadržava spremljenu ulogu pri ponovnoj prijavi', async t => {
+  const app = await fixture(t, { existing: true, role: 'employer' });
+  const me = await app.signIn();
+  assert.equal((await me.json()).user.role, 'employer');
+  assert.equal(app.registrations(), 0);
 });
 
 test('OAuth odbija pogrešan ili odsutan state prije razmjene tokena', async t => {
@@ -184,6 +199,7 @@ test('otkazana Google prijava vraća razumljivu šifru greške', async t => {
   const response = await app.request('/api/auth/google/callback?error=access_denied');
   assert.match(response.headers.get('location'), /authError=access_denied/);
   assert.equal(app.exchanges(), 0);
+  assert.equal((await app.request('/api/auth/me')).status, 401);
 });
 
 test('CSRF štiti odjavu i registraciju čak i kada napadač ima cookie', async t => {
@@ -210,15 +226,51 @@ test('onemogućen račun ne prihvaća prethodno otvorenu sesiju', async t => {
 
 test('bez Google ključeva auth vraća 503, a bez SESSION_SECRET konfiguracija ne prolazi', async t => {
   const app = await fixture(t, { configured: false });
-  assert.equal((await app.request('/api/auth/google')).status, 503);
+  for (const accept of ['application/json', '*/*']) {
+    const response = await app.request('/api/auth/google', { headers: { Accept: accept } });
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).code, 'GOOGLE_NOT_CONFIGURED');
+  }
   assert.throws(() => loadAuthConfig({}), /SESSION_SECRET/);
   assert.throws(() => loadAuthConfig({ SESSION_SECRET: config.secret, NODE_ENV: 'production' }), /HTTPS/);
+});
+
+test('bez Google ključeva preglednik se vraća u aplikaciju bez nove sesije', async t => {
+  const app = await fixture(t, { configured: false });
+  for (const path of ['/api/auth/google', '/api/auth/google/callback?code=unused']) {
+    const response = await app.request(path, { headers: { Accept: 'text/html' } });
+    assert.equal(response.status, 302);
+    const url = new URL(response.headers.get('location'));
+    assert.equal(url.origin, new URL(config.frontendUrl).origin);
+    assert.equal(url.searchParams.get('authError'), 'google_not_configured');
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.equal(response.headers.get('set-cookie'), null);
+  }
+  assert.equal((await app.request('/api/auth/me')).status, 401);
+  assert.equal(app.registrations(), 0);
 });
 
 test('ograničenje pokušaja vraća 429 i Retry-After', async t => {
   const app = await fixture(t);
   for (let i = 0; i < 20; i++) assert.equal((await app.request('/api/auth/google')).status, 302);
-  const rejected = await app.request('/api/auth/google');
+  const rejected = await app.request('/api/auth/google', { headers: { Accept: 'application/json' } });
   assert.equal(rejected.status, 429);
   assert.ok(Number(rejected.headers.get('retry-after')) > 0);
+  assert.equal((await rejected.json()).code, 'AUTH_RATE_LIMITED');
+});
+
+test('ograničenje OAuth navigacije vraća preglednik u aplikaciju, a onboarding zadržava JSON', async t => {
+  const app = await fixture(t);
+  for (let i = 0; i < 20; i++) await app.request('/api/auth/google');
+  for (const path of ['/api/auth/google', '/api/auth/google/callback?code=unused']) {
+    const response = await app.request(path, { headers: { Accept: 'text/html' } });
+    assert.equal(response.status, 302);
+    assert.equal(new URL(response.headers.get('location')).searchParams.get('authError'), 'rate_limited');
+    assert.ok(Number(response.headers.get('retry-after')) > 0);
+  }
+  const onboarding = await app.request('/api/auth/onboarding', { method: 'POST', headers: { Accept: 'text/html' } });
+  assert.equal(onboarding.status, 429);
+  assert.equal((await onboarding.json()).code, 'AUTH_RATE_LIMITED');
+  assert.equal(app.exchanges(), 0);
+  assert.equal((await app.request('/api/auth/me')).status, 401);
 });
