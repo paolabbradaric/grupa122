@@ -74,9 +74,9 @@ function App() {
       ) : page === "registracija-poslodavac" ? (
         <EmployerRegister onPrijava={() => setStranica("prijava-poslodavac")} onKorisnik={() => setStranica("registracija")} />
       ) : page === "profil-kandidata" ? (
-        <CandidateProfile key={auth.user.id} user={auth.user} />
+        <CandidateProfile key={auth.user.id} user={auth.user} csrfToken={auth.csrfToken} onUserUpdated={auth.updateUser} />
       ) : page === "profil-poslodavca" ? (
-        <EmployerProfile key={auth.user.id} user={auth.user} />
+        <EmployerProfile key={auth.user.id} user={auth.user} csrfToken={auth.csrfToken} onUserUpdated={auth.updateUser} />
       ) : page === "obavijesti-kandidata" ? (
         <CandidateNotifications />
       ) : page === "prijave-kandidata" ? (
