@@ -4,6 +4,7 @@ const PgStore = require('connect-pg-simple')(session);
 const pool = require('./config/db');
 
 const castingRoutes = require('./routes/castingRoutes');
+const { createProfileRouter } = require('./profiles/routes');
 const { createAuditionRouter } = require('./routes/auditionRoutes');
 const applicationController = require('./controllers/applicationController');
 const { createEmployerCastingRouter } = require('./routes/employerCastingRoutes');
@@ -79,6 +80,11 @@ function createApp(options = {}) {
 
   app.use('/api/auth', createAuthRouter({
     config, users, passport, authLimiter: options.authLimiter
+  }));
+
+  app.use('/api', createProfileRouter({
+    config, pool: options.profilePool || pool,
+    storage: options.profileStorage, model: options.profileModel
   }));
 
   // Rute poslodavca moraju biti nakon sesija/Passporta.

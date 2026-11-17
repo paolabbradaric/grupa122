@@ -47,5 +47,9 @@ export function useAuth() {
     setError('');
   }
 
-  return { ...session, loading, error, setError, completeProfile, logout };
+  function updateUser(user) {
+    setSession(previous => previous.user?.id === user.id ? {...previous,user} : previous);
+  }
+
+  return { updateUser, ...session, loading, error, setError, completeProfile, logout };
 }
