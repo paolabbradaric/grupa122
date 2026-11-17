@@ -53,6 +53,8 @@ Postavka GOOGLE_CALLBACK_URL određuje sljedeće: http://localhost:3000/api/auth
 
 Postavka GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET određuje sljedeće: OAuth klijent ovog projekta.
 
+Postavka ADMIN_EMAILS određuje potpune Google adrese pet administratora, odvojene zarezom. Popis se postavlja samo na backendu, privatno za svako okruženje. Primjer sintakse je `admin.one@example.com,admin.two@example.com`; stvarne adrese pribaviti od održavatelja. Normaliziraju se samo rubni razmaci i veličina slova. Prazan popis onemogućuje admin pristup, neispravna stavka zaustavlja pokretanje. Nakon promjene popisa restartati sve backend instance. Uklonjena adresa tada gubi pristup već na sljedećem admin zahtjevu postojeće sesije. Vidjeti [admin pristup](ADMIN_PRISTUP.md).
+
 Postavka SESSION_SECRET određuje sljedeće: Zasebna nasumična tajna s najmanje 32 znaka; bez nje backend odbija pokretanje.
 
 Postavka TRUST_PROXY_HOPS određuje sljedeće: Lokalno 0, drugdje stvaran broj pouzdanih proxy poslužitelja.
@@ -78,9 +80,14 @@ Za postojeću bazu prvo utvrditi primijenjene promjene i slijediti [migracijski 
 ```powershell
 npm run db:migrate:auth
 npm run db:migrate:casting-drafts
+npm run db:migrate:admin
 ```
 
 Ovo nisu obavezne naredbe svakog pokretanja. Draft migracija ima preduvjete, a starija migracija limita nije ponovljiva. Sesijska tablica mora postojati prije prijave jer aplikacija ne stvara tablicu automatski.
+
+Admin migracija mijenja samo `users`: nepoznat datum rođenja, ime i prezime dopušteni su samo ulozi admin, a normalizirana adresa mora biti jedinstvena. Ne stvara račune niti mijenja njihove subjecte, profile i odluke verifikacije. Postojeće sukobljene adrese sigurno zaustavljaju cijelu transakciju; ne čistiti ih automatski. Nove instalacije koriste ažurirani `db/schema.sql`.
+
+Frontend putanja `/admin` mora pri izravnom otvaranju i osvježavanju dobiti SPA `index.html`; `/api` mora ostati usmjeren na Express. Vite razvojni server to podržava. Na statičkom hostingu postaviti odgovarajući SPA fallback, a na nginxu nakon odvojene `/api` lokacije koristiti `try_files $uri $uri/ /index.html`. Produkcijski hosting nije konfiguriran ovim zadatkom. Dostupnost SPA ljuske ne daje ovlasti nad zaštićenim API-jem.
 
 ### Google OAuth
 

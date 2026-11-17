@@ -37,6 +37,8 @@
     "test": "node --test",
     "test:db": "node scripts/check-database.js",
     "test:db:casting": "node scripts/check-casting-database.js",
+    "db:migrate:admin": "node scripts/migrate-admin.js",
+    "test:admin:db": "node --test test/admin-database.test.js",
     "db:migrate:profiles": "node scripts/migrate-profiles.js",
     "media:cleanup": "node scripts/cleanup-profile-media.js",
     "test:profiles:db": "node scripts/check-profiles-database.js"

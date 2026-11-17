@@ -2,6 +2,12 @@
 
 Ova dopuna prati [zadatak #12](https://github.com/paolabbradaric/grupa122/issues/12) i postojeću [autentifikaciju](AUTENTIFIKACIJA.md). Opisuje aktualnu jednokratnu Google konfiguraciju i granice provjere.
 
+## Administratorska prijava
+
+Pet ovlaštenih osoba koristi isti postojeći Google tok, svaka sa svojim računom. Backend uspoređuje potvrđenu Google adresu s privatnim `ADMIN_EMAILS`, kreira ili promovira samo isti Google subject i otvara `/admin`. Nema zasebnih admin lozinki ni javnog izbora admin uloge. Mariov postojeći račun ostaje demo administrator, uz sačuvan identitet i kandidatski profil; model i dalje ima jednu aktivnu ulogu.
+
+Prije prve nove admin prijave primijeniti `npm run db:migrate:admin`, privatno postaviti svih pet dogovorenih adresa i ponovno pokrenuti backend. Adrese se ne objavljuju u dokumentaciji, primjeru konfiguracije ili frontend bundleu. Prazan popis zatvara admin pristup; pogrešna sintaksa zaustavlja pokretanje. Stare sesije bez dokaza potvrđenog identiteta zahtijevaju novu Google prijavu. Postupak i granice stvarne provjere opisani su u [admin pristupu](ADMIN_PRISTUP.md).
+
 ## Konfiguracija i pokretanje
 
 ### Jednokratna postavka održavatelja
