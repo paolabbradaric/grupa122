@@ -12,7 +12,7 @@ OAuth klijent predstavlja **aplikaciju**, a ne pojedinačnog korisnika. Postoje�
 
 Održavatelj treba:
 
-1. Prvo pronaći timski projekt u [Google Cloud konzoli](https://console.cloud.google.com/auth/overview). Ako postoji, koristiti njegov prikladan web-klijent; ne preuzimati ključeve nepovezane aplikacije. Ako nema pristup, vlasnik projekta mora obaviti postavku ili omogućiti potreban pristup.
+1. Član tima zadužen za autentifikaciju vodi Google konfiguraciju aplikacije. Prvo treba pronaći projekt u [Google Cloud konzoli](https://console.cloud.google.com/auth/overview). Ako postoji, koristiti njegov prikladan web-klijent; ne preuzimati ključeve nepovezane aplikacije. Ako projekt još ne postoji, pripremiti zaseban projekt za CastMeIfYouCan na dogovorenom Google računu. Pristup projektu može imati više članova tima; nije potrebna zasebna osoba kao poslovni vlasnik aplikacije.
 2. U **Google Auth Platform → Branding** provjeriti **App name** (`CastMeIfYouCan`), **User support email** i kontakt održavatelja. Kontakt treba biti stvarna, nadzirana adresa tima. Provjeriti podatke i status u **Verification Center** prema stvarnim zahtjevima projekta.
 3. U **Audience** provjeriti **User type** (`Internal` / `External`) i **Publishing status** (`Testing` / `In production`). `Internal` ograničava pristup na organizaciju projekta. Za širu publiku provjeriti odgovarajuću postavku `External` i pravila organizacijskih Google računa.
 4. U **Data Access** zadržati samo identitet: `openid`, `email`, `profile` (Google ih može prikazati i kao `userinfo.email` / `userinfo.profile`). Prema [Googleovim pravilima publike](https://support.google.com/cloud/answer/15549945?hl=en), za isključivo osnovni identitet vrijedi iznimka od uobičajenog Testing popisa testnih korisnika i sedmodnevnog isteka autorizacije. Dodavanje drugih scopes mijenja uvjete. Organizacijske zabrane i zaštite računa i dalje mogu blokirati pristup. Samo osnovni scopes nisu razlog da se bez provjere zahtijeva objava ili dodatna verifikacija.
@@ -66,7 +66,7 @@ JSON API pozivi zadržavaju `503 GOOGLE_NOT_CONFIGURED` i `429 AUTH_RATE_LIMITED
 
 ### Stanje provjere 17. 11. 2026.
 
-Osnovna implementacija već je spojena u PR-u #29. U pregledanim lokalnim `backend/.env` konfiguracijama nisu postavljeni `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET`, a `SESSION_SECRET` postoji. Provjera Google Cloud konzole nije dovršena: alat za preglednik zaustavio je pristup jer nije mogao pouzdano utvrditi trenutačni URL. Korisnik nije potvrdio timski projekt niti ima poznat pristup. To ne dokazuje da projekt ili klijent ne postoji. Produkcijska konfiguracija također nije provjerena.
+Osnovna implementacija već je spojena u PR-u #29. U pregledanim lokalnim `backend/.env` konfiguracijama nisu postavljeni `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET`, a `SESSION_SECRET` postoji. Nakon početne prepreke s preglednikom pregledana je dostupna Google Cloud sesija: na tom računu prikazan je samo projekt druge aplikacije, bez potvrđenog projekta CastMeIfYouCan. Njegovi ključevi nisu preuzeti. Pripremljen je obrazac novog projekta CastMeIfYouCan; prije izrade treba odabrati Google račun kojim će tim upravljati projektom. To ne isključuje postojanje projekta na drugom računu. Produkcijska konfiguracija nije provjerena.
 
 Automatski auth testovi provjeravaju i točan client ID, callback, scopes te PKCE S256, ponovljenu prijavu istog računa, očuvanje uloge poslodavca, povratak preglednika pri nedostajućim ključevima i rate limitu te očuvanje JSON API ugovora. Googleov mrežni odgovor i korisnički model u HTTP testovima su simulirani; stvarni SQL i PostgreSQL sesije provjerava zaseban DB test. To nije stvarna Google prijava.
 
@@ -78,7 +78,7 @@ Provedene provjere ove dopune:
 - Frontend `npm run lint` i `npm run build`: prolaze.
 - Stvarni Google račun i vizualni prikaz ove dopune u pregledniku: nisu provjereni zbog navedenih prepreka.
 
-**Preostali korak vlasnika:** utvrditi projekt, provjeriti **Branding**, **Audience**, **Data Access** i **Clients → Web application → Authorized redirect URIs**, privatno postaviti oba ključa i restartati backend. Nakon toga kroz preglednik provjeriti:
+**Preostali dio timskog zaduženja za autentifikaciju:** odabrati Google račun i projekt aplikacije, provjeriti **Branding**, **Audience**, **Data Access** i **Clients → Web application → Authorized redirect URIs**, privatno postaviti oba ključa i restartati backend. Nakon toga kroz preglednik provjeriti:
 
 | Scenarij | Očekivano | Trenutačni rezultat stvarnog toka |
 | --- | --- | --- |
@@ -96,3 +96,4 @@ Dok ovi koraci nisu provedeni, prijava nije potvrđena spremnom za stvarne koris
 - [Google: OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect).
 - [Google: OAuth za web-poslužitelje](https://developers.google.com/identity/protocols/oauth2/web-server).
 - [Google: upravljanje publikom](https://support.google.com/cloud/answer/15549945?hl=en) — pravila provjerena 17. 11. 2026.
+
