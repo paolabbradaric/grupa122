@@ -1,6 +1,6 @@
 # 4. Arhitektura i oblikovanje — CastMeIfYouCan
 
-Stanje: 17. 11. 2026., kod [bd785d4](https://github.com/paolabbradaric/grupa122/commit/bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d).
+Polazna provjera arhitekture: 17. 11. 2026., kod [bd785d4](https://github.com/paolabbradaric/grupa122/commit/bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d). Naknadna dopuna prati [PR #44](https://github.com/paolabbradaric/grupa122/pull/44), spojen u `f42e73d`; konfiguracija i potvrđeni lokalni Google scenariji opisani su u [Google prijavi](GOOGLE_PRIJAVA.md).
 
 Poglavlje opisuje implementirane temelje baze i autentifikacije te njihove veze s ostatkom aplikacije. Poslovni moduli oglasa, prijava i audicija drugih članova koriste isti Express proces i PostgreSQL. Granice provjerenog ponašanja navedene su u [Ispitivanju](5-Ispitivanje.md).
 
@@ -76,7 +76,7 @@ Sljedeće odluke zapisane su naknadno prema implementaciji, ranijoj dokumentacij
 
 Zahtjevi F-001–F-005 predviđaju vanjsku prijavu, povezivanje profila i lokalne uloge. Budući da je backend već koristio Express i PostgreSQL, auth pristup prilagođen je tom okruženju. Zadržani su Passport, stabilni Google identitet i serverska sesija, uz parametrizirane SQL upite.
 
-Aplikacija ne sprema vlastite korisničke lozinke. Nakon vanjske prijave sama provjerava ovlasti i održava sesije. Odluka je implementirana kroz [PR #29](https://github.com/paolabbradaric/grupa122/pull/29), u skladu s [razvojnim planom](RAZVOJNI_PLAN.md). Stvarni Google tok još nije potvrđen zapisnikom od 17. 11. 2026.
+Aplikacija ne sprema vlastite korisničke lozinke. Nakon vanjske prijave sama provjerava ovlasti i održava sesije. Odluka je implementirana kroz [PR #29](https://github.com/paolabbradaric/grupa122/pull/29), u skladu s [razvojnim planom](RAZVOJNI_PLAN.md). [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) naknadno potvrđuje stvarnu lokalnu kandidatsku registraciju, ponovnu prijavu, osvježavanje i odjavu. Stvarni poslodavački tok, restart cijelog sustava i produkcija ostaju neprovjereni tim scenarijima.
 
 ### ADR-DB-01: Nadogradnja postojeće baze migracijama
 

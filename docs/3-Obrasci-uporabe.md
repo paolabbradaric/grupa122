@@ -4,7 +4,7 @@ Verzija: Priprema za M0 (4. tjedan), listopad 2026.
 
 U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, koji su koraci i što se događa ako nešto ne uspije. Koristimo iste oznake funkcijskih zahtjeva kao u Analizi zahtjeva. Ovo je planirano ponašanje aplikacije — ne znači da su sve funkcije već gotove.
 
-Za UC-001 i UC-002 implementirani su auth API i odvojene automatizirane HTTP/DB provjere. [Autentifikacija](AUTENTIFIKACIJA.md) opisuje stvarni ugovor, a [Ispitivanje](5-Ispitivanje.md) razlikuje prolaz testova od neizvedenog stvarnog Google toka. UC-003 još ima preostalu demonstracijsku lokalnu pohranu.
+Za UC-001 i UC-002 implementirani su auth API i odvojene automatizirane HTTP/DB provjere. [Autentifikacija](AUTENTIFIKACIJA.md) opisuje stvarni ugovor, a [Ispitivanje](5-Ispitivanje.md) razlikuje automatizirane testove od stvarnog lokalnog kandidatskog toka potvrđenog u [Google prijavi](GOOGLE_PRIJAVA.md). Stvarni poslodavački tok i produkcija nisu potvrđeni. UC-003 još ima preostalu demonstracijsku lokalnu pohranu.
 
 ## 3.1 Dijagram obrazaca uporabe
 
@@ -264,13 +264,13 @@ Alternativni tijekovi. Obrađujemo važne slučajeve: krive podatke, istek roka,
 
 Usklađenost s implementacijom. Tijekom razvoja provjeravat ćemo odgovara li stvarni rad aplikacije ovim opisima.
 
-Testiranje. Konkretne testove i njihove rezultate dodat ćemo u Ispitivanje kada budu provedeni.
+Testiranje. Auth/DB testovi i potvrđeni kandidatski Google scenariji povezani su u [Ispitivanju](5-Ispitivanje.md). Rezultati ostalih obrazaca dodaju se nakon njihova izvođenja.
 
-Zahtjevi koje nismo izdvojili u zaseban oval: F-005 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u UC-F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu Sljedivost zahtjeva i testova vodit ćemo u Analizi zahtjeva.
+Zahtjevi koje nismo izdvojili u zaseban oval: F-005 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u [UC-002](#uc-002-prijava-i-odjava). F-033 (administratorska statistika) jednostavan je prikaz opisan u [Analizi zahtjeva](2-Analiza-zahtjeva.md#f-033). Sljedivost zahtjeva i testova vodi se u [Analizi zahtjeva](2-Analiza-zahtjeva.md#26-sljedivost-zahtjeva).
 
-Što još trebamo potvrditi na M0:
+Pitanja evidentirana pri pripremi M0:
 
-Kojeg OAuth/OIDC pružatelja identiteta ćemo koristiti?
+Kojeg OAuth/OIDC pružatelja identiteta ćemo koristiti? Naknadno je odabran i implementiran Google; lokalni kandidatski tok potvrđen je u [PR-u #44](https://github.com/paolabbradaric/grupa122/pull/44).
 
 Koju vanjsku uslugu ćemo koristiti za e-poštu i je li ona dovoljna kao vanjska integracija?
 

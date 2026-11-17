@@ -16,7 +16,9 @@ Naredba npm run build izvedena je iz direktorija frontend, uz izlazni kod 0. Rez
 
 Za DB provjere učitana je postojeća privatna backend konfiguracija izvornog lokalnog checkouta, bez kopiranja .env u granu. Pozvane su iste skripte koje koriste navedene npm naredbe: Node je učitao dotenv s privatne lokalne putanje i zatim scripts/check-database.js odnosno scripts/check-casting-database.js. Izvorni kod testova ostao je iz navedenog novijeg main. Privatne vrijednosti nisu dio izvještaja.
 
-Auth HTTP testovi simuliraju Googleove mrežne odgovore i korisnički model. DB testovi koriste stvarni konfigurirani PostgreSQL, privremene tablice i odgovarajući rollback; ne dodaju trajne korisnike i ne migriraju zajedničke tablice. Nema potvrde stvarne Google prijave ili produkcijskog toka.
+Auth HTTP testovi simuliraju Googleove mrežne odgovore i korisnički model. DB testovi koriste stvarni konfigurirani PostgreSQL, privremene tablice i odgovarajući rollback; ne dodaju trajne korisnike i ne migriraju zajedničke tablice. Ovo početno izvođenje na `bd785d4` ne potvrđuje stvarnu Google prijavu ili produkcijski tok.
+
+Naknadni [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) i [Google dopuna](../../GOOGLE_PRIJAVA.md) zasebno bilježe 14 auth testova, 142 uspješna i 8 preskočenih redovnih backend testova te stvarnu lokalnu kandidatsku registraciju, ponovnu prijavu, osvježavanje i odjavu. Ti rezultati ne mijenjaju reviziju ni izvorne ispise ovog zapisnika.
 
 Redovni paket uključuje i testove drugih autora. Auth paket zasebno je ponovljen radi jasnog dokaza ovog područja. Dvije preskočene auth/draft DB provjere izvedene su zasebno; ostale preskočene DB integracije ostaju neizvedene. Brojeve ne treba zbrajati kao različite slučajeve ili postotak pokrivenosti.
 

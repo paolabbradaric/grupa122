@@ -1,8 +1,8 @@
 # 5. Ispitivanje — autentifikacija i baza
 
-Izvođenje: 17. 11. 2026. Revizija koda: [bd785d4](https://github.com/paolabbradaric/grupa122/commit/bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d). Okruženje: Windows, Node.js 24.14.0, npm 11.9.0.
+Početno izvođenje: 17. 11. 2026. Revizija koda: [bd785d4](https://github.com/paolabbradaric/grupa122/commit/bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d). Okruženje: Windows, Node.js 24.14.0, npm 11.9.0. Naknadni rezultati Google dopune iz [PR-a #44](https://github.com/paolabbradaric/grupa122/pull/44) navedeni su zasebno u ovom poglavlju.
 
-Ovo poglavlje bilježi provjere Mariova auth/DB doprinosa i redovnih paketa aktualnog main. Ne predstavlja potvrdu svih poslovnih tokova aplikacije. [Zapisnik i puni ispisi](verification/2026-11-17/README.md) čuvaju dokaze konkretnog izvođenja.
+Ovo poglavlje bilježi provjere Mariova auth/DB doprinosa i redovnih paketa na navedenim revizijama. Ne predstavlja potvrdu svih poslovnih tokova aplikacije. [Zapisnik i puni ispisi](verification/2026-11-17/README.md) čuvaju dokaze početnog izvođenja na `bd785d4`; [Google prijava](GOOGLE_PRIJAVA.md) opisuje naknadne provjere.
 
 ## 5.1 Pristup ispitivanju
 
@@ -42,7 +42,7 @@ Ova provjera odnosi se na NF-02 / UC-002. Deaktivirati testnog korisnika u simul
 
 ### A-T07
 
-Ova provjera odnosi se na NF-02, NF-11. Izostaviti Google ključeve/tajnu i prekoračiti auth limit. Očekivano ponašanje: 503 bez OAuth konfiguracije, odbijeno pokretanje bez tajne, 429 i Retry-After za limit. Prošlo; konfiguracijski i limiter testovi.
+Ova provjera odnosi se na NF-02, NF-11. Izostaviti Google ključeve/tajnu i prekoračiti auth limit. Početni zapisnik na `bd785d4` potvrđuje 503 bez OAuth konfiguracije, odbijeno pokretanje bez tajne te 429 i Retry-After za limit. Nakon PR-a #44 JSON API zadržava 503/429, a OAuth navigacija preglednika dobiva 302 na frontend s `authError=google_not_configured` ili `authError=rate_limited`; pri ograničenju ostaje Retry-After. Onboarding zadržava JSON 429 i kada zahtjev prihvaća HTML. Naknadni auth testovi potvrđuju oba ugovora.
 
 ### A-T08
 
@@ -56,15 +56,15 @@ Ova provjera odnosi se na F-018, F-019, NF-04 — DB dio. npm run test:db:castin
 
 Ova provjera odnosi se na Migracijski integritet. Isti DB paket: sačuvati postojeće testne retke, ponoviti migraciju i pokušati nadogradnju nevaljanih nenacrta. Očekivano ponašanje: Retci ostaju isti; ponavljanje daje isti ugovor; neuspjeh vraća promjene. Prošlo; podtest rollbacka i usporedba ugovora.
 
-### Sustavski scenariji koji još nisu izvedeni
+### Sustavski scenariji i stanje provjere
 
 ### A-S01
 
-Konfigurirati OAuth klijent i izoliranu testnu bazu; stvarnim Google računima dovršiti kandidata i poslodavca u pregledniku, odjaviti se i ponovno prijaviti. Očekuje se sljedeći ishod: Isti lokalni račun, odgovarajuća uloga i podaci, bez duplikata. Nije pokrenuto u ovoj provjeri.
+Planirani postupak: konfigurirati OAuth klijent i izoliranu testnu bazu; stvarnim Google računima dovršiti kandidata i poslodavca u pregledniku, odjaviti se i ponovno prijaviti. Očekuje se isti lokalni račun, odgovarajuća uloga i podaci, bez duplikata. Početno izvođenje na `bd785d4` nije uključivalo taj scenarij. Naknadni [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) potvrđuje kandidatsku registraciju, odjavu i ponovnu prijavu u lokalno pokrenutoj aplikaciji uz konfiguriranu zajedničku bazu: ostaju isti lokalni ID, uloga i jedan profil. Stvarni poslodavački dio i puni scenarij na izoliranoj bazi nisu potvrđeni tom provjerom; registracija poslodavca pokrivena je automatiziranim HTTP/DB testovima.
 
 ### A-S02
 
-Nakon stvarne prijave osvježiti stranicu, ponovno pokrenuti backend i zatim se odjaviti; pokušati stari cookie. Očekuje se sljedeći ishod: Važeća sesija ponovno se učitava nakon restarta; odjava ukida pristup. Nije pokrenuto u ovoj provjeri.
+Nakon stvarne prijave osvježiti stranicu, ponovno pokrenuti backend i zatim se odjaviti; pokušati stari cookie. Očekuje se da se važeća sesija ponovno učita nakon restarta, a odjava ukine pristup. U početnom izvođenju na `bd785d4` scenarij nije pokrenut. Naknadna [Google provjera](GOOGLE_PRIJAVA.md) potvrđuje očuvanje stvarne kandidatske prijave nakon osvježavanja i uklanjanje aktivne PostgreSQL sesije pri odjavi. Ponovna uporaba starog cookieja pokrivena je HTTP testom; stvarni restart sustava uz očuvanje postojeće prijave nije provjeren. Scenarij zato ostaje djelomično potvrđen.
 
 ### A-S03
 
@@ -76,7 +76,7 @@ Na javnoj inačici provjeriti HTTPS, cookie postavke, proxy i Google callback. O
 
 ## 5.3 Provedene naredbe i rezultati
 
-Sve navedene naredbe završile su izlaznim kodom 0.
+Sljedeći sačuvani rezultati pripadaju početnoj reviziji `bd785d4`; sve navedene naredbe završile su izlaznim kodom 0.
 
 Auth paket. Naredba se izvodi ovako: node --test test/auth.test.js / backend. Rezultat: 11 uspješnih, 0 neuspješnih, 0 preskočenih. Sačuvan je [ispis izvođenja](verification/2026-11-17/auth-tests.txt).
 
@@ -94,9 +94,15 @@ Dva auth/draft DB testa koja se preskaču u redovnom paketu izvedena su zasebnim
 
 PlantUML izvori i SVG slike provjereni su zasebno, prema istim imenima u docs/puml/ i docs/assets/diagrams/. Veze između dokumentacije i izvornog koda provjerene su prije PR-a.
 
+### 5.3.1 Naknadna Google provjera
+
+[PR #44](https://github.com/paolabbradaric/grupa122/pull/44), spojen u `f42e73d`, bilježi 14 uspješnih auth testova i redovni backend paket sa 142 uspješna i 8 preskočenih testova, bez pada. Zasebni auth PostgreSQL test prolazi 1/1, a frontend lint i build prolaze. [Google prijava](GOOGLE_PRIJAVA.md#stanje-provjere-17-11-2026) opisuje okruženje, stvarne kandidatske scenarije i preostale granice.
+
+Stvarna provjera uključuje prvi kandidatski profil, ponovnu prijavu bez duplikata, osvježavanje i odjavu s uklanjanjem sesije iz baze. Stvarni poslodavački ulazak, ručno otkazivanje na Googleovoj stranici, organizacijski računi, restart s postojećom sesijom i produkcija nisu potvrđeni tim izvođenjem. Stari ispisi s 11 auth i 139 redovnih uspješnih testova ostaju povijesni dokaz revizije `bd785d4`; ne zamjenjuju se novim brojevima.
+
 ## 5.4 Poznati nedostaci i granice dokaza
 
-Stvarni Google servis. Simulirani HTTP i zasebni DB test ne dokazuju cijeli tok kroz vanjski Google i preglednik; A-S01 ostaje otvoren.
+Stvarni Google servis. Lokalni kandidatski tok potvrđen je zasebnim stvarnim Google računom u opsegu PR-a #44. A-S01/A-S02 ostaju djelomično potvrđeni: stvarni poslodavac, restart s postojećom prijavom i dio negativnih scenarija nisu ručno izvedeni. Automatizirani HTTP/DB testovi imaju zasebnu dokaznu vrijednost.
 
 Profili i portfolio. Naknadne izmjene profila još imaju demonstracijsku lokalnu pohranu. F-006–F-008 nisu dovršeni samom registracijom.
 

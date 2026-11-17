@@ -24,11 +24,13 @@ Dana 4. studenoga dodana su pravila za nepotpune nacrte i potpunu objavu oglasa,
 
 Na Mariov zahtjev 17. studenoga dopunjena je dokumentacija i ponovljene su postojeće provjere, uz pomoć Codexa. Rezultati su u [zapisniku](verification/2026-11-17/README.md), a uporaba alata opisana je na [početnoj stranici](Home.md).
 
+Istog dana [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) uključuje dovršenu lokalnu Google konfiguraciju, povratak preglednika u aplikaciju pri nedostupnoj prijavi ili ograničenju pokušaja i dodatne auth testove. Stvarnim kandidatskim računom potvrđeni su prvi ulazak, dovršavanje profila, osvježavanje, odjava s uklanjanjem PostgreSQL sesije i ponovna prijava u isti račun bez duplikata. [Google prijava](GOOGLE_PRIJAVA.md) navodi točan opseg i granice tih provjera; OAuth tajne ostaju izvan Gita.
+
 Sati rada nisu dostavljeni pa nisu procijenjeni. Poslovni moduli ostalih članova zadržavaju svoje autorstvo; uporaba zajedničkog middlewarea ne pripisuje njihov rad autoru autentifikacije.
 
 ## A.4 Pregled promjena u repozitoriju
 
-Doprinos se može dodatno pratiti kroz [GitHub Contributors](https://github.com/paolabbradaric/grupa122/graphs/contributors) i [commitove računa mariohaluzan](https://github.com/paolabbradaric/grupa122/commits/main/?author=mariohaluzan). Pregled implementacije obuhvaća razdoblje od 17. listopada do 4. studenoga, uz dokumentacijsku provjeru 17. studenoga. Broj commitova ne pokazuje ukupne sate ni sav rad na integraciji.
+Doprinos se može dodatno pratiti kroz [GitHub Contributors](https://github.com/paolabbradaric/grupa122/graphs/contributors) i [commitove računa mariohaluzan](https://github.com/paolabbradaric/grupa122/commits/main/?author=mariohaluzan). Početna implementacija obuhvaća razdoblje od 17. listopada do 4. studenoga, a 17. studenoga slijede dokumentacijska provjera i dopuna stvarne lokalne Google prijave kroz PR #44. Broj commitova ne pokazuje ukupne sate ni sav rad na integraciji.
 
 ## A.5 Inženjerski izazovi i rješenja
 
@@ -38,6 +40,6 @@ Nacrti su zahtijevali drukčija pravila od objavljenih oglasa. Dio NOT NULL uvje
 
 Postojeća baza i Express backend zadržani su tijekom prilagodbe prijave. Umjesto uvođenja novog aplikacijskog okvira pripremljene su migracije i auth moduli koji koriste postojeći pg pool. Zajednička veza osigurana je TLS-om i javnim CA certifikatom, uz privatne pristupne podatke.
 
-Za provjeru prijave bilo je potrebno razlikovati simulirani HTTP tok od stvarnih SQL upisa. Zato su testovi razdvojeni, a stvarni Google tok ostao je označen kao neizvedena sustavska provjera.
+Za provjeru prijave bilo je potrebno razlikovati simulirani HTTP tok od stvarnih SQL upisa. Zato su testovi razdvojeni. Početni zapisnik na `bd785d4` nije uključivao stvarni Google tok; naknadni PR #44 potvrđuje lokalni kandidatski tok kroz Google i postojeću bazu. Stvarni poslodavački tok, restart s postojećom prijavom i produkcijska konfiguracija ostaju zasebne neprovedene provjere.
 
 [Status zadatka #12](AUTENTIFIKACIJA.md#status-zadatka-12-i-potreban-završetak) i [kazalo](Home.md) vode na povezane dijelove dokumentacije.

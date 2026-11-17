@@ -240,7 +240,7 @@ Za demonstraciju se koristi jedan zajednički administratorski račun; pristupni
 
 ### C-05
 
-Za prijavu koristimo vanjskog pružatelja identiteta preko OAuth 2.0 / OpenID Connect, a ne vlastiti sustav lozinki. Odabrati pružatelja identiteta, povezati prijavu s korisničkim ulogama i testirati uspješnu i neuspješnu prijavu. Izvor: Dogovor tima (28. 10. 2026.) i plan rada kolegija. Vrsta zapisa: Ograničenje.
+Za prijavu koristimo Google preko OAuth 2.0 / OpenID Connect, a ne vlastiti sustav lozinki. Vanjski identitet povezuje se s lokalnim računom i ulogom; uspješnu, neuspješnu i ponovljenu prijavu treba provjeravati za predviđeno okruženje. Implementacija i granice stvarne lokalne provjere opisane su u [Autentifikaciji](AUTENTIFIKACIJA.md) i [Google prijavi](GOOGLE_PRIJAVA.md). Izvor: Dogovor tima (28. 10. 2026.), plan rada kolegija i PR-ovi #29/#44. Vrsta zapisa: Ograničenje.
 
 ### C-06
 
@@ -274,13 +274,15 @@ U razdoblju 28. 10. 2026. promjena se odnosi na F-001–F-003, F-005, NF-02, C-0
 
 U razdoblju 3. 11. 2026. promjena se odnosi na F-001–F-005, NF-02. Implementirana Google prijava i lokalne PostgreSQL sesije; nema vlastitih lozinki. Dokaz ili dogovor: [PR #29](https://github.com/paolabbradaric/grupa122/pull/29).
 
+Dana 17. 11. 2026. konfiguriran je lokalni Google OAuth klijent i potvrđeni su stvarna kandidatska registracija, ponovna prijava istog računa, osvježavanje i odjava. Pri nedostajućoj konfiguraciji ili ograničenju pokušaja preglednik se vraća u aplikaciju, a JSON API zadržava odgovore 503/429. Zahtjevi se time ne proširuju; dopunjeni su rezultati provjere F-001–F-005, NF-02 i NF-11. Dokaz: [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) i [Google prijava](GOOGLE_PRIJAVA.md).
+
 Ostale važne promjene dodaju se nakon potvrde.
 
 ## 2.6 Sljedivost zahtjeva
 
-Za autentifikaciju i bazu provedene su automatizirane provjere 17. 11. 2026. [Poglavlje 5](5-Ispitivanje.md) povezuje ih s UC-001/UC-002 i testovima A-T01–A-T10, uz neizvedene sustavske scenarije A-S01–A-S04. Ostali redci ostaju plan provjera ako nemaju konkretan dokaz.
+Za autentifikaciju i bazu provedene su automatizirane provjere 17. 11. 2026. [Poglavlje 5](5-Ispitivanje.md) povezuje ih s UC-001/UC-002 i testovima A-T01–A-T10 te navodi stupanj provjere sustavskih scenarija A-S01–A-S04. Naknadna stvarna lokalna provjera kandidata zabilježena je u [Google prijavi](GOOGLE_PRIJAVA.md). Ostali redci ostaju plan provjera ako nemaju konkretan dokaz.
 
-Zahtjevi F-001–F-005 odnose se na Prijava, odjava i računi / UC-001, UC-002. [A-T01–A-T08](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost): auth i DB testovi prošli; stvarni Google tok A-S01/A-S02 još nije izveden.
+Zahtjevi F-001–F-005 odnose se na Prijava, odjava i računi / UC-001, UC-002. [A-T01–A-T08](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost): auth i DB testovi prošli. Stvarni kandidatski dijelovi A-S01/A-S02 potvrđeni su za registraciju, ponovnu prijavu, osvježavanje i odjavu; stvarni poslodavački tok, restart sustava i produkcija nisu potvrđeni tim provjerama.
 
 Zahtjevi F-006–F-008 odnose se na Profili kandidata i poslodavaca. Mogu li korisnici spremati svoje podatke, dodati do pet fotografija i uređivati samo vlastiti profil.
 

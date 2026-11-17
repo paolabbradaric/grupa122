@@ -1,6 +1,6 @@
 # 6. Postavljanje, instalacija i konfiguracija
 
-Provjereno okruženje: Windows, Node.js 24.14.0 i npm 11.9.0; kod bd785d4, 17. 11. 2026. PostgreSQL je dostupan preko zajedničke Supabase veze. Točne inačice paketa određuju lockfileovi u backend/ i frontend/.
+Provjereno okruženje: Windows, Node.js 24.14.0 i npm 11.9.0; početna provjera na kodu `bd785d4`, 17. 11. 2026. Google upute uključuju naknadne promjene iz [PR-a #44](https://github.com/paolabbradaric/grupa122/pull/44), spojenog u `f42e73d`. PostgreSQL je dostupan preko zajedničke Supabase veze. Točne inačice paketa određuju lockfileovi u backend/ i frontend/.
 
 Ovdje su razvojne upute za bazu i autentifikaciju. Javni URL i produkcijski razmještaj nisu potvrđeni ovim zapisom.
 
@@ -84,9 +84,11 @@ Ovo nisu obavezne naredbe svakog pokretanja. Draft migracija ima preduvjete, a s
 
 ### Google OAuth
 
-Pripremiti Google OAuth klijent vrste Web application i consent screen. U autorizirane redirect URI-je upisati točan GOOGLE_CALLBACK_URL. Ako je klijent u načinu testiranja, dopustiti odgovarajuće testne račune. Ključevi ostaju u privatnoj konfiguraciji backenda.
+Pripremiti Google OAuth klijent vrste Web application i consent screen. U autorizirane redirect URI-je upisati točan GOOGLE_CALLBACK_URL. Publiku, osnovne scopes i pravila načina Testing provjeriti prema [Google prijavi — postavljanje i provjera](GOOGLE_PRIJAVA.md). Ključevi ostaju u privatnoj konfiguraciji backenda. Za postojeći lokalni klijent postupak i potvrđeno stanje opisani su u toj dopuni.
 
-Bez ključeva GET /api/auth/google vraća 503 GOOGLE_NOT_CONFIGURED; javni dio može raditi ako su baza i ostala konfiguracija dostupni. Stvarni Google ulazak nije izveden u [zapisniku od 17. 11.](verification/2026-11-17/README.md).
+Bez ključeva OAuth navigacija preglednika na `GET /api/auth/google` ili callback dobiva `302` na frontend s `authError=google_not_configured`. JSON API zahtjev zadržava `503 GOOGLE_NOT_CONFIGURED`. Pri ograničenju pokušaja OAuth navigacija dobiva `302` s `authError=rate_limited`, a JSON API i onboarding zadržavaju `429 AUTH_RATE_LIMITED`; `Retry-After` ostaje dostupan. Frontend prikazuje odgovarajuću poruku i uklanja parametar iz URL-a. Nijedan od tih neuspjeha ne otvara prijavljenu sesiju; javni dio može raditi ako su baza i ostala konfiguracija dostupni.
+
+Početni [zapisnik na reviziji bd785d4](verification/2026-11-17/README.md) nije uključivao stvarni Google ulazak. Naknadna [Google provjera](GOOGLE_PRIJAVA.md#stanje-provjere-17-11-2026) potvrđuje lokalni kandidatski tok: registraciju, ponovnu prijavu, osvježavanje i odjavu. Stvarni poslodavački tok, restart s postojećom prijavom i produkcijsko postavljanje nisu potvrđeni tim scenarijima.
 
 ### Pokretanje i osnovna provjera
 
@@ -148,7 +150,9 @@ Vlasnik baze treba odrediti aplikacijski račun s manjim pravima, povratne kopij
 
 Ako se pojavi problem „backend odbija pokretanje zbog tajne”, treba napraviti sljedeću provjeru: SESSION_SECRET mora postojati i imati najmanje 32 znaka.
 
-Ako se pojavi problem „google početak vraća 503”, treba napraviti sljedeću provjeru: Provjeriti oba OAuth ključa.
+Ako se pri Google prijavi preglednik vrati s porukom da prijava nije dostupna (`authError=google_not_configured`) ili JSON API vrati `503 GOOGLE_NOT_CONFIGURED`, provjeriti oba OAuth ključa u privatnoj konfiguraciji i restartati backend nakon izmjene.
+
+Ako se preglednik vrati s `authError=rate_limited` ili JSON API vrati `429 AUTH_RATE_LIMITED`, pričekati vrijeme iz `Retry-After` prije novog pokušaja.
 
 Ako se pojavi problem „google odbija callback”, treba napraviti sljedeću provjeru: Usporediti protokol, host, port i punu putanju redirect URI-ja.
 
