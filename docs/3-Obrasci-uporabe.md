@@ -4,17 +4,19 @@
 
 U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, koji su koraci i što se događa ako nešto ne uspije. Koristimo iste oznake funkcijskih zahtjeva kao u 2. Analizi zahtjeva. Ovo je **planirano ponašanje aplikacije** — ne znači da su sve funkcije već gotove.
 
+Za UC-001 i UC-002 implementirani su auth API i odvojene automatizirane HTTP/DB provjere. [Autentifikacija](AUTENTIFIKACIJA.md) opisuje stvarni ugovor, a [Ispitivanje](5-Ispitivanje.md) razlikuje prolaz testova od neizvedenog stvarnog Google toka. UC-003 još ima preostalu demonstracijsku lokalnu pohranu.
+
 ## 3.1 Dijagram obrazaca uporabe
 
 Na dijagramu je prikazano tko koristi CastMeIfYouCan i koje su glavne radnje dostupne pojedinim korisnicima.
 
-**Glavni akteri:** Posjetitelj (A-01), kandidat (A-02), poslodavac (A-03) i administrator (A-04). Usluga e-pošte (A-05) planirana je za obavijesti, a **OAuth/OIDC pružatelj identiteta (A-06)** sudjeluje u registraciji i prijavi. Konkretne pružatelje usluga još trebamo odabrati.
+**Glavni akteri:** Posjetitelj (A-01), kandidat (A-02), poslodavac (A-03) i administrator (A-04). Usluga e-pošte (A-05) planirana je za obavijesti, a **OAuth/OIDC pružatelj identiteta (A-06)** sudjeluje u registraciji i prijavi. Implementirani pružatelj identiteta je Google; usluga e-pošte nije potvrđena ovim auth pregledom.
 
-![Dijagram obrazaca uporabe aplikacije CastMeIfYouCan](https://www.plantuml.com/plantuml/png/RLNBZjem5DtxAwxOes88hzsCQ5MXQWJgb4MhR2wn2Gx1HeuJgLFr8_e9_P6kElzLsvt4WBFBFVSSvzn7d8VAe3RrkIGbFnWm2hJ8ZmQOq3mpGabIdOIyeCOpN30xOSwVpVUIWqkZp4jE26P6QHXiLLLm8mmlYm5W1HzLPThS9vHCC3G-qGPNmb8nR33pwH2sX4Ts5b9KHgCDFSSZRNfNbNMEm8SNzVhRS4_uS4PHjeJDOssExpRhzokuwFhr3pgF81YNpgv1hrYpBI5TLJ1OOMMU-FhmLTKhb0FuGG3gYcTOsUHkDHoDQ2e_yzpxoaJn_vJTok8HSvpAhRQK1a60OkwXOuyZzYILEyt__X8Doe9Ro-eWoY2OH8B47S-jQmOgBx4At2JYJbFv3O-cu0sy83HSYuCuEVzr9vf6ebagDtkDx4R0Ey4i4inJ-MmQkpMk05lotjT-PsuUoHQsyel6fYoyqFF5EIWMaM8PEYiHRC88cNVyvJsVZbBvf7nJdQWhWOuYfftkXk5UQ3YzxMldWqOJfdR2NxXsQmfOCt6z3pIQC9supNdXkl6Bqog2csZ4D74JmCQIR8KTBneldOP-t7QRHbEbCzSBPWUgGxS3VqP-4kA-OHWEtzRwEae8QR_ZGBX7nX4oYP0aGfRtY9tEFHATGwDpRCKat2N1P8oDUx193vRqODCURDw3BMACzdYXFLveptjTSVuI33NSXBERq0wJ-1ind6Ylkz2Igs1C7hXaxeVm3m00)
+![CastMeIfYouCan use cases](assets/diagrams/3-1-castmeifyoucan-system-UC.svg)
 
 **Slika 3.1. Dijagram obrazaca uporabe — CastMeIfYouCan**
 
-**PlantUML izvor:** 3-1-castmeifyoucan-system-UC.puml. Za sliku smo upotrijebili PlantUML prikaz dijagrama koji smo odabrali za projekt.
+**PlantUML izvor:** [3-1-castmeifyoucan-system-UC.puml](puml/3-1-castmeifyoucan-system-UC.puml). Za sliku smo upotrijebili PlantUML prikaz dijagrama koji smo odabrali za projekt.
 
 Dijagram prikazuje 16 glavnih obrazaca uporabe: registraciju i prijavu, profile, oglase, prijave kandidata, audicije, obavijesti, verifikaciju i administraciju. Neke manje radnje nalaze se unutar tih obrazaca, zato ne crtamo poseban oval za svaku funkciju iz dokumenta 2.
 

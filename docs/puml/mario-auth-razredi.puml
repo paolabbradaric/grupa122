@@ -1,0 +1,56 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+title CastMeIfYouCan — odgovornosti autentifikacije
+class Error <<JavaScript>>
+class AuthError {
+  +status : number
+  +code : string
+  +message : string
+  +constructor(status, code, message)
+}
+class AuthRoutes <<module>> {
+  +createAuthRouter(options) : Router
+}
+class Validation <<module>> {
+  +validateProfile(body, now) : Profile
+}
+class UserModel <<factory result>> {
+  +findById(id) : Promise
+  +findByAuthId(authId) : Promise
+  +register(identity, profile) : Promise
+}
+class Passport <<library>> {
+  +serializeUser(callback)
+  +deserializeUser(callback)
+  +authenticate(strategy, options, callback)
+}
+class Pool <<pg library>> {
+  +query(sql, values) : Promise
+  +connect() : Promise
+}
+class Middleware <<module>> {
+  +requireAuth(req, res, next)
+  +requireRole(...roles) : function
+  +protectMutation(config) : function
+}
+Error <|-- AuthError
+AuthRoutes ..> Validation : validates profile
+AuthRoutes --> UserModel : register / findByAuthId
+AuthRoutes --> Passport : Google authentication
+AuthRoutes ..> Middleware : Origin / CSRF
+Validation ..> AuthError : throws
+Middleware ..> AuthError : rejects request
+UserModel ..> AuthError : maps uniqueness conflict
+UserModel --> Pool : parameterized SQL / transaction
+Passport --> UserModel : deserialize local user ID
+note bottom of UserModel
+  Object returned by createUserModel(pool).
+  This is not an ORM entity or a JS class.
+end note
+note bottom of AuthRoutes
+  Modules are represented as UML classifiers.
+  Router options: config, passport, users, authLimiter.
+end note
+@enduml

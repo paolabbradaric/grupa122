@@ -46,7 +46,7 @@ Ovo su funkcije koje naša aplikacija treba imati. Svaka ima oznaku, prioritet, 
 | F-033 | Administrator može vidjeti osnovnu statistiku korisnika, verifikacija, oglasa i prijava. | Nizak | Plan razvoja tima | Administratorski prikaz pokazuje brojeve usklađene sa zapisima u bazi; neovlašteni korisnik nema pristup administrativnoj statistici. |
 | F-034 | Aplikacija šalje važne obavijesti o prijavama i audicijama putem e-pošte. | Srednji | Plan tima i upute kolegija (usluga nije odabrana) | Nakon dogovorenog događaja sustav pokušava dostaviti obavijest na adresu korisnika putem konfigurirane vanjske usluge; uspjeh ili neuspjeh dostave može se provjeriti u zapisima. Odabir usluge i točne vrste poruka treba potvrditi. |
 
-**Dogovorena prijava:** Koristit ćemo **OAuth 2.0 / OpenID Connect** preko vanjskog pružatelja identiteta. Ne spremamo vlastite lozinke niti izrađujemo njihovu promjenu. F-005 sada opisuje siguran povratak na postojeći profil nakon ponovne OAuth/OIDC prijave. Još trebamo odabrati pružatelja identiteta, uslugu za e-poštu (F-034) i potvrditi pravila brisanja i statusa.
+**Dogovorena prijava:** Koristit ćemo **OAuth 2.0 / OpenID Connect** preko vanjskog pružatelja identiteta. Ne spremamo vlastite lozinke niti izrađujemo njihovu promjenu. F-005 sada opisuje siguran povratak na postojeći profil nakon ponovne OAuth/OIDC prijave. Google je implementirani pružatelj prema [PR-u #29](https://github.com/paolabbradaric/grupa122/pull/29). Uslugu za e-poštu (F-034) i ostala otvorena domenska pitanja treba potvrditi zasebno.
 
 ## 2.2 Nefunkcijski zahtjevi
 
@@ -80,7 +80,7 @@ Ovdje su navedene uloge koje koriste aplikaciju i što svaka od njih može radit
 | A-03 | Poslodavac (predstavnik organizacije) | Uređuje organizaciju, traži verifikaciju, upravlja oglasima i odabirom, terminima i prijavama. | F-002–F-005, F-008–F-009, F-018–F-024, F-027, F-029–F-030 |
 | A-04 | Administrator (zajednički demo račun) | Provjerava organizacije, obrađuje prijavljeni sadržaj i uklanja oglase; pregledava statistike. | F-010, F-025, F-031–F-033 |
 | A-05 | Vanjska usluga e-pošte (sekundarni akter, planirano) | Sudjeluje pri slanju važnih obavijesti; usluga još nije odabrana. | F-034 |
-| A-06 | OAuth/OIDC pružatelj identiteta (sekundarni akter) | Provjerava korisnički identitet; konkretnog pružatelja još trebamo odabrati. | F-001, F-002, F-003 |
+| A-06 | OAuth/OIDC pružatelj identiteta (sekundarni akter) | Provjerava korisnički identitet; implementirana je Google prijava uz zasebnu lokalnu sesiju i ulogu. | F-001, F-002, F-003 |
 
 **Ostali dionici:** naš tim i nastavno osoblje koje prati projekt. Vanjski pružatelj identiteta je akter A-06 jer sudjeluje u prijavi.
 
@@ -100,7 +100,9 @@ Ovdje smo zapisali pravila projekta i stvari koje još trebamo potvrditi.
 | AS-02 | Pretpostavka | Otkazana audicija oslobađa mjesto, a status oglasa i rezervacije ažuriraju se dosljedno. | Plan razvoja tima | Precizirati statusne prijelaze i testirati otkazivanje, ponovno rezerviranje i konkurentne zahtjeve. |
 | AS-03 | Pretpostavka | Maksimalan broj prijava 1000 je početna vrijednost po oglasu, uz mogućnost manje vrijednosti. | Plan razvoja tima | Provjeriti točnu dopuštenu granicu (1–1000 u prototipu) i uskladiti frontend, API i bazu. |
 
-**Što još trebamo potvrditi na M0:** (1) Koji OAuth/OIDC pružatelj identiteta ćemo koristiti? (2) Je li e-pošta za audicije dovoljna kao vanjska integracija? (3) Tko smije trajno brisati oglase i koje podatke brišemo? (4) Koje podatke kandidata vidi poslodavac? (5) Koji su dopušteni statusi prijava i rezervacija? (6) Je li NF-05 prihvatljiv?
+**Pitanja evidentirana pri pripremi M0:** (1) Koji OAuth/OIDC pružatelj identiteta ćemo koristiti? (2) Je li e-pošta za audicije dovoljna kao vanjska integracija? (3) Tko smije trajno brisati oglase i koje podatke brišemo? (4) Koje podatke kandidata vidi poslodavac? (5) Koji su dopušteni statusi prijava i rezervacija? (6) Je li NF-05 prihvatljiv?
+
+Pružatelj iz prvog pitanja naknadno je odabran: Google, implementiran u PR-u #29. Ostale stavke ovdje se ne proglašavaju riješenima.
 
 ## 2.5 Značajne promjene zahtjeva
 
@@ -111,22 +113,23 @@ U ovu tablicu upisujemo veće promjene u dogovorima. Dopunit ćemo je nakon razg
 | Listopad 2026. (dan nije evidentiran) | F-019, F-030 | Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. | Dogovor tima |
 | Listopad 2026. (dan nije evidentiran) | F-025 | Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. | Dogovor tima |
 | 28. 10. 2026. | F-001–F-003, F-005, NF-02, C-05 | Tim je odlučio koristiti OAuth 2.0 / OpenID Connect. Prilagođena je registracija i sigurnost, a F-005 smo prilagodili ponovnoj prijavi i povezivanju s postojećim profilom jer lozinkama upravlja vanjski pružatelj. | Dogovor tima |
+| 3. 11. 2026. | F-001–F-005, NF-02 | Implementirana Google prijava i lokalne PostgreSQL sesije; nema vlastitih lozinki. | [PR #29](https://github.com/paolabbradaric/grupa122/pull/29) |
 
-Način prijave sada je dogovoren, a ostale važne promjene dodat ćemo nakon potvrde.
+Ostale važne promjene dodaju se nakon potvrde.
 
 ## 2.6 Sljedivost zahtjeva
 
-Ovdje smo povezali zahtjeve s dijelovima aplikacije i provjerama koje planiramo napraviti. Testove još nismo proveli. Obrasci uporabe detaljnije su opisani u dokumentu 3-Obrasci-uporabe.md.
+Za autentifikaciju i bazu provedene su automatizirane provjere 17. 11. 2026. [Poglavlje 5](5-Ispitivanje.md) povezuje ih s UC-001/UC-002 i testovima A-T01–A-T10, uz neizvedene sustavske scenarije A-S01–A-S04. Ostali redci ostaju plan provjera ako nemaju konkretan dokaz.
 
-| Zahtjevi | Dio aplikacije | Što trebamo provjeriti |
+| Zahtjevi | Dio aplikacije | Provjera i dokaz / preostali plan |
 | --- | --- | --- |
-| F-001–F-005 | Prijava, odjava i korisnički računi | Radi li OAuth/OIDC prijava i odjava, prepoznaje li se postojeći korisnik i jesu li podaci zaštićeni. |
+| F-001–F-005 | Prijava, odjava i računi / UC-001, UC-002 | [A-T01–A-T08](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost): auth i DB testovi prošli; stvarni Google tok A-S01/A-S02 još nije izveden. |
 | F-006–F-008 | Profili kandidata i poslodavaca | Mogu li korisnici spremati svoje podatke, dodati do pet fotografija i uređivati samo vlastiti profil. |
 | F-009–F-010 | Verifikacija poslodavaca | Može li poslodavac poslati zahtjev, a administrator odobriti ili odbiti verifikaciju. |
 | F-011–F-013 | Pregled i pretraga oglasa | Prikazuju li se javni oglasi, detalji i rezultati pretrage. |
 | F-014–F-016, F-026 | Prijave kandidata | Mogu li se kandidati prijaviti i povući prijavu te jesu li spriječene dvostruke i zakašnjele prijave. |
 | F-017, F-034 | Obavijesti | Prikazuju li se obavijesti pravim korisnicima i radi li planirano slanje e-pošte. |
-| F-018–F-022 | Izrada i upravljanje oglasima | Mogu li poslodavci spremiti nacrt, objaviti, urediti ili zatvoriti vlastiti oglas. |
+| F-018–F-022 | Izrada i upravljanje oglasima | [A-T09/A-T10](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost) potvrđuju DB dio nacrta/objave i migraciju; potpuni API/UI tok i ovlasti nisu dokazani samo tim testom. |
 | F-023–F-024, F-030 | Pregled prijava i odabir kandidata | Može li poslodavac obraditi prijave i označiti oglas popunjenim kada odabere dovoljan broj kandidata. |
 | F-025 | Brisanje oglasa | Može li administrator obrisati oglas i povezane podatke te je li brisanje zabranjeno ostalima. |
 | F-027–F-029 | Audicije i rezervacije | Mogu li se dodavati termini, rezervirati slobodna mjesta i otkazivati rezervacije. |
@@ -134,7 +137,7 @@ Ovdje smo povezali zahtjeve s dijelovima aplikacije i provjerama koje planiramo 
 | NF-01–NF-04, NF-11–NF-12 | Sigurnost i privatnost | Jesu li podaci i korisničke ovlasti zaštićeni i prikazuju li se razumljive pogreške. |
 | NF-05–NF-10 | Brzina i jednostavnost korištenja | Radi li aplikacija dovoljno brzo, pamti li podatke i može li se koristiti na različitim uređajima i preglednicima. |
 
-**Napomena:** Ovo su planirane provjere. Rezultate ćemo upisati u dokument 5-Ispitivanje.md kada stvarno testiramo aplikaciju.
+**Napomena:** Potvrđeni auth/DB rezultati su u [Ispitivanju](5-Ispitivanje.md) i [zapisniku](verification/2026-11-17/README.md). Prolaz middleware testa nije dokaz ovlasti svih poslovnih modula, a registracija nije dovršena trajna izmjena profila F-006–F-008.
 
 ## 2.7 Pregled zahtjeva
 

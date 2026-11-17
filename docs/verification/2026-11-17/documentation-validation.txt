@@ -1,0 +1,9 @@
+Date: 2026-11-17
+Code revision: bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d
+Markdown files checked: 11
+Local links checked: 131
+Anchors checked: 7
+Rendered project SVGs: 6
+SQL tables represented: 18
+Private value matches: 0
+Validation errors: 0

@@ -1,28 +1,30 @@
 # 7. Zaključak i budući rad
 
-**Cilj:** Objektivno procijeniti i dokumentirati konačni opseg onoga što je tim isporučio, kritički se osvrnuti na najvažnije inženjerske spoznaje stečene tijekom razvoja programa te identificirati realne mogućnosti nadogradnje.
+**Opseg:** rezultat baze i autentifikacije od 17. 11. 2026. Završni zaključak cijelog projekta treba dopuniti nakon zajedničke provjere svih poslovnih tokova.
 
-## 7.1 Rezultati projekta
+## 7.1 Rezultati doprinosa
 
-[Sažmite što korisnici mogu raditi u dovršenoj aplikaciji. Jasno razlikujte dovršene, djelomično ostvarene i neostvarene funkcionalnosti te opišite njihov učinak na korisnike. Tvrdnje temeljite na pokrenutoj aplikaciji i zabilježenim rezultatima ispitivanja.]
+Izrađeni su relacijski model i PostgreSQL shema, migracije limita i nacrta, zajednička TLS veza, Google/Passport prijava, registracija kandidata i poslodavaca, serverske sesije, odjava i middleware ovlasti. Frontend prepoznaje stvarnog korisnika i njegovu serversku ulogu; nema samostalnog odabira administratora.
+
+Kod je uključen kroz PR-ove #23, #25, #29 i #31. Odgovornosti, API ugovor, model, instalacija i dokazi sada su povezani iz [kazala](Home.md). Dana 17. 11. prošli su 11 auth testova, 1 auth DB test i 10 draft testova/podtestova; aktualni redovni backend paket imao je 139 uspješnih i 8 preskočenih testova. Frontend lint i build prošli su. [Zapisnik](verification/2026-11-17/README.md) objašnjava simulacije i preklapanje paketa; brojevi nisu dokaz potpune pokrivenosti.
 
 ## 7.2 Izazovi i naučene lekcije
 
-[Opišite jedan ili dva značajna tehnička ili organizacijska izazova. Objasnite što se dogodilo, kako je tim reagirao i što je iz toga naučio. Navedite znanja ili vještine koje bi timu pomogle da problem ranije prepozna ili riješi. Navedite što biste u sličnom projektu sljedeći put napravili drugačije i zašto.]
+Promjenu zahtjeva za autentifikaciju treba pratiti kroz sve dokumente: stari zadatak za lozinke ne opisuje noviji dogovor o OAuth/OIDC prijavi. Identitet, lokalna uloga i vlasništvo zapisa imaju zasebne provjere. Ograničenja baze štite integritet, ali ne provode cjelokupne ovlasti ili poslovni tok.
 
-<details>
-<summary><strong>Primjer: obrada lokacije pri prijavi događaja</strong></summary>
+Migracije omogućuju očuvanje baze, uz cijenu provjere početnog stanja i redoslijeda. Razlikovanje simuliranog HTTP testa i stvarnog SQL testa sprječava zaključak da je vanjska Google integracija već potvrđena. [Aktivnosti i izazovi](A-Pregled-aktivnosti-grupe.md) povezuju odluke s konkretnim rezultatima.
 
-**Primjer — CrisisMap:** Tim se pri podnošenju prijava kriznih događaja u početku oslanjao na pristup lokaciji preglednika. Kada su korisnici odbili dopuštenje, nisu mogli zadati lokaciju. Tim je dodao mogućnost ručnog odabira lokacije i ispitao oba puta. To je pokazalo zašto funkcionalnost koja ovisi o dopuštenju od početka treba imati alternativni korisnički tijek.
+## 7.3 Preostali rad
 
-**Analiza primjera:** Opis navodi poteškoću, odgovor tima i konkretnu naučenu lekciju. Ne tvrdi da je cijela aplikacija ispitana samo zato što je provjeren jedan tijek.
+| Stavka | Potreban rezultat |
+| --- | --- |
+| Stvarna Google prijava | Konfigurirati ili potvrditi OAuth klijent i izvesti prvi/ponovljeni ulazak obiju uloga, osvježavanje i odjavu kroz preglednik. |
+| Profili i portfolio | Dovršiti trajni API izmjene profila i pohrane datoteka; lokalna demonstracijska pohrana nije dovršena funkcionalnost F-006–F-008. |
+| Demo admin | Potvrditi ograničeni demo račun i njegovu namjenu bez tajni u Gitu. |
+| Vlasništvo i integracija | S autorima poslovnih modula provjeriti tuđe podatke, verifikaciju, oglase, prijave i audicije. |
+| Produkcija | Potvrditi javni URL, HTTPS/proxy, manje privilegiran DB račun, zajednički limiter, povratne kopije i oporavak. |
+| Sustavska kvaliteta | Izvesti planirane provjere preglednika, pristupačnosti, rezolucija i opterećenja prije tvrdnje da su ti zahtjevi ispunjeni. |
 
-</details>
+To su nedovršeni ili neprovjereni dijelovi postojećeg opsega, a ne samo neobavezna buduća poboljšanja. Zadatak #12 i cijeli projekt ne zatvaraju se samom dokumentacijskom dopunom.
 
-## 7.3 Budući rad
-
-[Navedite mali broj opravdanih poboljšanja i ograničite se na nekoliko prioriteta. Razlikujte nedovršene funkcionalnosti potrebne za ispunjenje izvornog opsega od neobaveznih proširenja. Za svako ukratko objasnite korist i što bi trebalo promijeniti.]
-
----
-
->**Završna provjera:** Tvrdnje o dovršenim funkcionalnostima podudaraju se s postavljenom aplikacijom i rezultatima ispitivanja. Nedovršen rad jasno je naveden; planovi za budući rad ne prikazuju se kao dovršene funkcionalnosti. Utrošeno vrijeme i pojedinačni doprinosi dokumentirani su u dokumentu A. Pregled aktivnosti grupe.
+[Ispitivanje](5-Ispitivanje.md) · [Status auth zadatka](AUTENTIFIKACIJA.md#status-zadatka-12-i-potreban-završetak)

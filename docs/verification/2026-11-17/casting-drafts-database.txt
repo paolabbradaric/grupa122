@@ -1,0 +1,21 @@
+▶ Casting drafts: initial schema and migration enforce the same contract
+  ▶ initial schema
+    ✔ save, edit and publish an incomplete draft (545.6138ms)
+    ✔ every required field rejects NULL outside draft; text rejects whitespace (4162.506ms)
+    ✔ drafts still enforce ages, counts, status, project and uniqueness (886.7155ms)
+  ✔ initial schema (5938.1092ms)
+  ▶ migration
+    ✔ save, edit and publish an incomplete draft (437.1552ms)
+    ✔ every required field rejects NULL outside draft; text rejects whitespace (4375.5262ms)
+    ✔ drafts still enforce ages, counts, status, project and uniqueness (1023.624ms)
+  ✔ migration (6480.2425ms)
+  ✔ invalid existing data rolls the migration back without losing rows (585.279ms)
+✔ Casting drafts: initial schema and migration enforce the same contract (14155.8566ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14412.0374

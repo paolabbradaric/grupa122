@@ -1,0 +1,155 @@
+@startuml
+!pragma layout smetana
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+title CastMeIfYouCan — relacijski model iz db/schema.sql
+
+entity users {
+  * id : INT <<PK>>
+  --
+  auth_id : VARCHAR <<UNIQUE>>
+  email : VARCHAR <<UNIQUE>>
+  role : VARCHAR
+  deleted_at : TIMESTAMPTZ (NULL)
+}
+entity candidate_profiles {
+  * id : INT <<PK>>
+  --
+  user_id : INT <<FK, UNIQUE>>
+}
+entity organisations {
+  * id : INT <<PK>>
+  --
+  owner_id : INT <<FK>>
+  reg_num : VARCHAR <<UNIQUE>>
+  location : VARCHAR (NULL)
+}
+entity projects {
+  * id : INT <<PK>>
+  --
+  org_id : INT <<FK>>
+  title : VARCHAR
+  project_type : VARCHAR
+}
+entity casting_calls {
+  * id : INT <<PK>>
+  --
+  project_id : INT <<FK, UNIQUE>>
+  status : VARCHAR
+  positions_count : INT (NULL u draft)
+  max_applications : INT = 1000
+}
+entity applications {
+  * id : INT <<PK>>
+  --
+  candidate_id : INT <<FK>>
+  casting_call_id : INT <<FK>>
+  status : VARCHAR
+  UNIQUE(candidate_id, casting_call_id)
+}
+entity audition_slots {
+  * id : INT <<PK>>
+  --
+  casting_call_id : INT <<FK>>
+  capacity : INT
+}
+entity audition_bookings {
+  * id : INT <<PK>>
+  --
+  audition_slot_id : INT <<FK>>
+  application_id : INT <<FK>>
+}
+entity notifications {
+  * id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  application_id : INT <<FK, NULL>>
+  casting_call_id : INT <<FK, NULL>>
+  booking_id : INT <<FK, NULL>>
+}
+entity media_files {
+  * id : INT <<PK>>
+  --
+  owner_user_id : INT <<FK>>
+  storage_key : VARCHAR
+}
+entity verification {
+  * id : INT <<PK>>
+  --
+  org_id : INT <<FK>>
+  reviewed_by : INT <<FK, NULL>>
+  status : VARCHAR
+}
+entity skills {
+  * id : INT <<PK>>
+  --
+  name : VARCHAR <<UNIQUE>>
+}
+entity candidate_skills {
+  * candidate_id : INT <<PK, FK>>
+  * skill_id : INT <<PK, FK>>
+}
+entity casting_call_skills {
+  * casting_call_id : INT <<PK, FK>>
+  * skill_id : INT <<PK, FK>>
+}
+entity application_files {
+  * application_id : INT <<PK, FK>>
+  * media_file_id : INT <<PK, FK>>
+}
+entity casting_call_status_history {
+  * id : INT <<PK>>
+  --
+  casting_call_id : INT <<FK>>
+  changed_by : INT <<FK, NULL>>
+}
+entity application_status_history {
+  * id : INT <<PK>>
+  --
+  application_id : INT <<FK>>
+  changed_by : INT <<FK, NULL>>
+}
+entity "app_private.sessions" as sessions {
+  * sid : VARCHAR <<PK>>
+  --
+  sess : JSON
+  expire : TIMESTAMP
+}
+
+users ||--o| candidate_profiles
+users ||--o{ organisations : owner_id
+organisations ||--o{ projects
+projects ||--o| casting_calls
+candidate_profiles ||--o{ applications
+casting_calls ||--o{ applications
+casting_calls ||--o{ audition_slots
+audition_slots ||--o{ audition_bookings
+applications ||--o{ audition_bookings
+users ||--o{ notifications
+applications |o--o{ notifications
+casting_calls |o--o{ notifications
+audition_bookings |o--o{ notifications
+users ||--o{ media_files
+organisations ||--o{ verification
+users |o--o{ verification : reviewed_by
+candidate_profiles ||--o{ candidate_skills
+skills ||--o{ candidate_skills
+casting_calls ||--o{ casting_call_skills
+skills ||--o{ casting_call_skills
+applications ||--o{ application_files
+media_files ||--o{ application_files
+casting_calls ||--o{ casting_call_status_history
+users |o--o{ casting_call_status_history : changed_by
+applications ||--o{ application_status_history
+users |o--o{ application_status_history : changed_by
+note right of sessions
+  sess može sadržavati lokalni ID korisnika.
+  Ta veza nije SQL strani ključ.
+end note
+note bottom of audition_bookings
+  Prikazane su kardinalnosti koje nameće SQL.
+  Poslovna pravila mogu biti stroža od njih.
+end note
+@enduml
