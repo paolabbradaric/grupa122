@@ -1,6 +1,6 @@
 # 7. Zaključak i budući rad
 
-**Opseg:** rezultat baze i autentifikacije od 17. 11. 2026. Završni zaključak cijelog projekta treba dopuniti nakon zajedničke provjere svih poslovnih tokova.
+Opseg: rezultat baze i autentifikacije od 17. 11. 2026. Završni zaključak cijelog projekta treba dopuniti nakon zajedničke provjere svih poslovnih tokova.
 
 ## 7.1 Rezultati doprinosa
 
@@ -16,15 +16,18 @@ Migracije omogućuju očuvanje baze, uz cijenu provjere početnog stanja i redos
 
 ## 7.3 Preostali rad
 
-| Stavka | Potreban rezultat |
-| --- | --- |
-| Stvarna Google prijava | Konfigurirati ili potvrditi OAuth klijent i izvesti prvi/ponovljeni ulazak obiju uloga, osvježavanje i odjavu kroz preglednik. |
-| Profili i portfolio | Dovršiti trajni API izmjene profila i pohrane datoteka; lokalna demonstracijska pohrana nije dovršena funkcionalnost F-006–F-008. |
-| Demo admin | Potvrditi ograničeni demo račun i njegovu namjenu bez tajni u Gitu. |
-| Vlasništvo i integracija | S autorima poslovnih modula provjeriti tuđe podatke, verifikaciju, oglase, prijave i audicije. |
-| Produkcija | Potvrditi javni URL, HTTPS/proxy, manje privilegiran DB račun, zajednički limiter, povratne kopije i oporavak. |
-| Sustavska kvaliteta | Izvesti planirane provjere preglednika, pristupačnosti, rezolucija i opterećenja prije tvrdnje da su ti zahtjevi ispunjeni. |
+Za stvarnu Google prijavu treba konfigurirati ili potvrditi OAuth klijent i izvesti prvi/ponovljeni ulazak obiju uloga, osvježavanje i odjavu kroz preglednik.
+
+Za profile i portfolio treba dovršiti trajni API izmjene profila i pohrane datoteka; lokalna demonstracijska pohrana nije dovršena funkcionalnost F-006–F-008.
+
+Za demo admin račun treba potvrditi ograničeni demo račun i njegovu namjenu bez tajni u Gitu.
+
+Provjeru vlasništva treba provesti s autorima poslovnih modula provjeriti tuđe podatke, verifikaciju, oglase, prijave i audicije.
+
+Prije produkcijske uporabe treba potvrditi javni URL, HTTPS/proxy, manje privilegiran DB račun, zajednički limiter, povratne kopije i oporavak.
+
+Za provjeru kvalitete treba izvesti planirane provjere preglednika, pristupačnosti, rezolucija i opterećenja prije tvrdnje da su ti zahtjevi ispunjeni.
 
 To su nedovršeni ili neprovjereni dijelovi postojećeg opsega, a ne samo neobavezna buduća poboljšanja. Zadatak #12 i cijeli projekt ne zatvaraju se samom dokumentacijskom dopunom.
 
-[Ispitivanje](5-Ispitivanje.md) · [Status auth zadatka](AUTENTIFIKACIJA.md#status-zadatka-12-i-potreban-završetak)
+[Ispitivanje](5-Ispitivanje.md), [Status auth zadatka](AUTENTIFIKACIJA.md#status-zadatka-12-i-potreban-završetak)

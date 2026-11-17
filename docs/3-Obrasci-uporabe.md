@@ -1,8 +1,8 @@
 # 3. Obrasci uporabe — CastMeIfYouCan
 
-**Verzija:** Priprema za M0 (4. tjedan), listopad 2026.
+Verzija: Priprema za M0 (4. tjedan), listopad 2026.
 
-U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, koji su koraci i što se događa ako nešto ne uspije. Koristimo iste oznake funkcijskih zahtjeva kao u 2. Analizi zahtjeva. Ovo je **planirano ponašanje aplikacije** — ne znači da su sve funkcije već gotove.
+U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, koji su koraci i što se događa ako nešto ne uspije. Koristimo iste oznake funkcijskih zahtjeva kao u Analizi zahtjeva. Ovo je planirano ponašanje aplikacije — ne znači da su sve funkcije već gotove.
 
 Za UC-001 i UC-002 implementirani su auth API i odvojene automatizirane HTTP/DB provjere. [Autentifikacija](AUTENTIFIKACIJA.md) opisuje stvarni ugovor, a [Ispitivanje](5-Ispitivanje.md) razlikuje prolaz testova od neizvedenog stvarnog Google toka. UC-003 još ima preostalu demonstracijsku lokalnu pohranu.
 
@@ -10,17 +10,17 @@ Za UC-001 i UC-002 implementirani su auth API i odvojene automatizirane HTTP/DB 
 
 Na dijagramu je prikazano tko koristi CastMeIfYouCan i koje su glavne radnje dostupne pojedinim korisnicima.
 
-**Glavni akteri:** Posjetitelj (A-01), kandidat (A-02), poslodavac (A-03) i administrator (A-04). Usluga e-pošte (A-05) planirana je za obavijesti, a **OAuth/OIDC pružatelj identiteta (A-06)** sudjeluje u registraciji i prijavi. Implementirani pružatelj identiteta je Google; usluga e-pošte nije potvrđena ovim auth pregledom.
+Glavni akteri: Posjetitelj (A-01), kandidat (A-02), poslodavac (A-03) i administrator (A-04). Usluga e-pošte (A-05) planirana je za obavijesti, a OAuth/OIDC pružatelj identiteta (A-06) sudjeluje u registraciji i prijavi. Implementirani pružatelj identiteta je Google; usluga e-pošte nije potvrđena ovim auth pregledom.
 
 ![CastMeIfYouCan use cases](assets/diagrams/3-1-castmeifyoucan-system-UC.svg)
 
-**Slika 3.1. Dijagram obrazaca uporabe — CastMeIfYouCan**
+Slika 3.1. Dijagram obrazaca uporabe — CastMeIfYouCan
 
-**PlantUML izvor:** [3-1-castmeifyoucan-system-UC.puml](puml/3-1-castmeifyoucan-system-UC.puml). Za sliku smo upotrijebili PlantUML prikaz dijagrama koji smo odabrali za projekt.
+PlantUML izvor: [3-1-castmeifyoucan-system-UC.puml](puml/3-1-castmeifyoucan-system-UC.puml). Za sliku smo upotrijebili PlantUML prikaz dijagrama koji smo odabrali za projekt.
 
 Dijagram prikazuje 16 glavnih obrazaca uporabe: registraciju i prijavu, profile, oglase, prijave kandidata, audicije, obavijesti, verifikaciju i administraciju. Neke manje radnje nalaze se unutar tih obrazaca, zato ne crtamo poseban oval za svaku funkciju iz dokumenta 2.
 
-**Prijava:** Dogovorili smo da koristimo **OAuth 2.0 / OpenID Connect**. Vanjski pružatelj provjerava identitet, a CastMeIfYouCan zatim povezuje korisnika s ulogom kandidata, poslodavca ili administratora. Nećemo izrađivati vlastiti sustav lozinki.
+Prijava: Dogovorili smo da koristimo OAuth 2.0 / OpenID Connect. Vanjski pružatelj provjerava identitet, a CastMeIfYouCan zatim povezuje korisnika s ulogom kandidata, poslodavca ili administratora. Nećemo izrađivati vlastiti sustav lozinki.
 
 ## 3.2 Specifikacije obrazaca uporabe
 
@@ -28,202 +28,256 @@ Za svaki obrazac uporabe napisali smo tko ga pokreće, što treba biti ispunjeno
 
 ### UC-001: Registracija
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Posjetitelj (A-01) |
-| **Povezani zahtjevi** | F-001, F-002 |
-| **Preduvjeti** | Korisnik još nema povezan profil u aplikaciji. Za prijavu koristi vanjskog OAuth/OIDC pružatelja identiteta. |
-| **Glavni uspješni tok** | 1. Korisnik odabire registraciju.<br>2. Aplikacija ga preusmjerava na vanjskog pružatelja identiteta.<br>3. Korisnik uspješno potvrđuje identitet i vraća se u aplikaciju.<br>4. Odabire ulogu kandidata ili poslodavca i unosi potrebne podatke profila odnosno tvrtke.<br>5. Aplikacija provjerava podatke i sprema račun povezan s vanjskim identitetom.<br>6. Prikazuje se potvrda. |
-| **Alternativni tokovi / Iznimke** | **3a – Korisnik odustane ili vanjska prijava ne uspije:** račun se ne stvara.<br>**4a – Nedostaju podaci:** korisnik ih mora dopuniti.<br>**5a – Kandidat nema 18 godina:** registracija se odbija.<br>**5b – Neispravan OIB poslodavca:** potrebno je ispraviti unos.<br>**5c – Vanjski identitet već je povezan s računom:** aplikacija ne stvara duplikat. |
-| **Posljedice (ishod)** | Korisnik ima profil povezan s vanjskom prijavom. Poslodavac mora proći verifikaciju prije objavljivanja oglasa. |
+Obrazac pokreće Posjetitelj (A-01).
+
+Povezani zahtjevi su F-001, F-002.
+
+Prije početka vrijedi sljedeće: Korisnik još nema povezan profil u aplikaciji. Za prijavu koristi vanjskog OAuth/OIDC pružatelja identiteta.
+
+Korisnik odabire registraciju. Aplikacija ga preusmjerava na vanjskog pružatelja identiteta. Korisnik uspješno potvrđuje identitet i vraća se u aplikaciju. Odabire ulogu kandidata ili poslodavca i unosi potrebne podatke profila odnosno tvrtke. Aplikacija provjerava podatke i sprema račun povezan s vanjskim identitetom. Prikazuje se potvrda.
+
+Mogući su i sljedeći ishodi: 3a – Korisnik odustane ili vanjska prijava ne uspije: račun se ne stvara. 4a – Nedostaju podaci: korisnik ih mora dopuniti. 5a – Kandidat nema 18 godina: registracija se odbija. 5b – Neispravan OIB poslodavca: potrebno je ispraviti unos. 5c – Vanjski identitet već je povezan s računom: aplikacija ne stvara duplikat.
+
+Ishod uporabe: Korisnik ima profil povezan s vanjskom prijavom. Poslodavac mora proći verifikaciju prije objavljivanja oglasa.
 
 ### UC-002: Prijava i odjava
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Kandidat (A-02), poslodavac (A-03), administrator (A-04) |
-| **Povezani zahtjevi** | F-003, F-004, F-005 |
-| **Preduvjeti** | Korisnik ima račun povezan s vanjskim identitetom ili dodijeljen administratorski pristup. |
-| **Glavni uspješni tok** | 1. Korisnik odabire Prijava.<br>2. Aplikacija ga preusmjerava na OAuth/OIDC pružatelja identiteta.<br>3. Korisnik se uspješno prijavi kod pružatelja i vraća u aplikaciju.<br>4. Aplikacija prepoznaje povezani vanjski identitet i otvara postojeći korisnički profil i sesiju s odgovarajućom ulogom, bez stvaranja novog računa.<br>5. Kad završi, korisnik odabire Odjava i aplikacija završava njegovu sesiju. |
-| **Alternativni tokovi / Iznimke** | **3a – Korisnik odustane ili prijava ne uspije:** aplikacija ne otvara sesiju.<br>**4a – Nevaljan odgovor pružatelja:** prijava se odbija.<br>**4c – Identitet nije povezan s računom:** aplikacija vodi korisnika na dovršetak registracije i ne daje mu pristup tuđem profilu.<br>**4b – Korisnik još nema dovršen profil:** aplikacija ga vodi na dovršetak registracije.<br>**5a – Nakon odjave:** zaštićene funkcije više nisu dostupne. |
-| **Posljedice (ishod)** | Korisnik se prijavio preko vanjskog pružatelja i koristi funkcije svoje uloge ili se uspješno odjavio. |
+Obrazac pokreće Kandidat (A-02), poslodavac (A-03), administrator (A-04).
+
+Povezani zahtjevi su F-003, F-004, F-005.
+
+Prije početka vrijedi sljedeće: Korisnik ima račun povezan s vanjskim identitetom ili dodijeljen administratorski pristup.
+
+Korisnik odabire Prijava. Aplikacija ga preusmjerava na OAuth/OIDC pružatelja identiteta. Korisnik se uspješno prijavi kod pružatelja i vraća u aplikaciju. Aplikacija prepoznaje povezani vanjski identitet i otvara postojeći korisnički profil i sesiju s odgovarajućom ulogom, bez stvaranja novog računa. Kad završi, korisnik odabire Odjava i aplikacija završava njegovu sesiju.
+
+Mogući su i sljedeći ishodi: 3a – Korisnik odustane ili prijava ne uspije: aplikacija ne otvara sesiju. 4a – Nevaljan odgovor pružatelja: prijava se odbija. 4c – Identitet nije povezan s računom: aplikacija vodi korisnika na dovršetak registracije i ne daje mu pristup tuđem profilu. 4b – Korisnik još nema dovršen profil: aplikacija ga vodi na dovršetak registracije. 5a – Nakon odjave: zaštićene funkcije više nisu dostupne.
+
+Ishod uporabe: Korisnik se prijavio preko vanjskog pružatelja i koristi funkcije svoje uloge ili se uspješno odjavio.
 
 ### UC-003: Uređivanje profila
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Kandidat (A-02), poslodavac (A-03) |
-| **Povezani zahtjevi** | F-006, F-007, F-008 |
-| **Preduvjeti** | Korisnik je prijavljen. |
-| **Glavni uspješni tok** | 1. Korisnik otvara svoj profil.<br>2. Aplikacija prikazuje postojeće podatke.<br>3. Kandidat mijenja podatke, iskustvo, vještine ili fotografije; poslodavac uređuje podatke tvrtke.<br>4. Korisnik odabire spremanje.<br>5. Aplikacija provjerava unos i sprema promjene. |
-| **Alternativni tokovi / Iznimke** | **3a – Previše fotografija:** kandidat ne može spremiti više od pet fotografija u portfoliju.<br>**3b – Pogrešan format slike:** dopušteni su JPG i PNG.<br>**5a – Neispravni podaci:** aplikacija prikazuje poruku i ne sprema promjene. Lozinkom i vanjskim računom korisnik upravlja kod svog pružatelja identiteta. |
-| **Posljedice (ishod)** | Promjene su spremljene i vide se nakon ponovne prijave; tuđi profil ne može se uređivati. |
+Obrazac pokreće Kandidat (A-02), poslodavac (A-03).
+
+Povezani zahtjevi su F-006, F-007, F-008.
+
+Prije početka vrijedi sljedeće: Korisnik je prijavljen.
+
+Korisnik otvara svoj profil. Aplikacija prikazuje postojeće podatke. Kandidat mijenja podatke, iskustvo, vještine ili fotografije; poslodavac uređuje podatke tvrtke. Korisnik odabire spremanje. Aplikacija provjerava unos i sprema promjene.
+
+Mogući su i sljedeći ishodi: 3a – Previše fotografija: kandidat ne može spremiti više od pet fotografija u portfoliju. 3b – Pogrešan format slike: dopušteni su JPG i PNG. 5a – Neispravni podaci: aplikacija prikazuje poruku i ne sprema promjene. Lozinkom i vanjskim računom korisnik upravlja kod svog pružatelja identiteta.
+
+Ishod uporabe: Promjene su spremljene i vide se nakon ponovne prijave; tuđi profil ne može se uređivati.
 
 ### UC-004: Pregled oglasa
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Posjetitelj (A-01); pregled je dostupan i prijavljenim korisnicima |
-| **Povezani zahtjevi** | F-011, F-012, F-013 |
-| **Preduvjeti** | Aplikacija je dostupna. |
-| **Glavni uspješni tok** | 1. Korisnik otvara početnu stranicu.<br>2. Aplikacija prikazuje javno objavljene oglase.<br>3. Korisnik može upisati pretragu ili odabrati filtre.<br>4. Odabire zanimljiv oglas.<br>5. Aplikacija prikazuje opis projekta i uloge, uvjete, lokaciju i rok. |
-| **Alternativni tokovi / Iznimke** | **3a – Nema rezultata:** prikazuje se poruka da nema odgovarajućih oglasa.<br>**4a – Oglas ne postoji ili nije javno dostupan:** prikazuje se odgovarajuća poruka. |
-| **Posljedice (ishod)** | Korisnik je pronašao i pregledao oglas, bez potrebe za prijavom. |
+Obrazac pokreće Posjetitelj (A-01); pregled je dostupan i prijavljenim korisnicima.
+
+Povezani zahtjevi su F-011, F-012, F-013.
+
+Prije početka vrijedi sljedeće: Aplikacija je dostupna.
+
+Korisnik otvara početnu stranicu. Aplikacija prikazuje javno objavljene oglase. Korisnik može upisati pretragu ili odabrati filtre. Odabire zanimljiv oglas. Aplikacija prikazuje opis projekta i uloge, uvjete, lokaciju i rok.
+
+Mogući su i sljedeći ishodi: 3a – Nema rezultata: prikazuje se poruka da nema odgovarajućih oglasa. 4a – Oglas ne postoji ili nije javno dostupan: prikazuje se odgovarajuća poruka.
+
+Ishod uporabe: Korisnik je pronašao i pregledao oglas, bez potrebe za prijavom.
 
 ### UC-005: Zahtjev za verifikaciju
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Poslodavac (A-03) |
-| **Povezani zahtjevi** | F-009 |
-| **Preduvjeti** | Poslodavac je registriran i prijavljen. |
-| **Glavni uspješni tok** | 1. Poslodavac otvara profil tvrtke.<br>2. Unosi potrebne podatke.<br>3. Odabire slanje zahtjeva za verifikaciju.<br>4. Aplikacija provjerava podatke.<br>5. Zahtjev se sprema sa statusom na čekanju. |
-| **Alternativni tokovi / Iznimke** | **4a – Nepotpuni podaci:** aplikacija traži dopunu.<br>**3a – Zahtjev je već na čekanju:** prikazuje se postojeći status.<br>**3b – Prethodni zahtjev je odbijen:** poslodavac vidi razlog i može poslati novi zahtjev. |
-| **Posljedice (ishod)** | Zahtjev za verifikaciju čeka odluku administratora. |
+Obrazac pokreće Poslodavac (A-03).
+
+Povezani zahtjevi su F-009.
+
+Prije početka vrijedi sljedeće: Poslodavac je registriran i prijavljen.
+
+Poslodavac otvara profil tvrtke. Unosi potrebne podatke. Odabire slanje zahtjeva za verifikaciju. Aplikacija provjerava podatke. Zahtjev se sprema sa statusom na čekanju.
+
+Mogući su i sljedeći ishodi: 4a – Nepotpuni podaci: aplikacija traži dopunu. 3a – Zahtjev je već na čekanju: prikazuje se postojeći status. 3b – Prethodni zahtjev je odbijen: poslodavac vidi razlog i može poslati novi zahtjev.
+
+Ishod uporabe: Zahtjev za verifikaciju čeka odluku administratora.
 
 ### UC-006: Obrada verifikacije
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Administrator (A-04) |
-| **Povezani zahtjevi** | F-010 |
-| **Preduvjeti** | Administrator je prijavljen i postoji zahtjev za verifikaciju. |
-| **Glavni uspješni tok** | 1. Administrator otvara popis zahtjeva.<br>2. Odabire zahtjev i pregledava podatke tvrtke.<br>3. Odobrava ili odbija zahtjev.<br>4. Aplikacija sprema odluku i mijenja status. |
-| **Alternativni tokovi / Iznimke** | **3a – Odbijanje:** administrator mora navesti razlog.<br>**3b – Odustajanje:** zahtjev ostaje nepromijenjen.<br>**4a – Korisnik nema ovlasti:** aplikacija odbija radnju. |
-| **Posljedice (ishod)** | Poslodavac vidi novi status; nakon odobrenja može objavljivati oglase. |
+Obrazac pokreće Administrator (A-04).
+
+Povezani zahtjevi su F-010.
+
+Prije početka vrijedi sljedeće: Administrator je prijavljen i postoji zahtjev za verifikaciju.
+
+Administrator otvara popis zahtjeva. Odabire zahtjev i pregledava podatke tvrtke. Odobrava ili odbija zahtjev. Aplikacija sprema odluku i mijenja status.
+
+Mogući su i sljedeći ishodi: 3a – Odbijanje: administrator mora navesti razlog. 3b – Odustajanje: zahtjev ostaje nepromijenjen. 4a – Korisnik nema ovlasti: aplikacija odbija radnju.
+
+Ishod uporabe: Poslodavac vidi novi status; nakon odobrenja može objavljivati oglase.
 
 ### UC-007: Stvaranje i objava oglasa
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Poslodavac (A-03) |
-| **Povezani zahtjevi** | F-018, F-019 |
-| **Preduvjeti** | Poslodavac je prijavljen. Za javnu objavu treba biti verificiran. |
-| **Glavni uspješni tok** | 1. Poslodavac otvara obrazac Novi oglas.<br>2. Unosi naziv i tip projekta, opis, ulogu, lokaciju i rok prijave.<br>3. Posebno upisuje broj traženih kandidata i maksimalan broj prijava (zadano 1000).<br>4. Odabire Objavi.<br>5. Aplikacija provjerava podatke i verifikaciju.<br>6. Oglas se sprema kao objavljen. |
-| **Alternativni tokovi / Iznimke** | **4a – Spremi nacrt:** oglas se sprema bez javne objave; nacrt može spremiti i neverificirani poslodavac.<br>**5a – Poslodavac nije verificiran:** objava se odbija.<br>**5b – Nedostaju podaci ili rok nije u budućnosti:** traži se ispravak.<br>**5c – Broj kandidata ili limit prijava nije ispravan:** objava se odbija. |
-| **Posljedice (ishod)** | Oglas je javno objavljen ili spremljen kao nacrt. Prema našem dogovoru jedan oglas predstavlja jedan projekt i jednu ulogu. |
+Obrazac pokreće Poslodavac (A-03).
+
+Povezani zahtjevi su F-018, F-019.
+
+Prije početka vrijedi sljedeće: Poslodavac je prijavljen. Za javnu objavu treba biti verificiran.
+
+Poslodavac otvara obrazac Novi oglas. Unosi naziv i tip projekta, opis, ulogu, lokaciju i rok prijave. Posebno upisuje broj traženih kandidata i maksimalan broj prijava (zadano 1000). Odabire Objavi. Aplikacija provjerava podatke i verifikaciju. Oglas se sprema kao objavljen.
+
+Mogući su i sljedeći ishodi: 4a – Spremi nacrt: oglas se sprema bez javne objave; nacrt može spremiti i neverificirani poslodavac. 5a – Poslodavac nije verificiran: objava se odbija. 5b – Nedostaju podaci ili rok nije u budućnosti: traži se ispravak. 5c – Broj kandidata ili limit prijava nije ispravan: objava se odbija.
+
+Ishod uporabe: Oglas je javno objavljen ili spremljen kao nacrt. Prema našem dogovoru jedan oglas predstavlja jedan projekt i jednu ulogu.
 
 ### UC-008: Upravljanje oglasima
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Poslodavac (A-03) |
-| **Povezani zahtjevi** | F-020, F-021, F-022 |
-| **Preduvjeti** | Poslodavac je prijavljen i ima barem jedan oglas. |
-| **Glavni uspješni tok** | 1. Poslodavac otvara Moji oglasi.<br>2. Aplikacija prikazuje samo njegove oglase.<br>3. Može ih pretraživati i filtrirati prema statusu.<br>4. Odabire svoj oglas i mijenja dopuštene podatke.<br>5. Sprema promjene. |
-| **Alternativni tokovi / Iznimke** | **4a – Zatvori prijave:** nakon potvrde oglas više ne prima prijave.<br>**4b – Otkaži oglas:** nakon potvrde mijenja se status i obrađuju se buduće audicije.<br>**4c – Pokušaj uređivanja tuđeg oglasa:** radnja se odbija.<br>**5a – Nedopuštena promjena:** aplikacija prikazuje poruku i ne sprema izmjenu. |
-| **Posljedice (ishod)** | Oglas je ažuriran ili mu je promijenjen status prema pravilima. |
+Obrazac pokreće Poslodavac (A-03).
+
+Povezani zahtjevi su F-020, F-021, F-022.
+
+Prije početka vrijedi sljedeće: Poslodavac je prijavljen i ima barem jedan oglas.
+
+Poslodavac otvara Moji oglasi. Aplikacija prikazuje samo njegove oglase. Može ih pretraživati i filtrirati prema statusu. Odabire svoj oglas i mijenja dopuštene podatke. Sprema promjene.
+
+Mogući su i sljedeći ishodi: 4a – Zatvori prijave: nakon potvrde oglas više ne prima prijave. 4b – Otkaži oglas: nakon potvrde mijenja se status i obrađuju se buduće audicije. 4c – Pokušaj uređivanja tuđeg oglasa: radnja se odbija. 5a – Nedopuštena promjena: aplikacija prikazuje poruku i ne sprema izmjenu.
+
+Ishod uporabe: Oglas je ažuriran ili mu je promijenjen status prema pravilima.
 
 ### UC-009: Prijava na casting
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Kandidat (A-02) |
-| **Povezani zahtjevi** | F-014, F-015 |
-| **Preduvjeti** | Kandidat je prijavljen; oglas je objavljen i još prima prijave. |
-| **Glavni uspješni tok** | 1. Kandidat otvara željeni oglas.<br>2. Odabire prijavu na casting.<br>3. Ispunjava obrazac i potvrđuje prijavu.<br>4. Aplikacija provjerava rok, status oglasa, limit i postojeće prijave.<br>5. Prijava se sprema i prikazuje se potvrda. |
-| **Alternativni tokovi / Iznimke** | **2a – Korisnik nije prijavljen:** preusmjerava se na prijavu u sustav.<br>**4a – Kandidat se već prijavio:** nova prijava se odbija.<br>**4b – Rok je istekao ili su prijave zatvorene:** prijava se odbija.<br>**4c – Dosegnut maksimalan broj prijava ili je oglas popunjen/otkazan:** prijava se odbija.<br>**5a – Greška spremanja:** nema lažne potvrde. |
-| **Posljedice (ishod)** | Prijava je spremljena i dostupna kandidatu u Mojim prijavama. |
+Obrazac pokreće Kandidat (A-02).
+
+Povezani zahtjevi su F-014, F-015.
+
+Prije početka vrijedi sljedeće: Kandidat je prijavljen; oglas je objavljen i još prima prijave.
+
+Kandidat otvara željeni oglas. Odabire prijavu na casting. Ispunjava obrazac i potvrđuje prijavu. Aplikacija provjerava rok, status oglasa, limit i postojeće prijave. Prijava se sprema i prikazuje se potvrda.
+
+Mogući su i sljedeći ishodi: 2a – Korisnik nije prijavljen: preusmjerava se na prijavu u sustav. 4a – Kandidat se već prijavio: nova prijava se odbija. 4b – Rok je istekao ili su prijave zatvorene: prijava se odbija. 4c – Dosegnut maksimalan broj prijava ili je oglas popunjen/otkazan: prijava se odbija. 5a – Greška spremanja: nema lažne potvrde.
+
+Ishod uporabe: Prijava je spremljena i dostupna kandidatu u Mojim prijavama.
 
 ### UC-010: Moje prijave
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Kandidat (A-02) |
-| **Povezani zahtjevi** | F-016, F-026 |
-| **Preduvjeti** | Kandidat je prijavljen. |
-| **Glavni uspješni tok** | 1. Kandidat otvara Moje prijave.<br>2. Aplikacija prikazuje njegove prijave i statuse.<br>3. Kandidat odabire prijavu.<br>4. Pregledava detalje oglasa i status. |
-| **Alternativni tokovi / Iznimke** | **2a – Nema prijava:** prikazuje se poruka da zasad nema prijava.<br>**3a – Kandidat želi povući prijavu:** potvrđuje povlačenje; aplikacija ga dopušta samo ako pravila to dozvoljavaju.<br>**3b – Pokušaj pregleda tuđe prijave:** pristup se odbija. |
-| **Posljedice (ishod)** | Kandidat je pregledao prijave ili povukao dopuštenu prijavu. |
+Obrazac pokreće Kandidat (A-02).
+
+Povezani zahtjevi su F-016, F-026.
+
+Prije početka vrijedi sljedeće: Kandidat je prijavljen.
+
+Kandidat otvara Moje prijave. Aplikacija prikazuje njegove prijave i statuse. Kandidat odabire prijavu. Pregledava detalje oglasa i status.
+
+Mogući su i sljedeći ishodi: 2a – Nema prijava: prikazuje se poruka da zasad nema prijava. 3a – Kandidat želi povući prijavu: potvrđuje povlačenje; aplikacija ga dopušta samo ako pravila to dozvoljavaju. 3b – Pokušaj pregleda tuđe prijave: pristup se odbija.
+
+Ishod uporabe: Kandidat je pregledao prijave ili povukao dopuštenu prijavu.
 
 ### UC-011: Odabir kandidata
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Poslodavac (A-03) |
-| **Povezani zahtjevi** | F-023, F-024, F-030 |
-| **Preduvjeti** | Poslodavac je prijavljen i na njegov oglas stigle su prijave. |
-| **Glavni uspješni tok** | 1. Poslodavac otvara vlastiti oglas i popis prijava.<br>2. Pregledava dopuštene podatke prijavljenih kandidata.<br>3. Po potrebi mijenja status (u pregledu, uži izbor, poziv na audiciju).<br>4. Nakon procesa odabira označava kandidata odabranim ili odbijenim.<br>5. Aplikacija sprema odluku i ažurira status. |
-| **Alternativni tokovi / Iznimke** | **1a – Nema prijava:** prikazuje se poruka.<br>**4a – Kandidat je odbijen:** poslodavac unosi razlog.<br>**5a – Odabran je traženi broj kandidata:** oglas postaje popunjen i zatvara se za nove prijave.<br>**5b – Nedopušten prijelaz statusa ili previše odabranih:** radnja se odbija.<br>**1b – Tuđi oglas:** pristup prijavama se odbija. |
-| **Posljedice (ishod)** | Statusi prijava su ažurirani, a odabir se sprema bez prekoračenja broja traženih kandidata. |
+Obrazac pokreće Poslodavac (A-03).
+
+Povezani zahtjevi su F-023, F-024, F-030.
+
+Prije početka vrijedi sljedeće: Poslodavac je prijavljen i na njegov oglas stigle su prijave.
+
+Poslodavac otvara vlastiti oglas i popis prijava. Pregledava dopuštene podatke prijavljenih kandidata. Po potrebi mijenja status (u pregledu, uži izbor, poziv na audiciju). Nakon procesa odabira označava kandidata odabranim ili odbijenim. Aplikacija sprema odluku i ažurira status.
+
+Mogući su i sljedeći ishodi: 1a – Nema prijava: prikazuje se poruka. 4a – Kandidat je odbijen: poslodavac unosi razlog. 5a – Odabran je traženi broj kandidata: oglas postaje popunjen i zatvara se za nove prijave. 5b – Nedopušten prijelaz statusa ili previše odabranih: radnja se odbija. 1b – Tuđi oglas: pristup prijavama se odbija.
+
+Ishod uporabe: Statusi prijava su ažurirani, a odabir se sprema bez prekoračenja broja traženih kandidata.
 
 ### UC-012: Termini audicija
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Poslodavac (A-03) |
-| **Povezani zahtjevi** | F-027, F-029 |
-| **Preduvjeti** | Poslodavac je prijavljen i ima oglas za koji organizira audicije. |
-| **Glavni uspješni tok** | 1. Poslodavac otvara audicije svojeg oglasa.<br>2. Odabire dodavanje termina.<br>3. Unosi datum, početak, završetak, lokaciju i broj mjesta.<br>4. Aplikacija provjerava podatke.<br>5. Termin se sprema i dostupan je pozvanim kandidatima. |
-| **Alternativni tokovi / Iznimke** | **4a – Pogrešno vrijeme ili kapacitet:** termin se ne sprema.<br>**2a – Otkazivanje termina:** poslodavac otkazuje termin i rezervirani kandidati dobivaju obavijest.<br>**5a – Nakon audicije:** poslodavac može evidentirati dolazak ili nedolazak. |
-| **Posljedice (ishod)** | Termin je spremljen ili otkazan; status dolaska evidentira se kada je potrebno. |
+Obrazac pokreće Poslodavac (A-03).
+
+Povezani zahtjevi su F-027, F-029.
+
+Prije početka vrijedi sljedeće: Poslodavac je prijavljen i ima oglas za koji organizira audicije.
+
+Poslodavac otvara audicije svojeg oglasa. Odabire dodavanje termina. Unosi datum, početak, završetak, lokaciju i broj mjesta. Aplikacija provjerava podatke. Termin se sprema i dostupan je pozvanim kandidatima.
+
+Mogući su i sljedeći ishodi: 4a – Pogrešno vrijeme ili kapacitet: termin se ne sprema. 2a – Otkazivanje termina: poslodavac otkazuje termin i rezervirani kandidati dobivaju obavijest. 5a – Nakon audicije: poslodavac može evidentirati dolazak ili nedolazak.
+
+Ishod uporabe: Termin je spremljen ili otkazan; status dolaska evidentira se kada je potrebno.
 
 ### UC-013: Rezervacija audicije
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Kandidat (A-02) |
-| **Povezani zahtjevi** | F-028, F-029 |
-| **Preduvjeti** | Kandidat je prijavljen i pozvan je na audiciju. |
-| **Glavni uspješni tok** | 1. Kandidat otvara poziv na audiciju.<br>2. Aplikacija prikazuje slobodne termine.<br>3. Kandidat odabire termin.<br>4. Aplikacija provjerava ima li mjesta i smije li kandidat rezervirati.<br>5. Rezervacija se sprema i kandidat dobiva potvrdu. |
-| **Alternativni tokovi / Iznimke** | **2a – Nema mjesta:** prikazuje se poruka.<br>**4a – Mjesto se upravo popunilo:** rezervacija se odbija i kandidat može odabrati drugi termin.<br>**4b – Kandidat nije pozvan ili već ima aktivnu rezervaciju:** nova rezervacija se odbija.<br>**5a – Promjena/otkazivanje:** kandidat oslobađa mjesto i po pravilima bira drugi termin. |
-| **Posljedice (ishod)** | Kandidat ima potvrđenu rezervaciju ili je uspješno otkazao odnosno promijenio prethodnu. |
+Obrazac pokreće Kandidat (A-02).
+
+Povezani zahtjevi su F-028, F-029.
+
+Prije početka vrijedi sljedeće: Kandidat je prijavljen i pozvan je na audiciju.
+
+Kandidat otvara poziv na audiciju. Aplikacija prikazuje slobodne termine. Kandidat odabire termin. Aplikacija provjerava ima li mjesta i smije li kandidat rezervirati. Rezervacija se sprema i kandidat dobiva potvrdu.
+
+Mogući su i sljedeći ishodi: 2a – Nema mjesta: prikazuje se poruka. 4a – Mjesto se upravo popunilo: rezervacija se odbija i kandidat može odabrati drugi termin. 4b – Kandidat nije pozvan ili već ima aktivnu rezervaciju: nova rezervacija se odbija. 5a – Promjena/otkazivanje: kandidat oslobađa mjesto i po pravilima bira drugi termin.
+
+Ishod uporabe: Kandidat ima potvrđenu rezervaciju ili je uspješno otkazao odnosno promijenio prethodnu.
 
 ### UC-014: Obavijesti
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Kandidat (A-02), poslodavac (A-03); usluga e-pošte (A-05) je sekundarni akter |
-| **Povezani zahtjevi** | F-017, F-034 |
-| **Preduvjeti** | Korisnik ima račun; nastao je događaj važan za njegovu prijavu ili audiciju. |
-| **Glavni uspješni tok** | 1. Nakon promjene sustav stvara obavijest za odgovarajućeg korisnika.<br>2. Korisnik otvara Obavijesti.<br>3. Aplikacija prikazuje poruku i datum.<br>4. Korisnik je može označiti pročitanom. |
-| **Alternativni tokovi / Iznimke** | **2a – Nema obavijesti:** prikazuje se odgovarajuća poruka.<br>**1a – Važna promjena:** ako je dogovorena vanjska usluga, pokušava se poslati i e-mail.<br>**1b – Slanje e-pošte nije uspjelo:** greška se bilježi, bez prikazivanja lažne potvrde dostave. |
-| **Posljedice (ishod)** | Korisnik vidi obavijest i po potrebi mijenja njezin status u pročitano. E-pošta je još planirana integracija. |
+Obrazac pokreće Kandidat (A-02), poslodavac (A-03); usluga e-pošte (A-05) je sekundarni akter.
+
+Povezani zahtjevi su F-017, F-034.
+
+Prije početka vrijedi sljedeće: Korisnik ima račun; nastao je događaj važan za njegovu prijavu ili audiciju.
+
+Nakon promjene sustav stvara obavijest za odgovarajućeg korisnika. Korisnik otvara Obavijesti. Aplikacija prikazuje poruku i datum. Korisnik je može označiti pročitanom.
+
+Mogući su i sljedeći ishodi: 2a – Nema obavijesti: prikazuje se odgovarajuća poruka. 1a – Važna promjena: ako je dogovorena vanjska usluga, pokušava se poslati i e-mail. 1b – Slanje e-pošte nije uspjelo: greška se bilježi, bez prikazivanja lažne potvrde dostave.
+
+Ishod uporabe: Korisnik vidi obavijest i po potrebi mijenja njezin status u pročitano. E-pošta je još planirana integracija.
 
 ### UC-015: Prijava oglasa
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Kandidat (A-02), poslodavac (A-03) |
-| **Povezani zahtjevi** | F-031 |
-| **Preduvjeti** | Korisnik je prijavljen i može pregledati oglas. |
-| **Glavni uspješni tok** | 1. Korisnik otvara oglas s neprimjerenim sadržajem.<br>2. Odabire opciju Prijavi oglas.<br>3. Unosi razlog prijave.<br>4. Potvrđuje slanje.<br>5. Aplikacija sprema prijavu za administratora. |
-| **Alternativni tokovi / Iznimke** | **3a – Nema razloga:** aplikacija traži unos razloga.<br>**4a – Korisnik odustaje:** prijava se ne sprema.<br>**5a – Problem sa spremanjem:** prikazuje se greška. |
-| **Posljedice (ishod)** | Administrator može pregledati prijavu; samim slanjem oglas se ne briše. |
+Obrazac pokreće Kandidat (A-02), poslodavac (A-03).
+
+Povezani zahtjevi su F-031.
+
+Prije početka vrijedi sljedeće: Korisnik je prijavljen i može pregledati oglas.
+
+Korisnik otvara oglas s neprimjerenim sadržajem. Odabire opciju Prijavi oglas. Unosi razlog prijave. Potvrđuje slanje. Aplikacija sprema prijavu za administratora.
+
+Mogući su i sljedeći ishodi: 3a – Nema razloga: aplikacija traži unos razloga. 4a – Korisnik odustaje: prijava se ne sprema. 5a – Problem sa spremanjem: prikazuje se greška.
+
+Ishod uporabe: Administrator može pregledati prijavu; samim slanjem oglas se ne briše.
 
 ### UC-016: Moderiranje oglasa
 
-| Element specifikacije | Opis |
-| :--- | :--- |
-| **Primarni akter** | Administrator (A-04) |
-| **Povezani zahtjevi** | F-025, F-032 |
-| **Preduvjeti** | Administrator je prijavljen i postoji oglas ili prijava sadržaja za pregled. |
-| **Glavni uspješni tok** | 1. Administrator otvara popis prijavljenih oglasa.<br>2. Pregledava prijavu, razlog i oglas.<br>3. Odlučuje hoće li prijavu odbiti ili poduzeti moderatorsku radnju.<br>4. Aplikacija provjerava ovlasti i sprema odluku. |
-| **Alternativni tokovi / Iznimke** | **3a – Trajno brisanje oglasa:** administrator mora potvrditi brisanje; uklanjaju se oglas i dogovoreni povezani zapisi i datoteke.<br>**3b – Prijava nije opravdana:** zatvara se bez brisanja oglasa.<br>**3c – Administrator odustaje:** oglas ostaje nepromijenjen.<br>**4a – Neovlašten korisnik:** radnja se odbija. |
-| **Posljedice (ishod)** | Prijava je obrađena. Kod potvrđenog brisanja oglas i povezani podaci više nisu dostupni. |
+Obrazac pokreće Administrator (A-04).
 
+Povezani zahtjevi su F-025, F-032.
+
+Prije početka vrijedi sljedeće: Administrator je prijavljen i postoji oglas ili prijava sadržaja za pregled.
+
+Administrator otvara popis prijavljenih oglasa. Pregledava prijavu, razlog i oglas. Odlučuje hoće li prijavu odbiti ili poduzeti moderatorsku radnju. Aplikacija provjerava ovlasti i sprema odluku.
+
+Mogući su i sljedeći ishodi: 3a – Trajno brisanje oglasa: administrator mora potvrditi brisanje; uklanjaju se oglas i dogovoreni povezani zapisi i datoteke. 3b – Prijava nije opravdana: zatvara se bez brisanja oglasa. 3c – Administrator odustaje: oglas ostaje nepromijenjen. 4a – Neovlašten korisnik: radnja se odbija.
+
+Ishod uporabe: Prijava je obrađena. Kod potvrđenog brisanja oglas i povezani podaci više nisu dostupni.
 
 ## 3.3 Provjera dosljednosti obrazaca uporabe
 
-Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz 2. Analize zahtjeva.
+Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz Analize zahtjeva.
 
-| Provjera | Kako ćemo provjeriti |
-| --- | --- |
-| Povezanost sa zahtjevima | Svaki opisani UC navodi postojeće oznake F-001 do F-034 iz dokumenta 2. |
-| Korisničke uloge | Provjerit ćemo da kandidat ne može uređivati tuđe oglase, poslodavac ne vidi tuđe prijave i samo administrator izvršava administrativne radnje. |
-| Glavni tijek | Svaki opisani postupak treba imati jasan početak, korake i rezultat. |
-| Alternativni tijekovi | Obrađujemo važne slučajeve: krive podatke, istek roka, duple prijave, popunjene termine i radnje bez ovlasti. |
-| Usklađenost s implementacijom | Tijekom razvoja provjeravat ćemo odgovara li stvarni rad aplikacije ovim opisima. |
-| Testiranje | Konkretne testove i njihove rezultate dodat ćemo u 5. Ispitivanje kada budu provedeni. |
+Povezanost sa zahtjevima. Svaki opisani UC navodi postojeće oznake F-001 do F-034 iz dokumenta 2.
 
-**Zahtjevi koje nismo izdvojili u zaseban oval:** F-005 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u UC-002. F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu 2. Sljedivost zahtjeva i testova vodit ćemo u Analizi zahtjeva.
+Korisničke uloge. Provjerit ćemo da kandidat ne može uređivati tuđe oglase, poslodavac ne vidi tuđe prijave i samo administrator izvršava administrativne radnje.
 
-**Što još trebamo potvrditi na M0:**
+Glavni tijek. Svaki opisani postupak treba imati jasan početak, korake i rezultat.
 
-- Kojeg OAuth/OIDC pružatelja identiteta ćemo koristiti?
-- Koju vanjsku uslugu ćemo koristiti za e-poštu i je li ona dovoljna kao vanjska integracija?
-- Tko točno smije trajno brisati oglase i koje sve povezane podatke brišemo?
-- Koje podatke kandidata smije vidjeti poslodavac?
-- Koji su točni dopušteni prijelazi statusa oglasa, prijava i rezervacija?
+Alternativni tijekovi. Obrađujemo važne slučajeve: krive podatke, istek roka, duple prijave, popunjene termine i radnje bez ovlasti.
 
-**Zaključak:** Opisali smo 16 važnih obrazaca uporabe aplikacije CastMeIfYouCan. Oni nam služe kao plan za daljnji razvoj i testiranje, a ažurirat ćemo ih kada potvrdimo otvorene dogovore i povežemo sve dijelove sustava.
+Usklađenost s implementacijom. Tijekom razvoja provjeravat ćemo odgovara li stvarni rad aplikacije ovim opisima.
+
+Testiranje. Konkretne testove i njihove rezultate dodat ćemo u Ispitivanje kada budu provedeni.
+
+Zahtjevi koje nismo izdvojili u zaseban oval: F-005 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u UC-F-033 (administratorska statistika) jednostavan je prikaz koji ostaje opisan u dokumentu Sljedivost zahtjeva i testova vodit ćemo u Analizi zahtjeva.
+
+Što još trebamo potvrditi na M0:
+
+Kojeg OAuth/OIDC pružatelja identiteta ćemo koristiti?
+
+Koju vanjsku uslugu ćemo koristiti za e-poštu i je li ona dovoljna kao vanjska integracija?
+
+Tko točno smije trajno brisati oglase i koje sve povezane podatke brišemo?
+
+Koje podatke kandidata smije vidjeti poslodavac?
+
+Koji su točni dopušteni prijelazi statusa oglasa, prijava i rezervacija?
+
+Zaključak: Opisali smo 16 važnih obrazaca uporabe aplikacije CastMeIfYouCan. Oni nam služe kao plan za daljnji razvoj i testiranje, a ažurirat ćemo ih kada potvrdimo otvorene dogovore i povežemo sve dijelove sustava.

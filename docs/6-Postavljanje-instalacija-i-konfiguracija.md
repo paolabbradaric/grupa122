@@ -1,6 +1,6 @@
 # 6. Postavljanje, instalacija i konfiguracija
 
-**Provjereno okruženje:** Windows, Node.js 24.14.0 i npm 11.9.0; kod bd785d4, 17. 11. 2026. PostgreSQL je dostupan preko zajedničke Supabase veze. Točne inačice paketa određuju lockfileovi u backend/ i frontend/.
+Provjereno okruženje: Windows, Node.js 24.14.0 i npm 11.9.0; kod bd785d4, 17. 11. 2026. PostgreSQL je dostupan preko zajedničke Supabase veze. Točne inačice paketa određuju lockfileovi u backend/ i frontend/.
 
 Ovdje su razvojne upute za bazu i autentifikaciju. Javni URL i produkcijski razmještaj nisu potvrđeni ovim zapisom.
 
@@ -8,7 +8,7 @@ Ovdje su razvojne upute za bazu i autentifikaciju. Javni URL i produkcijski razm
 
 ![Razvojni razmještaj](assets/diagrams/mario-razvojni-razmjestaj.svg)
 
-**PlantUML:** [mario-razvojni-razmjestaj.puml](puml/mario-razvojni-razmjestaj.puml).
+PlantUML: [mario-razvojni-razmjestaj.puml](puml/mario-razvojni-razmjestaj.puml).
 
 Preglednik otvara Vite na http://localhost:5173; proxy prosljeđuje /api Expressu na portu 3000. Google autorizacija koristi vanjsku HTTPS uslugu, a razvojni callback dolazi na backend. Veza prema Supabaseu koristi TLS i CA provjeru. Lokalni HTTP vrijedi za opisano razvojno okruženje.
 
@@ -37,18 +37,25 @@ npm ci
 
 Vrijednosti su u backend/.env; [primjer](../backend/.env.example) ne sadrži lozinke. Backend konfiguraciju učitava neovisno o radnom direktoriju.
 
-| Varijabla | Uloga / razvojna vrijednost |
-| --- | --- |
-| PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD | PostgreSQL veza; zajednička adresa je u primjeru, lozinka se pribavlja sigurnim kanalom od vlasnika projekta. |
-| PGSSL | true za zajedničku Supabase vezu; false samo za odgovarajuću lokalnu vezu bez TLS-a. |
-| PGSSLROOTCERT | certs/supabase-ca.crt, relativno prema backend/. Provjera certifikata ostaje uključena. |
-| PORT | 3000; pri promjeni uskladiti Vite proxy i callback. |
-| NODE_ENV | development lokalno; production uključuje Secure cookie i zahtijeva HTTPS auth URL-ove. |
-| FRONTEND_URL | http://localhost:5173 |
-| GOOGLE_CALLBACK_URL | http://localhost:3000/api/auth/google/callback |
-| GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET | OAuth klijent ovog projekta. |
-| SESSION_SECRET | Zasebna nasumična tajna s najmanje 32 znaka; bez nje backend odbija pokretanje. |
-| TRUST_PROXY_HOPS | Lokalno 0, drugdje stvaran broj pouzdanih proxy poslužitelja. |
+Postavka PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD određuje sljedeće: PostgreSQL veza; zajednička adresa je u primjeru, lozinka se pribavlja sigurnim kanalom od vlasnika projekta.
+
+Postavka PGSSL određuje sljedeće: true za zajedničku Supabase vezu; false samo za odgovarajuću lokalnu vezu bez TLS-a.
+
+Postavka PGSSLROOTCERT određuje sljedeće: certs/supabase-ca.crt, relativno prema backend/. Provjera certifikata ostaje uključena.
+
+Postavka PORT određuje sljedeće: 3000; pri promjeni uskladiti Vite proxy i callback.
+
+Postavka NODE_ENV određuje sljedeće: development lokalno; production uključuje Secure cookie i zahtijeva HTTPS auth URL-ove.
+
+Postavka FRONTEND_URL određuje sljedeće: http://localhost:5173.
+
+Postavka GOOGLE_CALLBACK_URL određuje sljedeće: http://localhost:3000/api/auth/google/callback.
+
+Postavka GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET određuje sljedeće: OAuth klijent ovog projekta.
+
+Postavka SESSION_SECRET određuje sljedeće: Zasebna nasumična tajna s najmanje 32 znaka; bez nje backend odbija pokretanje.
+
+Postavka TRUST_PROXY_HOPS određuje sljedeće: Lokalno 0, drugdje stvaran broj pouzdanih proxy poslužitelja.
 
 Generirati lokalnu sesijsku tajnu i pohraniti je u privatnu konfiguraciju:
 
@@ -77,7 +84,7 @@ Ovo nisu obavezne naredbe svakog pokretanja. Draft migracija ima preduvjete, a s
 
 ### Google OAuth
 
-Pripremiti Google OAuth klijent vrste **Web application** i consent screen. U autorizirane redirect URI-je upisati točan GOOGLE_CALLBACK_URL. Ako je klijent u načinu testiranja, dopustiti odgovarajuće testne račune. Ključevi ostaju u privatnoj konfiguraciji backenda.
+Pripremiti Google OAuth klijent vrste Web application i consent screen. U autorizirane redirect URI-je upisati točan GOOGLE_CALLBACK_URL. Ako je klijent u načinu testiranja, dopustiti odgovarajuće testne račune. Ključevi ostaju u privatnoj konfiguraciji backenda.
 
 Bez ključeva GET /api/auth/google vraća 503 GOOGLE_NOT_CONFIGURED; javni dio može raditi ako su baza i ostala konfiguracija dostupni. Stvarni Google ulazak nije izveden u [zapisniku od 17. 11.](verification/2026-11-17/README.md).
 
@@ -121,11 +128,11 @@ Auth/draft DB provjere koriste privremene tablice konfigurirane veze. Pojedini t
 
 ### Kontrole poslovnih upisa
 
-| Postavke | Ponašanje aktualnog koda |
-| --- | --- |
-| APPLICATION_WRITES_ENABLED, APPLICATION_WRITES_CONFIRMED | Zadano false; za upise prijava obje trebaju biti true. |
-| APPLICATION_WRITES_ALLOW_REMOTE | Dodatni uvjet za upise prijava izvan lokalnog castme_test; nije potreban za privremene auth/draft testove. |
-| EMPLOYER_CASTING_WRITES_ENABLED, EMPLOYER_CASTING_WRITES_CONFIRMED | Zadano false; kod dopušta uključivanje samo za localhost/127.0.0.1, port 5432 i bazu castme_test. |
+Za postavke APPLICATION_WRITES_ENABLED, APPLICATION_WRITES_CONFIRMED vrijedi sljedeće: Zadano false; za upise prijava obje trebaju biti true.
+
+Za postavke APPLICATION_WRITES_ALLOW_REMOTE vrijedi sljedeće: Dodatni uvjet za upise prijava izvan lokalnog castme_test; nije potreban za privremene auth/draft testove.
+
+Za postavke EMPLOYER_CASTING_WRITES_ENABLED, EMPLOYER_CASTING_WRITES_CONFIRMED vrijedi sljedeće: Zadano false; kod dopušta uključivanje samo za localhost/127.0.0.1, port 5432 i bazu castme_test.
 
 Ove postavke nisu globalna zabrana svih upisa. Registracija i sesije imaju vlastite upise, a druge rute treba provjeriti prema njihovu kodu. Ne uključivati poslovne upise u zajedničkoj bazi samo radi demonstracije instalacije.
 
@@ -139,14 +146,18 @@ Vlasnik baze treba odrediti aplikacijski račun s manjim pravima, povratne kopij
 
 ## 6.4 Česte konfiguracijske pogreške
 
-| Simptom | Provjera |
-| --- | --- |
-| Backend odbija pokretanje zbog tajne | SESSION_SECRET mora postojati i imati najmanje 32 znaka. |
-| Google početak vraća 503 | Provjeriti oba OAuth ključa. |
-| Google odbija callback | Usporediti protokol, host, port i punu putanju redirect URI-ja. |
-| POST vraća 403 | Provjeriti sesiju, svježi CSRF token i Origin; ne miješati lokalne hostove. |
-| TLS veza ne prolazi | Provjeriti adresu, dostupnost i CA putanju; ne gasiti provjeru certifikata kao zamjenu za ispravnu konfiguraciju. |
-| Sesijska tablica ne postoji | Provjeriti shemu i auth migraciju prije prijave. |
-| Poslovni upis odbijen iako prijava radi | Provjeriti zastavice i dopuštenu ciljnu bazu; autentifikacija i poslovni upisi odvojeni su mehanizmi. |
+Ako se pojavi problem „backend odbija pokretanje zbog tajne”, treba napraviti sljedeću provjeru: SESSION_SECRET mora postojati i imati najmanje 32 znaka.
 
-[Autentifikacija](AUTENTIFIKACIJA.md) · [Baza](BAZA_PODATAKA.md) · [Kazalo](Home.md)
+Ako se pojavi problem „google početak vraća 503”, treba napraviti sljedeću provjeru: Provjeriti oba OAuth ključa.
+
+Ako se pojavi problem „google odbija callback”, treba napraviti sljedeću provjeru: Usporediti protokol, host, port i punu putanju redirect URI-ja.
+
+Ako se pojavi problem „pOST vraća 403”, treba napraviti sljedeću provjeru: Provjeriti sesiju, svježi CSRF token i Origin; ne miješati lokalne hostove.
+
+Ako se pojavi problem „tLS veza ne prolazi”, treba napraviti sljedeću provjeru: Provjeriti adresu, dostupnost i CA putanju; ne gasiti provjeru certifikata kao zamjenu za ispravnu konfiguraciju.
+
+Ako se pojavi problem „sesijska tablica ne postoji”, treba napraviti sljedeću provjeru: Provjeriti shemu i auth migraciju prije prijave.
+
+Ako se pojavi problem „poslovni upis odbijen iako prijava radi”, treba napraviti sljedeću provjeru: Provjeriti zastavice i dopuštenu ciljnu bazu; autentifikacija i poslovni upisi odvojeni su mehanizmi.
+
+[Autentifikacija](AUTENTIFIKACIJA.md), [Baza](BAZA_PODATAKA.md), [Kazalo](Home.md)

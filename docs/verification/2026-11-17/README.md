@@ -1,15 +1,18 @@
 # Zapisnik provjera — 17. 11. 2026.
 
-**Kod:** [bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d](https://github.com/paolabbradaric/grupa122/commit/bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d), aktualni main na početku dokumentacijske dopune. **Okruženje:** Windows, Node.js 24.14.0, npm 11.9.0. Paketi su instalirani s npm ci u zasebnom radnom stablu.
+Kod: [bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d](https://github.com/paolabbradaric/grupa122/commit/bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d), aktualni main na početku dokumentacijske dopune. Okruženje: Windows, Node.js 24.14.0, npm 11.9.0. Paketi su instalirani s npm ci u zasebnom radnom stablu.
 
-| Naredba | Direktorij | Izlazni kod | Rezultat / ispis |
-| --- | --- | --- | --- |
-| npm test | backend | 0 | [139 uspješnih, 8 preskočenih, 0 neuspješnih; ukupno 147](backend-tests.txt) |
-| node --test test/auth.test.js | backend | 0 | [11 uspješnih](auth-tests.txt) |
-| npm run test:db | backend | 0 | [1 uspješan DB test](auth-database.txt) |
-| npm run test:db:casting | backend | 0 | [10 uspješnih testova/podtestova](casting-drafts-database.txt) |
-| npm run lint | frontend | 0 | [Bez pogrešaka](frontend-lint.txt) |
-| npm run build | frontend | 0 | [Uspješno](frontend-build.txt) |
+Naredba npm test izvedena je iz direktorija backend, uz izlazni kod 0. Rezultat je [139 uspješnih, 8 preskočenih, 0 neuspješnih; ukupno 147](backend-tests.txt).
+
+Naredba node --test test/auth.test.js izvedena je iz direktorija backend, uz izlazni kod 0. Rezultat je [11 uspješnih](auth-tests.txt).
+
+Naredba npm run test:db izvedena je iz direktorija backend, uz izlazni kod 0. Rezultat je [1 uspješan DB test](auth-database.txt).
+
+Naredba npm run test:db:casting izvedena je iz direktorija backend, uz izlazni kod 0. Rezultat je [10 uspješnih testova/podtestova](casting-drafts-database.txt).
+
+Naredba npm run lint izvedena je iz direktorija frontend, uz izlazni kod 0. Rezultat je [Bez pogrešaka](frontend-lint.txt).
+
+Naredba npm run build izvedena je iz direktorija frontend, uz izlazni kod 0. Rezultat je [Uspješno](frontend-build.txt).
 
 Za DB provjere učitana je postojeća privatna backend konfiguracija izvornog lokalnog checkouta, bez kopiranja .env u granu. Pozvane su iste skripte koje koriste navedene npm naredbe: Node je učitao dotenv s privatne lokalne putanje i zatim scripts/check-database.js odnosno scripts/check-casting-database.js. Izvorni kod testova ostao je iz navedenog novijeg main. Privatne vrijednosti nisu dio izvještaja.
 
