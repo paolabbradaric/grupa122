@@ -68,7 +68,11 @@ JSON API pozivi zadržavaju `503 GOOGLE_NOT_CONFIGURED` i `429 AUTH_RATE_LIMITED
 
 ### Stanje provjere 17. 11. 2026.
 
-Osnovna implementacija već je spojena u PR-u #29. Na računu koji je korisnik odabrao stvoren je zaseban Google Cloud projekt **CastMeIfYouCan** (`castmeifyoucan`), konfiguriran je identitet aplikacije i publika **External** te izrađen web-klijent **CastMeIfYouCan Local Web** s callbackom `http://localhost:3000/api/auth/google/callback`. Ključevi druge aplikacije nisu korišteni. Izvorni secret nije uspješno spremljen, pa je za isti klijent izrađen zamjenski secret. Njegov panel ostaje otvoren dok se ne potvrdi preuzimanje JSON-a. U pregledanom privatnom okruženju backenda oba Google ključa još nisu unesena, a `SESSION_SECRET` postoji. Provjera stvarne prijave i produkcijske konfiguracije ostaje otvorena.
+Osnovna implementacija već je spojena u PR-u #29. Na računu koji je korisnik odabrao stvoren je zaseban Google Cloud projekt **CastMeIfYouCan** (`castmeifyoucan`), spremljeni su identitet aplikacije, publika **External** i status **Testing** te izrađen web-klijent **CastMeIfYouCan Local Web** s callbackom `http://localhost:3000/api/auth/google/callback`. U **Data Access** spremljeni su samo `openid`, `userinfo.email` i `userinfo.profile`; osjetljivi i ograničeni scopes nisu dodani. Ključevi druge aplikacije nisu korišteni.
+
+Izvorni secret nije uspješno spremljen, pa je za isti klijent izrađen zamjenski secret. Njegov JSON je preuzet izvan repozitorija i provjeren prema točnom client ID-ju. Oba ključa unesena su samo u ignorirane privatne `backend/.env` datoteke izvornog checkouta `C:\progi\grupa122` i radnog worktreeja. Postojeći `SESSION_SECRET` nije mijenjan. Backend je restartan iz worktreeja `C:\progi\worktrees\grupa122-latest-20261117`; runtime strategija je registrirana, a stvarni `/api/auth/google` vraća Googleov redirect s odgovarajućim klijentom, callbackom, osnovnim scopes, stateom, PKCE S256 i sesijskim cookiejem. Produkcijska konfiguracija nije provjerena.
+
+Nakon uspješne nove i ponovljene prijave korisnik je u Google konzoli onemogućio izvorni, nekorišteni secret i potvrdio status **Disabled**. Aktivna privatna konfiguracija koristi zamjenski secret, različit od izvornoga. Provjera svih praćenih datoteka obaju checkouta nije pronašla stvarni client secret.
 
 Automatski auth testovi provjeravaju i točan client ID, callback, scopes te PKCE S256, ponovljenu prijavu istog računa, očuvanje uloge poslodavca, povratak preglednika pri nedostajućim ključevima i rate limitu te očuvanje JSON API ugovora. Googleov mrežni odgovor i korisnički model u HTTP testovima su simulirani; stvarni SQL i PostgreSQL sesije provjerava zaseban DB test. To nije stvarna Google prijava.
 
@@ -78,20 +82,20 @@ Provedene provjere ove dopune:
 - `npm test` u backendu: 142 prolazi, 8 namjenski isključenih baznih testova, bez pada.
 - `npm run test:db`: 1/1 prolazi na konfiguriranoj bazi, u privremenim tablicama i transakciji koja se poništava. Prije izvođenja potvrđeno je da ID stupci koriste `IDENTITY`; privremene kopije dobivaju vlastite sekvence.
 - Frontend `npm run lint` i `npm run build`: prolaze.
-- Stvarni Google račun i vizualni prikaz ove dopune u pregledniku: nisu provjereni zbog navedenih prepreka.
+- Stvarni Google tok: korisnik je u Chromeu odabrao račun i dovršio prvi kandidatski profil. SQL provjera pokazala je jedan lokalni račun s Google identitetom, jedan kandidatski profil i jednu aktivnu sesiju. Nakon osvježavanja navigacija ostaje prijavljena. Stvarna odjava uklonila je aktivnu sesiju iz PostgreSQL-a. Ponovna stvarna Google prijava vratila je isti lokalni ID, istu kandidatsku ulogu i postojeći profil bez novog obrasca ili duplikata; u bazi je ponovno jedna aktivna sesija. Tajne, OAuth tokeni i osobni podaci nisu dodani u Git.
 
-**Preostali dio timskog zaduženja za autentifikaciju:** potvrditi lokalno spremanje novog OAuth JSON-a, privatno postaviti oba ključa, restartati backend te potvrditi stvarni status publike i traženih scopes. Nakon uspješne provjere nove konfiguracije onemogućiti izvorni, nekorišteni secret. Kroz preglednik provjeriti:
+**Prije javne objave:** provjeriti produkcijsku domenu, HTTPS callback te predviđene Google račune. Lokalne postavke ne predstavljaju produkcijsko postavljanje. Pregled stvarno provedenih scenarija:
 
 | Scenarij | Očekivano | Trenutačni rezultat stvarnog toka |
 | --- | --- | --- |
-| Novi Google račun | Dovršavanje registracije kandidata ili poslodavca; zapis u postojećoj bazi. | Nije izvedeno. |
-| Ponovna prijava | Isti lokalni ID i spremljena uloga; bez duplikata. | Nije izvedeno. |
-| Osvježavanje stranice | Sesija ostaje valjana. | Nije izvedeno. |
-| Odjava i stari cookie | `/me` vraća `401`; zaštićene rute nisu dostupne. | Nije izvedeno. |
-| Otkazivanje ili OAuth greška | Razumljiva poruka; gost ne dobiva prijavljenu sesiju. | Nije izvedeno. |
-| Predviđena Google publika | Osobni i/ili organizacijski računi prema dogovorenoj publici. | Nije izvedeno. |
+| Novi Google račun | Dovršavanje registracije kandidata ili poslodavca; zapis u postojećoj bazi. | Stvarni kandidat potvrđen u pregledniku i bazi; poslodavac pokriven automatskim i baznim testovima. |
+| Ponovna prijava | Isti lokalni ID i spremljena uloga; bez duplikata. | Potvrđeno stvarnim Google računom i SQL provjerom istog ID-ja, uloge i jednog profila. |
+| Osvježavanje stranice | Sesija ostaje valjana. | Potvrđeno u stvarnom pregledniku. |
+| Odjava i stari cookie | Sesija se ukida; stari cookie ne vraća prijavu. | Stvarna odjava i uklanjanje aktivne PostgreSQL sesije potvrđeni; replay starog cookieja pokriven HTTP testom. |
+| Otkazivanje ili OAuth greška | Razumljiva poruka; gost ne dobiva prijavljenu sesiju. | Pokriveno HTTP testovima; ručno otkazivanje na Googleovoj stranici nije izvedeno. |
+| Predviđena Google publika | Osobni i/ili organizacijski računi prema dogovorenoj publici. | Jedan osobni Google račun potvrđen; organizacijska ograničenja nisu provjerena. |
 
-Dok ovi koraci nisu provedeni, prijava nije potvrđena spremnom za stvarne korisnike.
+Lokalni stvarni Google tok sada je potvrđen za opisane scenarije. To nije potvrda produkcijskog postavljanja ni dostupnosti za svaki Google račun.
 
 ## Službene upute
 
