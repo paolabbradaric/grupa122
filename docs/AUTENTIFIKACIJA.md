@@ -2,6 +2,8 @@
 
 Provjera dokumentacije: 17. 11. 2026., kod `bd785d4`. Područje prati [zadatak #12](https://github.com/paolabbradaric/grupa122/issues/12), F-001–F-005 i UC-001/UC-002. [Arhitektura i dijagrami](4-Arhitektura-i-oblikovanje.md), [baza i migracije](BAZA_PODATAKA.md), [instalacija](6-Postavljanje-instalacija-i-konfiguracija.md) i [dokazi ispitivanja](5-Ispitivanje.md) čine povezanu dokumentaciju ovog doprinosa.
 
+Naknadne promjene s grane `main`, zaključno s `f42e73d`, uključuju povratak u aplikaciju pri nedostupnoj prijavi i potvrdu stvarne lokalne Google prijave. Aktualna konfiguracija i rezultati opisani su u [Google prijavi — postavljanje i provjera](GOOGLE_PRIJAVA.md); raniji zapisnik provjera ostaje vezan uz `bd785d4`.
+
 ## Što je preuzeto i zašto
 
 Polazište je auth modul ranijeg lokalnog NestJS/TypeScript projekta. Preuzet je pristup s Google prijavom, Passportom, stabilnim identitetom, serverskom sesijom i provjerom aktivnog korisnika. Kod je prilagođen postojećem Express/CommonJS backendu. Uvođenje NestJS-a i TypeORM-a samo radi autentifikacije zahtijevalo bi nepotrebnu promjenu ostatka projekta.
@@ -83,7 +85,7 @@ Privatna shema ne smije biti dodana među izložene Supabase Data API sheme. Za�
 
 Svako okruženje treba zaseban nasumični `SESSION_SECRET`; tajne ne ulaze u Git. Ključeve drugog projekta ne treba preuzimati bez odgovarajuće konfiguracije ovog OAuth klijenta. Potpune naredbe i varijable su u [poglavlju 6](6-Postavljanje-instalacija-i-konfiguracija.md). Za stvarnu prijavu:
 
-U Google Cloud konzoli pripremiti OAuth klijent vrste Web application i consent screen. U načinu Testing dodati račune za ispitivanje.
+U Google Cloud konzoli pripremiti OAuth klijent vrste Web application i consent screen. Publiku i pravila načina Testing provjeriti prema osnovnim scopes i uputama u [Google prijavi](GOOGLE_PRIJAVA.md).
 
 U Authorized redirect URIs upisati točno `http://localhost:3000/api/auth/google/callback`.
 
@@ -105,7 +107,7 @@ npm run dev
 
 Otvoriti `http://localhost:5173`. Vite prosljeđuje `/api` backendu; API pozivi dolaze s iste domene. Koristiti dosljedno `localhost`, bez miješanja s `127.0.0.1`. Port 5173 je fiksan kako se dopušteni origin ne bi neprimjetno promijenio.
 
-Bez Google ključeva početak prijave vraća `503 GOOGLE_NOT_CONFIGURED`; javne rute i dalje rade. Bez dovoljno dugog `SESSION_SECRET` backend se ne pokreće.
+Bez Google ključeva OAuth navigacija preglednika vraća korisnika u aplikaciju s `authError=google_not_configured`, a pri ograničenju pokušaja s `authError=rate_limited`. JSON API zahtjevi zadržavaju `503 GOOGLE_NOT_CONFIGURED` odnosno `429 AUTH_RATE_LIMITED` i `Retry-After`. Javne rute i dalje rade. Bez dovoljno dugog `SESSION_SECRET` backend se ne pokreće.
 
 U produkciji postaviti `NODE_ENV=production`, HTTPS URL-ove i zaseban nasumični `SESSION_SECRET`. `/api` treba proslijediti backendu na istoj domeni kao frontend. `TRUST_PROXY_HOPS` mora odgovarati stvarnoj pouzdanoj proxy topologiji. Lokalna razvojna tajna ne koristi se u produkciji.
 
@@ -113,7 +115,7 @@ U produkciji postaviti `NODE_ENV=production`, HTTPS URL-ove i zaseban nasumični
 
 Za `GET /api/auth/google` vrijedi sljedeće: Preusmjeravanje na Google.
 
-Za `GET /api/auth/google/callback` vrijedi sljedeće: Provjera OAuth odgovora, sesija i povratak na frontend. Neuspjeh dodaje `authError=oauth_failed` ili `access_denied`.
+Za `GET /api/auth/google/callback` vrijedi sljedeće: Provjera OAuth odgovora, sesija i povratak na frontend. Neuspjeh dodaje `authError=oauth_failed` ili `access_denied`; nedostajuća konfiguracija i ograničenje pokušaja pri navigaciji preglednika koriste `google_not_configured` i `rate_limited`.
 
 Za `GET /api/auth/me` vrijedi sljedeće: `200 { user, onboardingRequired, identity, csrfToken }`; gost ili istekla prijava dobiva `401`.
 
@@ -168,7 +170,7 @@ HTTP testovi koriste stvarni Express, Passport, cookieje i provjere state/PKCE/C
 
 `test:db` koristi stvarnu konfiguriranu PostgreSQL vezu, privremene tablice i vanjsku transakciju koja se na kraju poništava. Provjerava registraciju obje uloge, povrat datuma bez pomaka vremenske zone, rollback konflikata i upis/dohvat/istek/uništavanje PostgreSQL sesije. Ne stvara trajne testne korisnike.
 
-Dana 17. 11. 2026. prošlo je 11 auth testova i 1 auth DB test. [Zapisnik](verification/2026-11-17/README.md) čuva reviziju, okruženje i ispise. Stvarna Google prijava nije izvedena u toj provjeri; raniji PR navodi da ključeve tek treba konfigurirati. Trenutačno stanje vanjske OAuth konzole nije provjereno. Ručni scenariji zapisani su u [Ispitivanju](5-Ispitivanje.md).
+Dana 17. 11. 2026. na reviziji `bd785d4` prošlo je 11 auth testova i 1 auth DB test. [Zapisnik](verification/2026-11-17/README.md) čuva reviziju, okruženje i ispise. Stvarna Google prijava nije izvedena u toj provjeri. Naknadna [dopuna Google prijave](GOOGLE_PRIJAVA.md) bilježi konfiguriran lokalni OAuth klijent, 14 uspješnih auth testova te stvarnu novu i ponovljenu kandidatsku prijavu, očuvanje sesije nakon osvježavanja i odjavu s uklanjanjem PostgreSQL sesije. Ručni scenariji i granice tih provjera navedeni su u dopuni i [Ispitivanju](5-Ispitivanje.md).
 
 Ranija bilješka implementacije navodi Chrome provjeru početne stranice, prijave obiju uloga i obrasca registracije uz simulirani `/me`. To nije ponovno izvođenje niti dokaz stvarne Google integracije od 17. 11.
 
@@ -180,7 +182,7 @@ Stariji zadatak još spominje vlastite lozinke i Argon2id. Noviji F-001–F-005,
 
 Model baze i migracije. [Baza](BAZA_PODATAKA.md), PR-ovi #23, #25, #29 i #31; implementirano.
 
-Registracija i prijava/odjava. API ugovor iznad, 11 auth i 1 DB test; implementirano, stvarna Google provjera još otvorena.
+Registracija i prijava/odjava. API ugovor iznad, raniji zapisnik s 11 auth i 1 DB testom te naknadna [Google dopuna](GOOGLE_PRIJAVA.md) s 14 auth testova; stvarni lokalni kandidatski tok potvrđen je za novu i ponovljenu prijavu, osvježavanje i odjavu. Stvarni poslodavački tok i organizacijska ograničenja nisu potvrđeni tim ručnim provjerama.
 
 Sesije i middleware uloga. Privatni PostgreSQL store, CSRF/Origin i limiter; implementirano uz granice navedene iznad.
 
@@ -190,7 +192,7 @@ Dohvat/izmjena profila i portfolio. /me pokriva korisnika i organizaciju; trajne
 
 Demo admin. Registracija admin uloge zabranjena; zaseban ograničeni demo račun nije potvrđen ovim pregledom.
 
-Produkcija i puni tok. HTTPS konfiguracija predviđena; javna objava, stvarni Google tok i oporavak sustava nisu potvrđeni ovim zapisnikom.
+Produkcija i puni tok. Lokalni Google tok potvrđen je u opsegu [Google dopune](GOOGLE_PRIJAVA.md). HTTPS konfiguracija je predviđena; javna objava i oporavak sustava nisu potvrđeni ovim zapisnikom.
 
 Dokumentacijski zahtjevi za ovaj doprinos pokriveni su u poglavljima 4–6, ovome API ugovoru, Bazi podataka, [sljedivosti zahtjeva](2-Analiza-zahtjeva.md#26-sljedivost-zahtjeva) i [evidenciji doprinosa](A-Pregled-aktivnosti-grupe.md). Nisu izmišljeni radni sati, sastanci ni rezultati neprovedenih provjera.
 
@@ -205,3 +207,7 @@ Dokumentacijski zahtjevi za ovaj doprinos pokriveni su u poglavljima 4–6, ovom
 [connect-pg-simple](https://github.com/voxpelli/node-connect-pg-simple) — PostgreSQL store.
 
 [Supabase: Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — zaštita pristupa tablicama.
+
+## Dopuna Google konfiguracije — 17. 11. 2026.
+
+Aktualni postupak postavljanja, pravila publike, povratak u aplikaciju pri nedostupnoj prijavi i provedene provjere opisani su u [Google prijavi — postavljanje i provjera](GOOGLE_PRIJAVA.md). Dopuna potvrđuje lokalni stvarni Google tok za navedene kandidatske scenarije; produkcijska konfiguracija i dostupnost za svaki Google račun ostaju neprovjerene.

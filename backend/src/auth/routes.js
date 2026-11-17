@@ -24,12 +24,26 @@ async function establishSession(req, user, config) {
 
 function createAuthRouter({ config, passport, users, authLimiter }) {
   const router = Router();
+  const failureUrl = code => {
+    const url = new URL(config.frontendUrl);
+    url.searchParams.set('authError', code);
+    return url.toString();
+  };
+  // Samo OAuth navigacija preglednika dobiva povratak na frontend.
+  // API zahtjevi i onboarding zadržavaju JSON i odgovarajući HTTP status.
+  const browserNavigation = req => req.method === 'GET' &&
+    ['/google', '/google/callback'].includes(req.path) &&
+    req.get('Accept')?.includes('text/html') && req.accepts(['html', 'json']) === 'html';
   const limiter = authLimiter || rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 20,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     message: { code: 'AUTH_RATE_LIMITED', error: 'Previše pokušaja. Pokušaj ponovno za 15 minuta.' },
+    handler(req, res, _next, options) {
+      if (browserNavigation(req)) return res.redirect(failureUrl('rate_limited'));
+      res.status(options.statusCode).json(options.message);
+    },
   });
   const protect = protectMutation(config);
   router.use((req, res, next) => {
@@ -40,14 +54,10 @@ function createAuthRouter({ config, passport, users, authLimiter }) {
 
   const configured = (req, res, next) => {
     if (!config.googleClientId || !config.googleClientSecret) {
+      if (browserNavigation(req)) return res.redirect(failureUrl('google_not_configured'));
       return next(new AuthError(503, 'GOOGLE_NOT_CONFIGURED', 'Google prijava još nije konfigurirana.'));
     }
     next();
-  };
-  const failureUrl = code => {
-    const url = new URL(config.frontendUrl);
-    url.searchParams.set('authError', code);
-    return url.toString();
   };
 
   router.get('/google', limiter, configured, passport.authenticate('google'));
