@@ -10,7 +10,7 @@ Polazište je auth modul ranijeg lokalnog NestJS/TypeScript projekta. Preuzet je
 
 `google.strategy.ts`. `passport.js`. Google/Passport, potvrđen e-mail, OAuth `state` i dodatni PKCE S256.
 
-`session.serializer.ts`. `passport.js`. Sesija pamti samo lokalni ID; svaki zahtjev ponovno provjerava aktivan račun u bazi.
+`session.serializer.ts`. `passport.js`. Passport pamti lokalni ID; svaki zahtjev ponovno provjerava aktivan račun u bazi. Serverska sesija dodatno veže potvrđenu Google adresu i subject uz prijavu radi admin autorizacije.
 
 `auth.service.ts`. `routes.js`. Passport 0.7 već regenerira ID u `logIn`; novu sesiju izričito spremamo prije odgovora. Nije potrebna dvostruka regeneracija.
 
@@ -32,9 +32,9 @@ Callback provjerava `state` prije razmjene autorizacijskog koda za tokene. Profi
 
 Identitet se traži kao `users.auth_id = 'google:' + sub`. Podudaranje e-mail adrese ne povezuje dva različita identiteta.
 
-Postojeći aktivan korisnik dobiva novu sesiju sa svojom postojećom ulogom iz baze. Obrisani račun ne može se ponovno prijaviti.
+Postojeći aktivan korisnik dobiva novu sesiju. Potvrđeni Google račun s privatnog popisa `ADMIN_EMAILS` server promovira u admina uz očuvanje ID-a, subjecta i povezanih podataka; ostali zadržavaju svoju ulogu. Obrisani račun ne može se ponovno prijaviti.
 
-Novi identitet dobiva privremenu sesiju od 10 minuta, bez poslovnih ovlasti. Frontend traži dovršavanje registracije.
+Novi identitet izvan admin popisa dobiva privremenu sesiju od 10 minuta, bez poslovnih ovlasti. Frontend traži dovršavanje registracije. Dopušteni novi admin dobiva račun izravno iz provjerenog Google callbacka, bez kandidatskog profila ili tvrtke. Nedostupno ime, prezime i datum rođenja ostaju `NULL` samo adminu.
 
 Korisnik unosi ime, prezime, datum rođenja i bira `candidate` ili `employer`. Server provjerava datum i najmanje 18 godina prema datumu u zoni Europe/Zagreb. Dob se računa iz korisnikova unosa; Google ovime ne dokazuje dob.
 
@@ -61,6 +61,8 @@ Auth odgovori imaju `Cache-Control: no-store`; pogreške ne šalju Google tokene
 OAuth početak/callback i registracija ograničeni su na 20 zahtjeva po IP-u u 15 minuta. Brojač je u memoriji procesa; prije više backend instanci potreban je zajednički limiter ili zaštita na reverse proxyju.
 
 `requireAuth`, `requireRole('employer')` i `protectMutation(config)` iz [middleware.js](../backend/src/auth/middleware.js) koriste se u zaštićenim poslovnim rutama. `requireAuth` vraća 401 gostu; `requireRole` vraća 403 prijavljenom korisniku s pogrešnom ulogom. Vlasništvo i domenska pravila provjerava konkretni poslovni modul.
+
+`requireAdmin(config)` iz [adminPolicy.js](../backend/src/auth/adminPolicy.js) provjerava svaki zahtjev cijelog `/api/admin` routera. Traži aktivnog DB admina, podudaranje aktualnog Google subjecta i adrese s dokazom u serverskoj sesiji te članstvo na privatnom popisu. Uloga sama ne daje pristup. Stara sesija bez dokaza traži novu Google prijavu. Sve mutacije dodatno zahtijevaju Origin i CSRF; svi admin odgovori imaju `no-store`, uključujući zabrane i greške parsiranja. Detalji konfiguracije, opoziva i preostalog posla su u [administratorskom pristupu](ADMIN_PRISTUP.md).
 
 Aktualni [app.js](../backend/src/app.js) uz javni GET pregled povezuje prijave, poslodavčeve oglase i audicije koje su razvijali drugi članovi. Sesije i Passport učitavaju se prije tih zaštićenih ruta. Auth middleware sam ne određuje čiji je pojedini oglas niti provodi verifikaciju tvrtke.
 
@@ -115,9 +117,11 @@ U produkciji postaviti `NODE_ENV=production`, HTTPS URL-ove i zaseban nasumični
 
 Za `GET /api/auth/google` vrijedi sljedeće: Preusmjeravanje na Google.
 
-Za `GET /api/auth/google/callback` vrijedi sljedeće: Provjera OAuth odgovora, sesija i povratak na frontend. Neuspjeh dodaje `authError=oauth_failed` ili `access_denied`; nedostajuća konfiguracija i ograničenje pokušaja pri navigaciji preglednika koriste `google_not_configured` i `rate_limited`.
+Za `GET /api/auth/google/callback` vrijedi sljedeće: Provjera OAuth odgovora, sesija i povratak na frontend, odnosno `/admin` za serverski potvrđenog administratora. Neuspjeh dodaje `authError=oauth_failed` ili `access_denied`; nedostajuća konfiguracija i ograničenje pokušaja pri navigaciji preglednika koriste `google_not_configured` i `rate_limited`.
 
-Za `GET /api/auth/me` vrijedi sljedeće: `200 { user, onboardingRequired, identity, csrfToken }`; gost ili istekla prijava dobiva `401`.
+Za `GET /api/auth/me` vrijedi sljedeće: `200 { user, admin, onboardingRequired, identity, csrfToken }`; gost ili istekla prijava dobiva `401`. `admin` je rezultat aktualne serverske politike za prikaz navigacije; ne zamjenjuje provjeru admin API-ja.
+
+Za `GET /api/admin/session` vrijedi sljedeće: `200 { admin: true, userId }` za ovlaštenu sesiju, `401` gostu i `403` prijavljenom korisniku bez admin ovlasti. Nema popisa dopuštenih adresa ni poslovnih mock operacija u API-ju.
 
 Za `POST /api/auth/onboarding` vrijedi sljedeće: JSON profil, Origin i CSRF; `201` s korisnikom i novim tokenom. `400` nevaljani podaci, `401` istek, `403` CSRF, `409` konflikt.
 

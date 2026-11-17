@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { authRequest } from './auth';
 
-const guest = { user: null, identity: null, onboardingRequired: false, csrfToken: null };
+const guest = { admin: false, user: null, identity: null, onboardingRequired: false, csrfToken: null };
 const oauthErrors = {
   google_not_configured: 'Google prijava trenutačno nije dostupna. Pokušaj ponovno kasnije.',
   rate_limited: 'Previše pokušaja prijave. Pokušaj ponovno za 15 minuta.',

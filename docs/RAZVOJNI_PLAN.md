@@ -4,7 +4,7 @@ Implementacija Google prijave, sesija i registracije opisana je u [Autentifikaci
 
 ## Potvrđene odluke
 - Prijava putem OAuth 2.0 / OpenID Connect pružatelja identiteta; vlastite korisničke lozinke ne pohranjujemo.
-- Uloge: kandidat, poslodavac, admin. Jedan zajednički admin račun samo za demo.
+- Uloge: kandidat, poslodavac, admin. Pet administratora koristi individualne Google račune s privatnog serverskog popisa. Demo koristi Mariov postojeći Google račun; nema zasebne zajedničke admin prijave.
 - Gosti vide javne oglase; prijavljeni poslodavac vidi samo svoje oglase.
 - Svaki oglas je zaseban projekt s jednom ulogom.
 - Svaki oglas ima `positions_count` (broj traženih kandidata) i `max_applications` (najviše prijava; početna vrijednost 1000 po oglasu). Prijave su moguće do roka, dok je oglas objavljen i limit nije dosegnut; kandidat se može prijaviti jednom na isti oglas. Dodatno su potrebne zaštite od automatiziranih prijava (npr. rate limiting).
@@ -38,10 +38,14 @@ Implementacija Google prijave, sesija i registracije opisana je u [Autentifikaci
 ## Važne smjernice
 - Postojeći db/schema.sql ima users.auth_id i odvojene projekte/casting pozive: uskladiti migracijom, ne prepisivati bez pregleda.
 - Autorizacija se provjerava na backendu; vlastiti podaci dostupni su samo ovlaštenima.
-- Lozinke nikada ne stavljati u Git; demo admin ne koristiti za stvarne korisnike.
+- Lozinke i privatni admin popis nikada ne stavljati u Git. Demo koristi postojeći ovlašteni Google račun.
 - Trajno brisanje zahtijeva obradu povezanih SQL zapisa, datoteka, aktivnih audicija, obavijesti i grešaka; demo s testnim podacima.
 - Git rad: zasebne grane, testovi i PR-ovi; main mora ostati pokretljiv.
 - Status zadatka je gotov tek nakon integracije i provjere s bazom.
 
 ## Cilj završnog demoa
 Gost pregledava oglas, kandidat se registrira, poslodavac traži verifikaciju, admin odobrava, poslodavac objavljuje, kandidat se prijavljuje, poslodavac ga poziva na audiciju, kandidat rezervira termin, a zatim poslodavac evidentira ishod.
+
+## Stanje admin modula
+
+Faza A daje sigurnu prijavu, automatski ulaz kroz `/admin` i serversku zaštitu `/api/admin`. Panel i dalje koristi jasno označene testne podatke i lokalne radnje. Poslovni tok završnog demoa još ovisi o funkcijama B1–B5: zahtjevima i odlukama verifikacije, slanju prijava oglasa, obradi tih prijava, trajnom brisanju oglasa i statistici. Konkretni preduvjeti i granice su u [admin backlogu](ADMIN_PRISTUP.md#preostali-posao).
