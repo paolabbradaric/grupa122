@@ -102,4 +102,3 @@ Lokalni stvarni Google tok sada je potvrđen za opisane scenarije. To nije potvr
 - [Google: OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect).
 - [Google: OAuth za web-poslužitelje](https://developers.google.com/identity/protocols/oauth2/web-server).
 - [Google: upravljanje publikom](https://support.google.com/cloud/answer/15549945?hl=en) — pravila provjerena 17. 11. 2026.
-

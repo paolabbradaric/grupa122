@@ -1,0 +1,19 @@
+✔ validira točnu dob, kalendarski datum, ulogu i OIB na serveru (41.2846ms)
+✔ Google identitet zahtijeva potvrđen e-mail i koristi google:sub (0.8909ms)
+✔ provjera ovlasti vraća 401 gostu, 403 kandidatu i propušta poslodavca (0.7676ms)
+✔ novi račun: OAuth → nepotpuna registracija → validacija → nova sesija → odjava (186.8935ms)
+✔ ponovna prijava prepoznaje postojeći račun bez registracije (31.4007ms)
+✔ OAuth odbija pogrešan ili odsutan state prije razmjene tokena (24.7459ms)
+✔ otkazana Google prijava vraća razumljivu šifru greške (13.0622ms)
+✔ CSRF štiti odjavu i registraciju čak i kada napadač ima cookie (57.2068ms)
+✔ onemogućen račun ne prihvaća prethodno otvorenu sesiju (25.4396ms)
+✔ bez Google ključeva auth vraća 503, a bez SESSION_SECRET konfiguracija ne prolazi (14.7822ms)
+✔ ograničenje pokušaja vraća 429 i Retry-After (100.6964ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1170.9696

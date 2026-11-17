@@ -1,0 +1,30 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+title CastMeIfYouCan — stanje prijave korisnika
+state "Gost\nbez aktivnog korisnika" as Guest
+state "Privremeni Google identitet\nvažeći pendingIdentity (10 min)" as Pending
+state "Prijavljeni korisnik\naktivan users zapis, lokalna uloga\ncookie maxAge postavljen na 8 h" as SignedIn
+[*] --> Guest
+Guest -down-> Pending : novi potvrđeni identitet
+Guest --> SignedIn : postojeći aktivni identitet
+Pending -down-> SignedIn : valjan profil + COMMIT\n+ spremljena nova sesija
+Pending --> Guest : istek ili logout
+SignedIn --> Guest : logout / istek sesije ili cookieja\nili otkrivena deaktivacija računa
+note right of Guest
+  Gost može imati OAuth sesiju sa state/PKCE.
+  To ne daje poslovne ovlasti.
+  Odbijen OAuth ostavlja korisnika gostom.
+end note
+note right of Pending
+  user = null, onboardingRequired = true
+  Poslovne rute odbijaju pristup.
+  Nevaljan profil ili konflikt zadržava
+  važeće privremeno stanje registracije.
+end note
+note right of SignedIn
+  user se ponovno dohvaća iz baze.
+  requireRole provjerava lokalnu ulogu;
+  vlasništvo provjerava poslovni modul.
+end note
+@enduml

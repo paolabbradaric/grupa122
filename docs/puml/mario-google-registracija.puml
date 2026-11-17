@@ -1,0 +1,57 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+title CastMeIfYouCan — Google prijava i dovršavanje registracije
+actor Korisnik
+participant "Preglednik / React" as UI
+participant "Express / Passport" as API
+participant Google
+database "PostgreSQL\nkorisnici i sesije" as DB
+
+Korisnik -> UI : Prijava putem Googlea
+UI -> API : GET /api/auth/google
+API -> DB : spremi state i PKCE verifier u sesiju
+API --> UI : preusmjeravanje na Google
+UI -> Google : autorizacija
+Google --> UI : povrat autorizacijskog koda i state
+UI -> API : GET /api/auth/google/callback
+API -> API : provjeri state
+alt state nedostaje ili nije valjan
+  API --> UI : preusmjeravanje s authError=oauth_failed
+else state valjan
+  API -> Google : razmjena koda uz PKCE verifier, dohvat profila
+  Google --> API : profil s potvrđenim e-mailom i sub
+  API -> DB : potraži users.auth_id = google:sub
+  alt postojeći aktivni korisnik
+    API -> DB : regenerirana prijavljena sesija + novi CSRF
+    API --> UI : povrat na frontend
+  else novi identitet
+    API -> DB : regenerirana privremena sesija (10 min) + CSRF
+    API --> UI : povrat na frontend
+    UI -> API : GET /api/auth/me
+    API --> UI : onboardingRequired=true, identity, csrfToken
+    Korisnik -> UI : ime, prezime, datum, uloga; podaci tvrtke
+    UI -> API : POST /api/auth/onboarding + Origin + X-CSRF-Token
+    API -> API : provjera CSRF-a, dobi, uloge i podataka
+    alt nevaljan unos ili istekla privremena sesija
+      API --> UI : 400 / 401; korisnik se ne stvara
+    else valjan unos
+      API -> DB : BEGIN; INSERT users; INSERT profil ili organizacija
+      alt konflikt identiteta, e-maila ili OIB-a
+        API -> DB : ROLLBACK
+        API --> UI : 409 ACCOUNT_CONFLICT
+      else upisi uspješni
+        API -> DB : COMMIT
+        API -> DB : regenerirana prijavljena sesija (8 h) + novi CSRF
+        API --> UI : 201, user, csrfToken
+      end
+    end
+  else postojeći račun je onemogućen
+    API --> UI : preusmjeravanje s authError=oauth_failed
+  end
+end
+note over API, DB
+  Registracija korisnika/profila čini jednu transakciju.
+  Spremanje prijavljene sesije zasebna je operacija nakon COMMIT-a.
+end note
+@enduml
