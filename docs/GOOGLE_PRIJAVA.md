@@ -19,6 +19,8 @@ Održavatelj treba:
 5. U **Clients** odabrati OAuth klijent vrste **Web application**. Njegov **Authorized redirect URIs** mora sadržavati točno `http://localhost:3000/api/auth/google/callback`, bez dodatne kose crte. To mora odgovarati `GOOGLE_CALLBACK_URL`; `localhost` i `127.0.0.1` nisu zamjenjivi. Ovaj serverski tok ne koristi GIS skriptu u pregledniku pa se ne konfigurira kao frontend ID-token tok.
 6. Privatno postaviti `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET` tog klijenta u `backend/.env` ili postojeće spremište tajni backenda. Ne unositi secret u razgovor, issue, PR, frontend ni `VITE_*`. Provjeriti `git check-ignore backend/.env`. Nakon unosa restartati backend.
 
+U uskom prozoru detalja klijenta Google skriva **Client secrets** u bočnom panelu: otvoriti ikonu **ⓘ / Information and summary** gore desno pa **Additional information** pomaknuti dolje. Google novi secret prikazuje samo pri izradi; odmah spremiti **Download JSON** izvan repozitorija. Ako secret nije spremljen, za isti klijent koristiti **Add client secret** i novi secret odmah spremiti. Nakon provjere nove konfiguracije onemogućiti stari, nekorišteni secret. Vidjeti [Googleove upute za klijente i rotaciju](https://support.google.com/cloud/answer/15549257?hl=en).
+
 U lokalnom `backend/.env` već postoji zaseban `SESSION_SECRET`; ne ispisivati ga i ne dodavati u Git. Ostale postavke su u `backend/.env.example`.
 
 ### Lokalno pokretanje
@@ -66,7 +68,7 @@ JSON API pozivi zadržavaju `503 GOOGLE_NOT_CONFIGURED` i `429 AUTH_RATE_LIMITED
 
 ### Stanje provjere 17. 11. 2026.
 
-Osnovna implementacija već je spojena u PR-u #29. U pregledanim lokalnim `backend/.env` konfiguracijama nisu postavljeni `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET`, a `SESSION_SECRET` postoji. Nakon početne prepreke s preglednikom pregledana je dostupna Google Cloud sesija: na tom računu prikazan je samo projekt druge aplikacije, bez potvrđenog projekta CastMeIfYouCan. Njegovi ključevi nisu preuzeti. Pripremljen je obrazac novog projekta CastMeIfYouCan; prije izrade treba odabrati Google račun kojim će tim upravljati projektom. To ne isključuje postojanje projekta na drugom računu. Produkcijska konfiguracija nije provjerena.
+Osnovna implementacija već je spojena u PR-u #29. Na računu koji je korisnik odabrao stvoren je zaseban Google Cloud projekt **CastMeIfYouCan** (`castmeifyoucan`), konfiguriran je identitet aplikacije i publika **External** te izrađen web-klijent **CastMeIfYouCan Local Web** s callbackom `http://localhost:3000/api/auth/google/callback`. Ključevi druge aplikacije nisu korišteni. Izvorni secret nije uspješno spremljen, pa je za isti klijent izrađen zamjenski secret. Njegov panel ostaje otvoren dok se ne potvrdi preuzimanje JSON-a. U pregledanom privatnom okruženju backenda oba Google ključa još nisu unesena, a `SESSION_SECRET` postoji. Provjera stvarne prijave i produkcijske konfiguracije ostaje otvorena.
 
 Automatski auth testovi provjeravaju i točan client ID, callback, scopes te PKCE S256, ponovljenu prijavu istog računa, očuvanje uloge poslodavca, povratak preglednika pri nedostajućim ključevima i rate limitu te očuvanje JSON API ugovora. Googleov mrežni odgovor i korisnički model u HTTP testovima su simulirani; stvarni SQL i PostgreSQL sesije provjerava zaseban DB test. To nije stvarna Google prijava.
 
@@ -78,7 +80,7 @@ Provedene provjere ove dopune:
 - Frontend `npm run lint` i `npm run build`: prolaze.
 - Stvarni Google račun i vizualni prikaz ove dopune u pregledniku: nisu provjereni zbog navedenih prepreka.
 
-**Preostali dio timskog zaduženja za autentifikaciju:** odabrati Google račun i projekt aplikacije, provjeriti **Branding**, **Audience**, **Data Access** i **Clients → Web application → Authorized redirect URIs**, privatno postaviti oba ključa i restartati backend. Nakon toga kroz preglednik provjeriti:
+**Preostali dio timskog zaduženja za autentifikaciju:** potvrditi lokalno spremanje novog OAuth JSON-a, privatno postaviti oba ključa, restartati backend te potvrditi stvarni status publike i traženih scopes. Nakon uspješne provjere nove konfiguracije onemogućiti izvorni, nekorišteni secret. Kroz preglednik provjeriti:
 
 | Scenarij | Očekivano | Trenutačni rezultat stvarnog toka |
 | --- | --- | --- |
