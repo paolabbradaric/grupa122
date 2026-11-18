@@ -121,7 +121,7 @@ test('application security: dedicated PostgreSQL bootstrap and upgrades', {
   let createdRoles = false;
   t.after(async () => {
     for (const pool of pools) await pool.end();
-    for (const name of databases) await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
+    for (const name of databases) await admin.query(`DROP DATABASE ${name}`);
     if (createdRoles) await admin.query('DROP ROLE anon, authenticated, security_observer');
     await admin.end();
   });
