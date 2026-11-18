@@ -44,10 +44,18 @@ Do not derive callback URLs from request Host headers or register arbitrary
 deployment URLs. Environment changes require a new deployment in the matching
 environment. Adding a URI to the existing Google client alone needs no redeploy.
 
-Keep the existing application and employer casting write gates disabled during
-deployment verification. Do not enable remote writes or run migrations as part
-of a build. Authentication writes sessions and can provision users; use only
+Keep write gates disabled for anonymous deployment verification. Employer writes
+may be activated separately after explicit authorization and database checks:
+`EMPLOYER_CASTING_WRITES_ENABLED=true`, `EMPLOYER_CASTING_WRITES_CONFIRMED=true`,
+and, outside local `castme_test`, `EMPLOYER_CASTING_WRITES_ALLOW_REMOTE=true`
+with `PGSSL=true`. Configure these only for the approved production environment;
+leave previews disabled. TLS certificate validation, role, ownership, Origin/CSRF
+and organisation verification still apply. Do not run migrations as part of a
+build. Authentication writes sessions and can provision users; use only
 accounts intended for the authorized login check, without unrelated DB writes.
+
+The controlled profile/moderation repair is recorded in
+[deployed-schema-fix.md](verification/2026-11-18/deployed-schema-fix.md).
 
 ## Candidate withdrawal activation
 

@@ -30,7 +30,7 @@ function getApplicationWritesEnabled(env = process.env) {
   if (!requested) return false;
   const allowRemote = env.APPLICATION_WRITES_ALLOW_REMOTE === 'true';
   if (!isLocalTestDatabase(env) && !allowRemote) {
-    throw new Error('Spremanje prijava je blokirano: dopuÅ¡tena je samo lokalna baza castme_test bez dodatne potvrde za udaljenu bazu.');
+    throw new Error('Spremanje prijava je blokirano: dopuštena je samo lokalna baza castme_test bez dodatne potvrde za udaljenu bazu.');
   }
   if (env.APPLICATION_WRITES_CONFIRMED !== 'true') {
     throw new Error('Spremanje prijava nije potvrdeno. Potrebna je izrazita potvrda konfiguracije.');
@@ -38,12 +38,19 @@ function getApplicationWritesEnabled(env = process.env) {
   return true;
 }
 
-// Prva verzija upravljanja nacrtima: samo lokalna testna baza.
-// Upisi su iskljuÄeni Äak i lokalno, osim uz obje izriÄite potvrde.
+// Upisi su zadano isključeni. Udaljena aktivacija traži zasebnu potvrdu i TLS.
 function getEmployerCastingWritesEnabled(env = process.env) {
   if (env.EMPLOYER_CASTING_WRITES_ENABLED !== 'true') return false;
-  if (!isLocalTestDatabase(env) || env.EMPLOYER_CASTING_WRITES_CONFIRMED !== 'true') {
-    throw new Error('Spremanje nacrta dopusteno je samo na potvrdenoj lokalnoj bazi castme_test.');
+  if (env.EMPLOYER_CASTING_WRITES_CONFIRMED !== 'true') {
+    throw new Error('Spremanje oglasa nije izričito potvrđeno konfiguracijom.');
+  }
+  if (!isLocalTestDatabase(env)) {
+    if (env.EMPLOYER_CASTING_WRITES_ALLOW_REMOTE !== 'true') {
+      throw new Error('Spremanje oglasa u udaljenu bazu nije izričito dopušteno.');
+    }
+    if (env.PGSSL !== 'true') {
+      throw new Error('Spremanje oglasa u udaljenu bazu zahtijeva TLS.');
+    }
   }
   return true;
 }
@@ -128,7 +135,7 @@ function createApp(options = {}) {
       return res.status(413).json({ error: 'Zahtjev je prevelik.' });
     }
     console.error('API zahtjev nije uspio:', error.code || 'INTERNAL_ERROR');
-    return res.status(500).json({ error: 'Zahtjev nije moguÄ‡e obraditi. Pokusaj ponovno.' });
+    return res.status(500).json({ error: 'Zahtjev nije moguće obraditi. Pokušaj ponovno.' });
   });
   return app;
 }
