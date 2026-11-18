@@ -14,6 +14,15 @@ const config = loadAuthConfig({
   GOOGLE_CLIENT_ID: 'test-client',
   GOOGLE_CLIENT_SECRET: 'test-google-secret',
 });
+const productionConfig = loadAuthConfig({
+  NODE_ENV: 'production',
+  SESSION_SECRET: config.secret,
+  GOOGLE_CLIENT_ID: config.googleClientId,
+  GOOGLE_CLIENT_SECRET: config.googleClientSecret,
+  FRONTEND_URL: 'https://castme.example.test',
+  GOOGLE_CALLBACK_URL: 'https://castme.example.test/api/auth/google/callback',
+  TRUST_PROXY_HOPS: '1',
+});
 const profile = {
   id: 'google-subject',
   _json: { sub: 'google-subject', email_verified: true },
@@ -58,7 +67,8 @@ test('provjera ovlasti vraća 401 gostu, 403 kandidatu i propušta poslodavca', 
   }
 });
 
-async function fixture(t, { existing = false, disabled = false, configured = true, role = 'candidate' } = {}) {
+async function fixture(t, { existing = false, disabled = false, configured = true, role = 'candidate',
+  authConfig = config, forwardedProto } = {}) {
   const usersById = new Map();
   const authIds = new Map();
   let registrations = 0;
@@ -78,7 +88,7 @@ async function fixture(t, { existing = false, disabled = false, configured = tru
     usersById.set(1, user);
     authIds.set('google:google-subject', user);
   }
-  const settings = configured ? config : { ...config, googleClientId: null, googleClientSecret: null };
+  const settings = configured ? authConfig : { ...authConfig, googleClientId: null, googleClientSecret: null };
   const passport = createPassport(settings, users);
   let exchanges = 0;
   if (configured) {
@@ -104,30 +114,103 @@ async function fixture(t, { existing = false, disabled = false, configured = tru
   async function request(path, options = {}) {
     const response = await fetch(base + path, {
       redirect: 'manual', ...options,
-      headers: { ...(cookie ? { Cookie: cookie } : {}), ...options.headers },
+      headers: { ...(cookie ? { Cookie: cookie } : {}),
+        ...(forwardedProto ? { 'X-Forwarded-Proto': forwardedProto } : {}), ...options.headers },
     });
     const setCookie = response.headers.get('set-cookie');
     if (setCookie) cookie = setCookie.split(';')[0];
     return response;
   }
-  async function signIn() {
-    const start = await request('/api/auth/google');
+  async function signIn(headers = {}) {
+    const start = await request('/api/auth/google', { headers });
     assert.equal(start.status, 302);
     const url = new URL(start.headers.get('location'));
     assert.equal(url.origin, 'https://accounts.google.com');
-    assert.equal(url.searchParams.get('client_id'), config.googleClientId);
-    assert.equal(url.searchParams.get('redirect_uri'), config.callbackUrl);
+    assert.equal(url.searchParams.get('client_id'), settings.googleClientId);
+    assert.equal(url.searchParams.get('redirect_uri'), settings.callbackUrl);
     assert.equal(url.searchParams.get('response_type'), 'code');
     assert.deepEqual(url.searchParams.get('scope').split(' ').sort(), ['email', 'openid', 'profile']);
     assert.equal(url.searchParams.get('code_challenge_method'), 'S256');
     assert.ok(url.searchParams.get('state'));
-    const callback = await request(`/api/auth/google/callback?code=test-code&state=${url.searchParams.get('state')}`);
+    if (settings.production) assertSecureCookie(start);
+    const callback = await request(`/api/auth/google/callback?code=test-code&state=${url.searchParams.get('state')}`, { headers });
     assert.equal(callback.status, 302);
-    assert.equal(callback.headers.get('location'), config.frontendUrl);
+    assert.equal(callback.headers.get('location'), settings.frontendUrl);
+    if (settings.production) assertSecureCookie(callback);
     return request('/api/auth/me');
   }
   return { request, signIn, getCookie: () => cookie, registrations: () => registrations, exchanges: () => exchanges };
 }
+
+function assertSecureCookie(response) {
+  const cookie = response.headers.get('set-cookie');
+  assert.ok(cookie);
+  for (const attribute of [/; Secure(?:;|$)/, /; HttpOnly(?:;|$)/, /; SameSite=Lax(?:;|$)/, /; Path=\/(?:;|$)/]) {
+    assert.match(cookie, attribute);
+  }
+  assert.doesNotMatch(cookie, /; Domain=/i);
+}
+
+test('HTTPS iza proxyja: callback, onboarding, obnova i odjava zadržavaju sigurnu sesiju', async t => {
+  for (const existing of [false, true]) {
+    await t.test(existing ? 'postojeći poslodavac' : 'novi kandidat', async t => {
+      const app = await fixture(t, { existing, role: 'employer', authConfig: productionConfig, forwardedProto: 'https' });
+      const response = await app.signIn({ Host: 'attacker.example', 'X-Forwarded-Host': 'attacker.example' });
+      let current = await response.json();
+      assert.equal(current.onboardingRequired, !existing);
+      if (!existing) {
+        const pendingCookie = app.getCookie();
+        const registration = await app.request('/api/auth/onboarding', {
+          method: 'POST',
+          headers: { Origin: new URL(productionConfig.frontendUrl).origin,
+            'Content-Type': 'application/json', 'X-CSRF-Token': current.csrfToken },
+          body: JSON.stringify(candidate),
+        });
+        assert.equal(registration.status, 201);
+        assertSecureCookie(registration);
+        assert.notEqual(app.getCookie(), pendingCookie);
+        current = await registration.json();
+      }
+      const expectedRole = existing ? 'employer' : 'candidate';
+      assert.equal(current.user.role, expectedRole);
+      assert.equal(current.onboardingRequired, false);
+      const refreshed = await (await app.request('/api/auth/me')).json();
+      assert.equal(refreshed.user.id, current.user.id);
+      assert.equal(refreshed.user.role, expectedRole);
+      const signedInCookie = app.getCookie();
+      const logout = await app.request('/api/auth/logout', { method: 'POST',
+        headers: { Origin: new URL(productionConfig.frontendUrl).origin, 'X-CSRF-Token': refreshed.csrfToken } });
+      assert.equal(logout.status, 200);
+      assertSecureCookie(logout);
+      assert.match(logout.headers.get('set-cookie'), /Expires=Thu, 01 Jan 1970/);
+      assert.equal((await app.request('/api/auth/me', { headers: { Cookie: signedInCookie } })).status, 401);
+      const repeated = await (await app.signIn()).json();
+      assert.equal(repeated.user.id, current.user.id);
+      assert.equal(repeated.user.role, expectedRole);
+      assert.equal(repeated.onboardingRequired, false);
+      assert.equal(app.registrations(), existing ? 0 : 1);
+    });
+  }
+});
+
+test('produkcija ne šalje Secure cookie bez HTTPS-a ili uz nepouzdani proxy', async t => {
+  for (const options of [
+    {},
+    { forwardedProto: 'http' },
+    { forwardedProto: 'https', authConfig: { ...productionConfig, trustProxy: 0 } },
+  ]) {
+    const app = await fixture(t, { authConfig: productionConfig, ...options });
+    const start = await app.request('/api/auth/google');
+    assert.equal(start.status, 302);
+    assert.equal(start.headers.get('set-cookie'), null);
+    const state = new URL(start.headers.get('location')).searchParams.get('state');
+    const callback = await app.request(`/api/auth/google/callback?code=test-code&state=${state}`);
+    assert.equal(new URL(callback.headers.get('location')).origin, new URL(productionConfig.frontendUrl).origin);
+    assert.equal(new URL(callback.headers.get('location')).searchParams.get('authError'), 'oauth_failed');
+    assert.equal(app.exchanges(), 0);
+    assert.equal((await app.request('/api/auth/me')).status, 401);
+  }
+});
 
 test('novi račun: OAuth → nepotpuna registracija → validacija → nova sesija → odjava', async t => {
   const app = await fixture(t);
