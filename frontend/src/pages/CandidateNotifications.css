@@ -237,3 +237,30 @@
         flex-direction: column;
     }
 }
+
+.application-withdraw-button {
+    margin-top: 20px;
+    padding: 11px 20px;
+    background: #ffffff;
+    color: #782d43;
+    border: 1px solid #a85a70;
+    border-radius: 30px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.application-withdraw-button:hover:not(:disabled) {
+    background: #fff0f1;
+}
+
+.application-withdraw-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.application-withdraw-button:focus-visible {
+    outline: 3px solid #a85a70;
+    outline-offset: 3px;
+}

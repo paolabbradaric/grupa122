@@ -180,9 +180,9 @@ function Application({ auth }) {
           onUserUpdated={auth.updateUser}
         />
       ) : page === "obavijesti-kandidata" ? (
-        <CandidateNotifications />
+        <CandidateNotifications key={auth.user.id} csrfToken={auth.csrfToken} />
       ) : page === "prijave-kandidata" ? (
-        <CandidateApplications />
+        <CandidateApplications key={auth.user.id} csrfToken={auth.csrfToken} />
       ) : page === "admin-panel" ? (
         <AdminAccess csrfToken={auth.csrfToken} />
       ) : page === "moji-oglasi" ? (
