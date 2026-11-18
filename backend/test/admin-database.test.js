@@ -19,7 +19,10 @@ test('admin PostgreSQL provisioning, migrations, identity conflicts and preserve
   const pool = new Pool({ connectionString: url.href });
   t.after(async () => {
     await pool.end();
-    await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
+    // pool.end() removes idle clients before all socket close callbacks run.
+    // A normal DROP lets PostgreSQL observe their graceful disconnection;
+    // FORCE can deliver a late FATAL to a closing client on fast CI servers.
+    await admin.query(`DROP DATABASE ${name}`);
     await admin.end();
   });
   // Roles belong only to the explicitly selected disposable local server.
