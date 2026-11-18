@@ -1,0 +1,239 @@
+.candidate-notifications {
+    min-height: 100vh;
+    background: #fffaf5;
+    padding: 65px 24px 100px;
+    font-family: inherit;
+}
+
+.notifications-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Naslov stranice */
+
+.notifications-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.notifications-label {
+    display: inline-block;
+    color: #a86a77;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+}
+
+.notifications-header h1 {
+    color: #782d43;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 800;
+    margin: 0 0 16px;
+}
+
+.notifications-header p {
+    color: #866c72;
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.notifications-count {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 9px 18px;
+    background: #fce8ec;
+    color: #782d43;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Prazan prikaz */
+
+.notifications-empty {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 65px 35px;
+    text-align: center;
+    background: #fff0f1;
+    border: 1px solid #f0d4d9;
+    border-radius: 26px;
+    box-shadow: 0 10px 30px rgba(120, 45, 67, 0.06);
+}
+
+.notifications-empty-icon {
+    width: 78px;
+    height: 78px;
+    margin: 0 auto 25px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #a85a70;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+}
+
+.notifications-empty h2 {
+    color: #782d43;
+    font-size: 26px;
+    margin-bottom: 14px;
+}
+
+.notifications-empty p {
+    max-width: 420px;
+    margin: 0 auto;
+    color: #866c72;
+    line-height: 1.8;
+    font-size: 15px;
+}
+
+/* Popis obavijesti */
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.notification-card {
+    background: #ffffff;
+    border: 1px solid #f0d4d9;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 6px 20px rgba(120, 45, 67, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(120, 45, 67, 0.09);
+}
+
+/* Nepročitana obavijest */
+
+.notification-unread {
+    background: #fff0f1;
+    border-left: 5px solid #a85a70;
+}
+
+/* Pročitana obavijest */
+
+.notification-read {
+    background: #ffffff;
+    border-left: 5px solid #e9d7da;
+}
+
+.notification-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.notification-type {
+    color: #a86a77;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.notification-new {
+    background: #a85a70;
+    color: #ffffff;
+    padding: 7px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.notification-card h2 {
+    color: #782d43;
+    font-size: 22px;
+    margin: 0 0 12px;
+}
+
+.notification-message {
+    color: #866c72;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.notification-card-bottom {
+    border-top: 1px solid #f2e0e3;
+    padding-top: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.notification-date {
+    color: #9b8589;
+    font-size: 13px;
+}
+
+/* Gumb */
+
+.notification-read-button {
+    background: #782d43;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    padding: 11px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.notification-read-button:hover {
+    background: #a85a70;
+}
+
+.notification-read-button:focus-visible {
+    outline: 3px solid #a85a70;
+    outline-offset: 3px;
+}
+
+/* Mobiteli */
+
+@media (max-width: 700px) {
+    .candidate-notifications {
+        padding: 40px 16px 70px;
+    }
+
+    .notifications-header {
+        margin-bottom: 32px;
+    }
+
+    .notifications-empty {
+        padding: 45px 22px;
+    }
+
+    .notifications-empty h2 {
+        font-size: 22px;
+    }
+
+    .notification-card {
+        padding: 22px;
+    }
+
+    .notification-card h2 {
+        font-size: 20px;
+    }
+
+    .notification-card-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
