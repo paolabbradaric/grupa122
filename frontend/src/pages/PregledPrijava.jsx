@@ -1,8 +1,22 @@
 //pregled prijava kandidata na odabrani oglas
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { zahtjevPoslodavca } from "../services/poslodavac";
 
-const naziviStatusa = { SUBMITTED: "Predana", SELECTED: "Odabran" };
+const naziviStatusa = {
+    SUBMITTED: "Predana", UNDER_REVIEW: "U pregledu", SHORTLISTED: "Uži izbor",
+    INVITED: "Pozvan/a na audiciju", AUDITIONED: "Audicija održana",
+    ACCEPTED: "Odabran/a", SELECTED: "Odabran/a", REJECTED: "Odbijena",
+    WITHDRAWN: "Povučena", CANCELLED: "Otkazana"
+};
+const sljedeciKorak = {
+    SUBMITTED: { status: "UNDER_REVIEW", naziv: "Stavi u pregled" },
+    UNDER_REVIEW: { status: "SHORTLISTED", naziv: "Dodaj u uži izbor" },
+    SHORTLISTED: { status: "INVITED", naziv: "Pozovi na audiciju" },
+    INVITED: { status: "AUDITIONED", naziv: "Označi audiciju održanom" }
+};
+const mozeOdbiti = (status) => [
+    "SUBMITTED", "UNDER_REVIEW", "SHORTLISTED", "INVITED", "AUDITIONED"
+].includes(status);
 
 function PregledPrijava({ oglas, onMojiOglasi, csrfToken }) {
     const [prijave, setPrijave] = useState([]);
@@ -13,6 +27,9 @@ function PregledPrijava({ oglas, onMojiOglasi, csrfToken }) {
     const [filter, setFilter] = useState("sve");
     const [otvorenaPrijava, setOtvorenaPrijava] = useState(null);
     const oglasId = oglas?.id;
+    const zahtjevUTijeku = useRef(false);
+    const [poruka, setPoruka] = useState("");
+    const [revizija, setRevizija] = useState(0);
 
     useEffect(() => {
         if (!oglasId) return;
@@ -28,23 +45,28 @@ function PregledPrijava({ oglas, onMojiOglasi, csrfToken }) {
                 if (!kontroler.signal.aborted) {
                     setPrijave(podaci.applications);
                     setStatusOglasa(podaci.casting.status);
+                    setGreska("");
                 }
             } catch (x) {
-                if (!kontroler.signal.aborted) setGreska(x.message);
+                if (!kontroler.signal.aborted) {
+                    setGreska(x.message);
+                    // Bez potvrđenog stanja oglasa ne nudimo promjene.
+                    setStatusOglasa("");
+                }
             } finally {
                 if (!kontroler.signal.aborted) setUcitavanje(false);
             }
         }
         ucitajPrijave();
         return () => kontroler.abort();
-    }, [oglasId]);
+    }, [oglasId, revizija]);
 
     const filtriranePrijave = prijave.filter((prijava) => {
         return filter === "sve" || prijava.status === filter;
     });
     const dostupniStatusi = [...new Set(prijave.map((prijava) => prijava.status))];
     if (filter !== "sve" && !dostupniStatusi.includes(filter)) dostupniStatusi.push(filter);
-    const brojOdabranih = prijave.filter((prijava) => prijava.status === "SELECTED").length;
+    const brojOdabranih = prijave.filter((prijava) => ["ACCEPTED", "SELECTED"].includes(prijava.status)).length;
     const mozeUpravljati = statusOglasa === "published" || statusOglasa === "closed";
 
     function prikaziDetalje(prijava) {
@@ -55,37 +77,76 @@ function PregledPrijava({ oglas, onMojiOglasi, csrfToken }) {
         }
     }
 
-    async function odaberiKandidata(prijava) {
-        if (!mozeUpravljati || prijava.status !== "SUBMITTED" || spremanje !== null) return;
+    function osvjeziPrijave() {
+        if (zahtjevUTijeku.current) return;
+        setUcitavanje(true);
+        setRevizija((prethodna) => prethodna + 1);
+    }
+
+    async function promijeniPrijavu(prijava, noviStatus) {
+        if (!mozeUpravljati || ucitavanje || zahtjevUTijeku.current) return;
+        const odabir = noviStatus === "ACCEPTED";
+        const dopusteno = odabir
+            ? prijava.status === "AUDITIONED"
+            : noviStatus === "REJECTED"
+                ? mozeOdbiti(prijava.status)
+                : sljedeciKorak[prijava.status]?.status === noviStatus;
+        if (!dopusteno) return;
+        setGreska("");
+        setPoruka("");
         if (!csrfToken) {
             setGreska("Nedostaje potvrda prijave. Osvježite stranicu.");
             return;
         }
-        if (!window.confirm(`Želite li odabrati kandidata ${prijava.firstName} ${prijava.lastName}?`)) return;
+        const podaci = { status: noviStatus };
+        if (noviStatus === "REJECTED") {
+            const razlog = window.prompt("Unesite razlog odbijanja kandidata:");
+            if (razlog === null) return;
+            if (!razlog.trim() || razlog.trim().length > 2000) {
+                setGreska("Razlog odbijanja mora sadržavati od 1 do 2000 znakova.");
+                return;
+            }
+            podaci.rejectionReason = razlog.trim();
+        }
+        const napomena = noviStatus === "REJECTED"
+            ? " Buduća aktivna rezervacija kandidata također će se otkazati."
+            : odabir
+                ? " Ako time popunite oglas, backend odbija preostale nezavršene prijave i otkazuje buduće termine i njihove aktivne rezervacije."
+                : noviStatus === "AUDITIONED"
+                    ? " Ova radnja označava održanu audiciju; evidencija dolaska vodi se zasebno."
+                    : "";
+        if (!window.confirm(
+            `Za kandidata ${prijava.firstName} ${prijava.lastName} postaviti status „${naziviStatusa[noviStatus]}”?${napomena}`
+        )) return;
+        zahtjevUTijeku.current = true;
         setSpremanje(prijava.id);
-        setGreska("");
         try {
             const odgovor = await zahtjevPoslodavca(
-                `/castings/${oglasId}/applications/${prijava.id}/select`,
-                { metoda: "POST", csrfToken }
+                `/castings/${oglasId}/applications/${prijava.id}/${odabir ? "select" : "status"}`,
+                { metoda: odabir ? "POST" : "PATCH", csrfToken,
+                    ...(odabir ? {} : { podaci }) }
             );
-            if (odgovor?.applicationId !== prijava.id || odgovor.castingId !== oglasId ||
-                typeof odgovor.applicationStatus !== "string" || typeof odgovor.castingStatus !== "string") {
-                throw new Error("Primljen je neočekivan odgovor. Ponovno otvorite prijave.");
+            const status = odabir ? odgovor?.applicationStatus : odgovor?.status;
+            if (odgovor?.applicationId !== prijava.id || status !== noviStatus ||
+                (odabir && (odgovor.castingId !== oglasId || typeof odgovor.castingStatus !== "string"))) {
+                throw new Error("Ishod nije potvrđen. Osvježite prijave prije ponavljanja radnje.");
             }
-            //Prikaz mijenjamo tek nakon uspješnog spremanja.
-            setPrijave((prethodnePrijave) => prethodnePrijave.map((trenutnaPrijava) => {
-                if (trenutnaPrijava.id === prijava.id) {
-                    return { ...trenutnaPrijava, status: odgovor.applicationStatus };
-                }
-                return trenutnaPrijava;
-            }));
-            setStatusOglasa(odgovor.castingStatus);
-        } catch (x) {
-            setGreska(x.message);
+            setPrijave((prethodne) => prethodne.map((trenutna) =>
+                trenutna.id === prijava.id ? { ...trenutna, status } : trenutna
+            ));
+            if (odabir) setStatusOglasa(odgovor.castingStatus);
+            setPoruka("Promjena je spremljena. Ponovno učitavam aktualne prijave.");
+        } catch (error) {
+            setGreska(error.message || "Zahtjev nije uspio. Osvježite prijave.");
+            // Mrežna greška može nastati i nakon upisa. Prvo ponovno učitati stanje.
+            setStatusOglasa("");
+            return;
         } finally {
+            zahtjevUTijeku.current = false;
             setSpremanje(null);
         }
+        // Popunjavanje oglasa može promijeniti i prijave drugih kandidata.
+        osvjeziPrijave();
     }
 
     function prikaziDatum(datum) {
@@ -138,7 +199,11 @@ function PregledPrijava({ oglas, onMojiOglasi, csrfToken }) {
                 </button>
             </div>
 
-            {greska && <p className="prijave-greska">{greska}</p>}
+            {greska && <p className="prijave-greska" role="alert">{greska}</p>}
+            {poruka && <p role="status">{poruka}</p>}
+            {spremanje !== null && <p role="status">Spremanje promjene...</p>}
+            <button type="button" className="prijave-gumb" disabled={spremanje !== null || ucitavanje}
+                onClick={osvjeziPrijave}>Osvježi prijave</button>
             {ucitavanje && <p>Učitavanje prijava...</p>}
             {statusOglasa === "filled" && <p>Oglas je popunjen.</p>}
             {!ucitavanje && statusOglasa && !mozeUpravljati && (
@@ -204,19 +269,27 @@ function PregledPrijava({ oglas, onMojiOglasi, csrfToken }) {
                                         : "Prikaži detalje"}
                                 </button>
 
-                                {mozeUpravljati &&
-                                    prijava.status === "SUBMITTED" && (
-                                        <button
-                                            type="button"
-                                            className="prijave-gumb prijave-gumb-status"
-                                            disabled={spremanje !== null}
-                                            onClick={() =>
-                                                odaberiKandidata(prijava)
-                                            }
-                                        >
-                                            {spremanje === prijava.id ? "Spremanje..." : "Odaberi kandidata"}
-                                        </button>
-                                    )}
+                                {mozeUpravljati && sljedeciKorak[prijava.status] && (
+                                    <button type="button" className="prijave-gumb prijave-gumb-status"
+                                        disabled={spremanje !== null || ucitavanje}
+                                        onClick={() => promijeniPrijavu(prijava, sljedeciKorak[prijava.status].status)}>
+                                        {sljedeciKorak[prijava.status].naziv}
+                                    </button>
+                                )}
+                                {mozeUpravljati && prijava.status === "AUDITIONED" && (
+                                    <button type="button" className="prijave-gumb prijave-gumb-status"
+                                        disabled={spremanje !== null || ucitavanje}
+                                        onClick={() => promijeniPrijavu(prijava, "ACCEPTED")}>
+                                        Odaberi kandidata
+                                    </button>
+                                )}
+                                {mozeUpravljati && mozeOdbiti(prijava.status) && (
+                                    <button type="button" className="prijave-gumb prijave-gumb-odbij"
+                                        disabled={spremanje !== null || ucitavanje}
+                                        onClick={() => promijeniPrijavu(prijava, "REJECTED")}>
+                                        Odbij kandidata
+                                    </button>
+                                )}
 
                             </div>
 

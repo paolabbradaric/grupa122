@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { zahtjevAudicije } from "../services/audicije";
 
 //upravljanje terminima audicija odabranog oglasa
 function Audicije({ oglas, onMojiOglasi, csrfToken }) {
@@ -7,8 +8,15 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
     const [lokacija, setLokacija] = useState("");
     const [kapacitet, setKapacitet] = useState("");
 
-    //samo termini dodani tijekom ovog otvaranja stranice
+
     const [termini, setTermini] = useState([]);
+
+    const [rezervacije, setRezervacije] = useState([]);
+    const [ucitavanje, setUcitavanje] = useState(true);
+    const [greskaDohvata, setGreskaDohvata] = useState("");
+    const [revizija, setRevizija] = useState(0);
+
+    const oglasId = oglas?.id;
 
     const [spremanje, setSpremanje] = useState(false);
     const [greska, setGreska] = useState("");
@@ -17,61 +25,144 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
     //sprječava pokretanje više zahtjeva istodobno
     const zahtjevUTijeku = useRef(false);
 
-    const mozeDodati = oglas?.status === "objavljen";
+    const mozeDodati = [
+        "objavljen",
+        "prijaveZatvorene",
+        "published",
+        "closed"
+    ].includes(oglas?.status);
+
+    const blokirano =
+        spremanje ||
+        ucitavanje ||
+        greskaDohvata !== "";
 
     //slanje zahtjeva postojećem API-ju audicija
-    async function posaljiZahtjev(putanja, metoda, tijelo) {
-        if (!csrfToken) {
-            throw new Error(
-                "Nedostaje potvrda prijave. Osvježite stranicu i prijavite se."
-            );
-        }
-
-        const odgovor = await fetch(`/api/auditions${putanja}`, {
-            method: metoda,
-            credentials: "same-origin",
-            headers: {
-                "X-CSRF-Token": csrfToken,
-                ...(tijelo !== undefined
-                    ? { "Content-Type": "application/json" }
-                    : {})
-            },
-            ...(tijelo !== undefined
-                ? { body: JSON.stringify(tijelo) }
-                : {})
+    function posaljiZahtjev(putanja, metoda, tijelo) {
+        return zahtjevAudicije(`/auditions${putanja}`, {
+            metoda,
+            csrfToken,
+            podaci: tijelo
         });
+    }
 
-        const tekst = await odgovor.text();
-        let podaci;
-
-        try {
-            podaci = tekst ? JSON.parse(tekst) : null;
-        } catch {
-            throw new Error(
-                "Backend nije vratio očekivani odgovor. Ishod radnje nije potvrđen."
-            );
+    useEffect(() => {
+        if (!oglasId) {
+            return;
         }
 
-        if (!odgovor.ok) {
-            if (odgovor.status === 401) {
-                throw new Error(
-                    "Za ovu radnju prijavite se kao poslodavac."
-                );
+        const kontroler = new AbortController();
+
+        async function ucitajPodatke() {
+            try {
+                const [popisTermina, odgovorRezervacija] =
+                    await Promise.all([
+                        zahtjevAudicije(`/auditions/${oglasId}`, {
+                            signal: kontroler.signal
+                        }),
+                        zahtjevAudicije(
+                            `/employer/castings/${oglasId}/bookings`,
+                            {
+                                signal: kontroler.signal
+                            }
+                        )
+                    ]);
+
+                if (
+                    !Array.isArray(popisTermina) ||
+                    !Array.isArray(odgovorRezervacija?.bookings)
+                ) {
+                    throw new Error(
+                        "Backend nije vratio očekivani popis termina i rezervacija."
+                    );
+                }
+
+                if (kontroler.signal.aborted) {
+                    return;
+                }
+
+                setTermini(popisTermina);
+                setRezervacije(odgovorRezervacija.bookings);
+                setGreskaDohvata("");
+            } catch (error) {
+                if (!kontroler.signal.aborted) {
+                    setGreskaDohvata(
+                        error instanceof Error
+                            ? error.message
+                            : "Podatke nije moguće učitati."
+                    );
+                }
+            } finally {
+                if (!kontroler.signal.aborted) {
+                    setUcitavanje(false);
+                }
             }
-
-            throw new Error(
-                podaci?.error || "Zahtjev nije uspio. Pokušajte ponovno."
-            );
         }
 
-        return podaci;
+        void ucitajPodatke();
+
+        return () => kontroler.abort();
+    }, [oglasId, revizija]);
+
+    function osvjeziPodatke() {
+        setUcitavanje(true);
+        setGreskaDohvata("");
+        setRevizija((prethodna) => prethodna + 1);
+    }
+
+    function aktivnaRezervacija(rezervacija) {
+        return !["cancelled", "canceled"].includes(rezervacija.status);
+    }
+
+    function prikaziDolazak(status) {
+        if (status === "attended") return "Došao/la";
+        if (status === "absent") return "Nije došao/la";
+        return "Nije evidentirano";
+    }
+
+    async function evidentirajDolazak(rezervacija, noviStatus, trenutnoVrijeme) {
+        if (zahtjevUTijeku.current || blokirano) return;
+        setGreska("");
+        setPoruka("");
+        const vrijeme = Date.parse(rezervacija.startsAt);
+        if (!aktivnaRezervacija(rezervacija) ||
+            !Number.isFinite(vrijeme) || vrijeme > trenutnoVrijeme) {
+            setGreska("Dolazak se može evidentirati tek nakon početka aktivnog termina.");
+            return;
+        }
+        if (!window.confirm(
+            `Za kandidata ${rezervacija.firstName} ${rezervacija.lastName} spremiti „${prikaziDolazak(noviStatus)}”?`
+        )) return;
+        zahtjevUTijeku.current = true;
+        setSpremanje(true);
+        try {
+            const odgovor = await zahtjevAudicije(
+                `/employer/castings/${oglasId}/bookings/${rezervacija.id}/attendance`,
+                { metoda: "PATCH", csrfToken, podaci: { attendanceStatus: noviStatus } }
+            );
+            if (odgovor?.id !== rezervacija.id || odgovor.attendanceStatus !== noviStatus) {
+                throw new Error("Potvrda evidencije nije očekivana. Osvježite podatke prije ponavljanja.");
+            }
+            setRezervacije((prethodne) => prethodne.map((trenutna) =>
+                trenutna.id === rezervacija.id
+                    ? { ...trenutna, attendanceStatus: odgovor.attendanceStatus }
+                    : trenutna
+            ));
+            setPoruka("Evidencija dolaska je spremljena.");
+            osvjeziPodatke();
+        } catch (error) {
+            setGreska(error.message || "Evidenciju nije moguće spremiti. Osvježite podatke.");
+        } finally {
+            zahtjevUTijeku.current = false;
+            setSpremanje(false);
+        }
     }
 
     //provjera unosa i priprema podataka za backend
     function pripremiPodatke() {
         if (!mozeDodati) {
             throw new Error(
-                "Dodavanje termina trenutačno je omogućeno samo za objavljene oglase."
+                "Termine možete dodavati objavljenim oglasima i oglasima sa zatvorenim prijavama."
             );
         }
 
@@ -130,7 +221,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
     async function dodajTermin(x) {
         x.preventDefault();
 
-        if (zahtjevUTijeku.current) {
+        if (zahtjevUTijeku.current || blokirano) {
             return;
         }
 
@@ -187,6 +278,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
             setLokacija("");
             setKapacitet("");
             setPoruka("Termin audicije uspješno je spremljen.");
+            osvjeziPodatke();
         } catch (x) {
             setGreska(
                 x instanceof TypeError
@@ -200,7 +292,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
     }
 
     async function otkaziTermin(termin, trenutnoVrijeme) {
-        if (zahtjevUTijeku.current) {
+        if (zahtjevUTijeku.current || blokirano) {
             return;
         }
 
@@ -219,7 +311,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
         }
 
         const potvrda = window.confirm(
-            `Želite li otkazati termin ${prikaziDatum(termin.starts_at)}?`
+            `Želite li otkazati termin ${prikaziDatum(termin.starts_at)}? Aktivne rezervacije tog termina također će se otkazati.`
         );
 
         if (!potvrda) {
@@ -255,6 +347,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
             });
 
             setPoruka("Termin audicije uspješno je otkazan.");
+            osvjeziPodatke();
         } catch (x) {
             setGreska(
                 x instanceof TypeError
@@ -330,11 +423,16 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
             </div>
 
             <p className="audicije-napomena">
-                Dohvat postojećih termina za poslodavca još nije dostupan.
-                Ovdje se prikazuju samo termini dodani tijekom ovog
-                otvaranja stranice. Nakon izlaska ostaju spremljeni
-                u bazi, ali ih zasad ne možemo ponovno učitati.
+                Prikazuju se spremljeni termini i rezervacije kandidata.
+                Dolazak se evidentira nakon početka termina, odvojeno od statusa prijave.
             </p>
+            <button type="button" disabled={spremanje || ucitavanje} onClick={osvjeziPodatke}>
+                Osvježi termine i rezervacije
+            </button>
+            {ucitavanje && <p role="status">Učitavanje termina i rezervacija...</p>}
+            {greskaDohvata && <p className="audicije-greska" role="alert">
+                {greskaDohvata} Kliknite osvježavanje za ponovni pokušaj.
+            </p>}
 
             {greska && (
                 <p className="audicije-greska">{greska}</p>
@@ -368,7 +466,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
                                 onChange={(x) =>
                                     setPocetak(x.target.value)
                                 }
-                                disabled={spremanje}
+                                disabled={blokirano}
                                 required
                             />
                         </div>
@@ -387,7 +485,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
                                 onChange={(x) =>
                                     setZavrsetak(x.target.value)
                                 }
-                                disabled={spremanje}
+                                disabled={blokirano}
                                 required
                             />
                         </div>
@@ -408,7 +506,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
                                 }
                                 maxLength={200}
                                 placeholder="Unesite adresu ili naziv prostora..."
-                                disabled={spremanje}
+                                disabled={blokirano}
                                 required
                             />
                         </div>
@@ -430,7 +528,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
                                 min={1}
                                 max={2147483647}
                                 step={1}
-                                disabled={spremanje}
+                                disabled={blokirano}
                                 required
                             />
                         </div>
@@ -439,7 +537,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
                             <button
                                 type="submit"
                                 className="audicije-gumb audicije-gumb-dodaj"
-                                disabled={spremanje}
+                                disabled={blokirano}
                             >
                                 Dodaj termin
                             </button>
@@ -447,18 +545,17 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
                     </form>
                 ) : (
                     <p>
-                        Dodavanje termina trenutačno je omogućeno samo
-                        za objavljene oglase.
+                        Termine možete dodavati objavljenim oglasima i oglasima sa zatvorenim prijavama.
                     </p>
                 )}
             </div>
 
             <div className="audicije-termini">
-                <h2>Termini dodani tijekom ovog otvaranja</h2>
+                <h2>Spremljeni termini</h2>
 
-                {termini.length === 0 ? (
+                {ucitavanje || greskaDohvata ? null : termini.length === 0 ? (
                     <p>
-                        U ovom otvaranju stranice još nije dodan termin.
+                        Za ovaj oglas još nema spremljenih termina audicija.
                     </p>
                 ) : (
                     <div className="audicije-popis">
@@ -480,6 +577,7 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
 
                                     <p>Lokacija: {termin.location}</p>
                                     <p>Kapacitet: {termin.capacity}</p>
+                                    <p>Slobodnih mjesta: {termin.availablePlaces ?? "Nije dostupno"}</p>
 
                                     <p>
                                         Status:
@@ -488,12 +586,34 @@ function Audicije({ oglas, onMojiOglasi, csrfToken }) {
                                     </p>
                                 </div>
 
+                                <div className="audicije-kandidati">
+                                    <h4>Rezervirani kandidati</h4>
+                                    {!rezervacije.some((r) => r.slotId === termin.id && aktivnaRezervacija(r))
+                                        ? <p>Nema aktivnih rezervacija za ovaj termin.</p>
+                                        : rezervacije.filter((r) => r.slotId === termin.id && aktivnaRezervacija(r)).map((r) => (
+                                            <div key={r.id} className="audicije-kandidat">
+                                                <p><strong>{r.firstName} {r.lastName}</strong></p>
+                                                <p>Dolazak: {prikaziDolazak(r.attendanceStatus)}</p>
+                                                <div className="audicije-akcije">
+                                                    <button type="button" disabled={blokirano || r.attendanceStatus === "attended"}
+                                                        onClick={() => evidentirajDolazak(r, "attended", Date.now())}>
+                                                        Došao/la
+                                                    </button>
+                                                    <button type="button" disabled={blokirano || r.attendanceStatus === "absent"}
+                                                        onClick={() => evidentirajDolazak(r, "absent", Date.now())}>
+                                                        Nije došao/la
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+
                                 {termin.status === "scheduled" && (
                                     <div className="audicije-akcije">
                                         <button
                                             type="button"
                                             className="audicije-gumb audicije-gumb-otkazi"
-                                            disabled={spremanje}
+                                            disabled={blokirano}
                                             onClick={() =>
                                                 otkaziTermin(termin, Date.now())
                                             }
