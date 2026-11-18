@@ -13,6 +13,7 @@ const optional = ['public.profile_media', 'public.profile_storage_objects', 'pub
   'app_private.application_submission_limits'];
 const sensitive = ['public.users', 'public.candidate_profiles', 'public.organisations',
   'public.media_files', 'public.verification', 'app_private.sessions', ...optional];
+const tablePrivileges = ['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN'];
 
 async function catalog(db) {
   // Enumerate both application schemas, including future tables: a new table
@@ -45,11 +46,21 @@ async function catalog(db) {
       FROM aclexplode(COALESCE(c.relacl,acldefault('s',c.relowner))) a ORDER BY 1) AS acl
     FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname IN ('public','app_private') AND c.relkind='S' ORDER BY 1`)).rows;
-  return { tables, schemas, sequences };
+  // relacl alone cannot reveal effective privileges inherited through a role.
+  const effectiveSensitivePrivileges = (await db.query(`SELECT r.rolname AS role,
+    target AS name, privilege, has_table_privilege(r.oid,to_regclass(target),privilege) AS granted
+    FROM pg_roles r CROSS JOIN unnest($1::text[]) target
+    CROSS JOIN unnest($2::text[]) privilege
+    WHERE r.rolname IN ('anon','authenticated') AND to_regclass(target) IS NOT NULL
+    ORDER BY 1,2,3`, [sensitive,tablePrivileges])).rows;
+  return { tables, schemas, sequences, effectiveSensitivePrivileges };
 }
 
 function assertClosed(snapshot) {
   assert.ok(snapshot.tables.length >= 18);
+  for (const right of snapshot.effectiveSensitivePrivileges) {
+    assert.equal(right.granted,false,`${right.role}: effective ${right.privilege} on ${right.name}`);
+  }
   for (const table of snapshot.tables) {
     assert.equal(table.rls, true, `${table.name} must have RLS`);
     assert.equal(table.force_rls, false, `${table.name} must preserve owner access`);
@@ -325,6 +336,48 @@ test('application security: dedicated PostgreSQL bootstrap and upgrades', {
       assert.deepEqual(await catalog(db),before);
     } finally { await admin.query('REVOKE security_observer FROM anon'); }
   });
+  for (const role of ['anon','authenticated']) {
+    await t.test(`inherited MAINTAIN for ${role} rejects the upgrade and preserves catalog, grant and data`, async () => {
+      const db = await database(); await db.query(legacy); await seed(db);
+      await db.query(`REVOKE ALL ON public.users FROM PUBLIC,anon,authenticated;
+        GRANT MAINTAIN ON public.users TO security_observer`);
+      await admin.query(`GRANT security_observer TO ${role}`);
+      try {
+        const { rows: [api] } = await db.query(`SELECT r.rolsuper,r.rolbypassrls,
+          r.oid=c.relowner AS owner, pg_has_role(r.oid,c.relowner,'USAGE') AS inherits_owner,
+          has_table_privilege(r.oid,c.oid,'MAINTAIN') AS maintain,
+          has_table_privilege(r.oid,c.oid,'SELECT') AS select
+          FROM pg_roles r CROSS JOIN pg_class c
+          WHERE r.rolname=$1 AND c.oid='public.users'::regclass`,[role]);
+        assert.deepEqual(api,{ rolsuper: false,rolbypassrls: false,owner: false,
+          inherits_owner: false,maintain: true,select: false });
+        const before = await catalog(db);
+        const data = await dataAndStructure(db);
+        assert.ok(before.tables.some(table => !table.rls),'Rollback must undo actual RLS changes');
+        await assert.rejects(migrateSecurity(db), error => {
+          assert.equal(error.code,'P0001');
+          assert.equal(error.message,`Security migration: API role ${role} retains inherited or column privileges on public.users; resolve those grants separately.`);
+          t.diagnostic(`${error.code}: ${error.message}`);
+          return true;
+        });
+        assert.deepEqual(await catalog(db),before);
+        assert.deepEqual(await dataAndStructure(db),data);
+        assert.equal((await db.query(`SELECT has_table_privilege($1,'public.users','MAINTAIN') AS granted`,[role])).rows[0].granted,true,
+          'Rollback must preserve the original inherited grant');
+      } finally { await admin.query(`REVOKE security_observer FROM ${role}`); }
+    });
+    await t.test(`direct MAINTAIN for ${role} is revoked by a successful repeatable upgrade`, async () => {
+      const db = await database(); await db.query(legacy); await seed(db);
+      await db.query(`REVOKE ALL ON public.users FROM PUBLIC,anon,authenticated;
+        GRANT MAINTAIN ON public.users TO ${role}`);
+      assert.equal((await db.query(`SELECT has_table_privilege($1,'public.users','MAINTAIN') AS granted`,[role])).rows[0].granted,true);
+      const before = await dataAndStructure(db);
+      await migrateSecurity(db); await migrateSecurity(db);
+      assertClosed(await catalog(db));
+      assert.deepEqual(await dataAndStructure(db),before);
+      assert.equal((await db.query(`SELECT has_table_privilege($1,'public.users','MAINTAIN') AS granted`,[role])).rows[0].granted,false);
+    });
+  }
   await t.test('owner registration, real session store, guest Express casting, profiles, moderation and quota remain functional', async () => {
     const { createUserModel } = require('../src/auth/userModel');
     const { createCastingModel } = require('../src/models/castingModel');

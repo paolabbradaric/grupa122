@@ -570,7 +570,7 @@ BEGIN
         EXECUTE format('REVOKE ALL ON TABLE %s FROM %I', target, api_role.rolname);
         -- Direct REVOKE cannot remove privileges inherited from another role.
         IF has_table_privilege(api_role.oid, to_regclass(target),
-          'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+          'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
           OR has_any_column_privilege(api_role.oid, to_regclass(target), 'SELECT,INSERT,UPDATE,REFERENCES') THEN
           RAISE EXCEPTION 'Security migration: API role % retains inherited or column privileges on %; resolve those grants separately.', api_role.rolname, target;
         END IF;
