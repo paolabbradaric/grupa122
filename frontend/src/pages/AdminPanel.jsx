@@ -1,379 +1,143 @@
-//administracijska stranica za pregled zahtjeva i prijavljenih oglasa
-import { useState } from "react";
+import { useEffect, useState } from 'react';
+import { moderationRequest, verificationLabels } from '../services/moderation';
 
-function AdminPanel() {
-    const [prikaz, setPrikaz] = useState("zahtjevi");
+const reportLabels = { open: 'Čeka obradu', dismissed: 'Zatvorena bez brisanja', removed: 'Oglas uklonjen' };
+const statLabels = {
+  ...verificationLabels, ...reportLabels, not_requested: 'Nije zatražena',
+  candidate: 'Kandidat', employer: 'Poslodavac', admin: 'Administrator',
+  draft: 'Nacrt', published: 'Objavljen', closed: 'Prijave zatvorene', filled: 'Popunjen', cancelled: 'Otkazan',
+  SUBMITTED: 'Predana', UNDER_REVIEW: 'U pregledu', SHORTLISTED: 'Uži izbor', INVITED: 'Pozvan na audiciju',
+  AUDITIONED: 'Audicija održana', SELECTED: 'Odabran', ACCEPTED: 'Prihvaćen', REJECTED: 'Odbijen',
+  WITHDRAWN: 'Povučena', CANCELLED: 'Otkazana',
+};
+const date = value => value ? new Date(value).toLocaleString('hr-HR') : '—';
 
-    //testni zahtjevi za verifikaciju poslodavaca
-    const [zahtjevi, setZahtjevi] = useState([
-        {
-            id: 1,
-            naziv: "Studio Sjever",
-            email: "studio@example.com",
-            opis: "Produkcijska kuća za film i televiziju.",
-            datum: "2026-11-10",
-            status: "naCekanju",
-            razlogOdbijanja: ""
-        },
-        {
-            id: 2,
-            naziv: "Kazalište Primjer",
-            email: "kazaliste@example.com",
-            opis: "Organizacija kazališnih predstava i audicija.",
-            datum: "2026-11-11",
-            status: "naCekanju",
-            razlogOdbijanja: ""
-        },
-        {
-            id: 3,
-            naziv: "Demo produkcija",
-            email: "produkcija@example.com",
-            opis: "Produkcija reklamnih sadržaja.",
-            datum: "2026-11-09",
-            status: "odbijen",
-            razlogOdbijanja: "Nisu dostavljeni potrebni podaci."
-        }
-    ]);
+export default function AdminPanel({ csrfToken, onDenied }) {
+  const [tab, setTab] = useState('verifications');
+  const [status, setStatus] = useState('pending');
+  const [offset, setOffset] = useState(0);
+  const [revision, setRevision] = useState(0);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [action, setAction] = useState(null);
+  const [reason, setReason] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const key = `${tab}:${status}:${offset}:${revision}`;
+  const loaded = result?.key === key;
 
-    //testni oglasi koje su korisnici prijavili
-    const [prijavljeniOglasi, setPrijavljeniOglasi] = useState([
-        {
-            id: 1,
-            naziv: "Reklama za sportski brend",
-            poslodavac: "Demo agencija",
-            razlogPrijave: "Oglas sadržava neprimjeren sadržaj.",
-            datum: "2026-11-11"
-        },
-        {
-            id: 2,
-            naziv: "Casting za kratkometražni film",
-            poslodavac: "Filmski studio Primjer",
-            razlogPrijave: "Sumnja na lažno predstavljanje.",
-            datum: "2026-11-12"
-        }
-    ]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const path = tab === 'stats' ? '/admin/stats' : `/admin/${tab}?status=${status}&limit=20&offset=${offset}`;
+    moderationRequest(path, { signal: controller.signal })
+      .then(data => { if (!controller.signal.aborted) { setResult({ key, data }); setError(''); } })
+      .catch(e => {
+        if (controller.signal.aborted) return;
+        if ([401, 403].includes(e.status)) onDenied(e.status);
+        else { setError(e.message); setResult({ key, data: null }); }
+      });
+    return () => controller.abort();
+  }, [tab, status, offset, key, onDenied]);
 
-    const [zahtjevZaOdbijanje, setZahtjevZaOdbijanje] = useState(null);
-    const [razlogOdbijanja, setRazlogOdbijanja] = useState("");
-
-    //izdvajanje zahtjeva prema statusu
-    const zahtjeviNaCekanju = zahtjevi.filter((zahtjev) => {
-        return zahtjev.status === "naCekanju";
-    });
-
-    const odbijeniZahtjevi = zahtjevi.filter((zahtjev) => {
-        return zahtjev.status === "odbijen";
-    });
-
-    function promijeniPrikaz(noviPrikaz) {
-        setPrikaz(noviPrikaz);
-        setZahtjevZaOdbijanje(null);
-        setRazlogOdbijanja("");
-    }
-
-    function odobriZahtjev(zahtjev) {
-        //mijenja se samo zahtjev s odgovarajućim id-em
-        setZahtjevi((prethodniZahtjevi) => {
-            return prethodniZahtjevi.map((trenutniZahtjev) => {
-                if (trenutniZahtjev.id === zahtjev.id) {
-                    return {
-                        ...trenutniZahtjev,
-                        status: "odobren",
-                        razlogOdbijanja: ""
-                    };
-                }
-
-                return trenutniZahtjev;
-            });
-        });
-
-        //zatvaranje obrasca ako je otvoren za odobreni zahtjev
-        if (zahtjevZaOdbijanje === zahtjev.id) {
-            setZahtjevZaOdbijanje(null);
-            setRazlogOdbijanja("");
-        }
-
-        console.log("Odobren zahtjev:", zahtjev.id);
-    }
-
-    function zapocniOdbijanje(zahtjev) {
-        setZahtjevZaOdbijanje(zahtjev.id);
-        setRazlogOdbijanja("");
-    }
-
-    function odustaniOdOdbijanja() {
-        setZahtjevZaOdbijanje(null);
-        setRazlogOdbijanja("");
-    }
-
-    function odbijZahtjev(zahtjev) {
-        //razlog ne smije biti prazan niti sadržavati samo razmake
-        if (razlogOdbijanja.trim() === "") {
-            alert("Morate unijeti razlog odbijanja zahtjeva!");
-            return;
-        }
-
-        const razlog = razlogOdbijanja.trim();
-
-        setZahtjevi((prethodniZahtjevi) => {
-            return prethodniZahtjevi.map((trenutniZahtjev) => {
-                if (trenutniZahtjev.id === zahtjev.id) {
-                    return {
-                        ...trenutniZahtjev,
-                        status: "odbijen",
-                        razlogOdbijanja: razlog
-                    };
-                }
-
-                return trenutniZahtjev;
-            });
-        });
-
-        console.log("Odbijen zahtjev:", zahtjev.id);
-        console.log("Razlog odbijanja:", razlog);
-
-        setZahtjevZaOdbijanje(null);
-        setRazlogOdbijanja("");
-    }
-
-    function obrisiOglas(oglas) {
-        const potvrda = window.confirm(
-            `Jeste li sigurni da želite nepovratno obrisati oglas "${oglas.naziv}"?`
-        );
-
-        if (!potvrda) {
-            return;
-        }
-
-        //uklanjanje oglasa iz testnog popisa
-        setPrijavljeniOglasi((prethodniOglasi) => {
-            return prethodniOglasi.filter((trenutniOglas) => {
-                return trenutniOglas.id !== oglas.id;
-            });
-        });
-
-        console.log("Oglas uklonjen iz testnog popisa:", oglas.id);
-    }
-
-    return (
-        <main className="admin-panel">
-            <div className="admin-zaglavlje">
-                <h1>Administracijski panel</h1>
-
-                <p>
-                    Ovdje možete pregledavati zahtjeve za verifikaciju
-                    poslodavaca, odbijene zahtjeve i prijavljene oglase.
-                </p>
-
-                <p className="admin-napomena">
-                    Trenutno se koriste testni podaci.
-                    Promjene se ne spremaju u bazu.
-                </p>
-            </div>
-
-            {/*odabir prikaza*/}
-            <div className="admin-navigacija">
-                <button
-                    type="button"
-                    className="admin-gumb admin-gumb-prikaz"
-                    onClick={() => promijeniPrikaz("zahtjevi")}
-                    disabled={prikaz === "zahtjevi"}
-                >
-                    Zahtjevi za verifikaciju ({zahtjeviNaCekanju.length})
-                </button>
-
-                <button
-                    type="button"
-                    className="admin-gumb admin-gumb-prikaz"
-                    onClick={() => promijeniPrikaz("odbijeni")}
-                    disabled={prikaz === "odbijeni"}
-                >
-                    Odbijeni zahtjevi ({odbijeniZahtjevi.length})
-                </button>
-
-                <button
-                    type="button"
-                    className="admin-gumb admin-gumb-prikaz"
-                    onClick={() => promijeniPrikaz("oglasi")}
-                    disabled={prikaz === "oglasi"}
-                >
-                    Prijavljeni oglasi ({prijavljeniOglasi.length})
-                </button>
-            </div>
-
-            {/*zahtjevi koji čekaju verifikaciju*/}
-            {prikaz === "zahtjevi" && (
-                <div className="admin-prikaz admin-zahtjevi">
-                    <h2>Zahtjevi za verifikaciju</h2>
-
-                    {zahtjeviNaCekanju.length === 0 ? (
-                        <p className="admin-prazno">
-                            Nema zahtjeva koji čekaju pregled.
-                        </p>
-                    ) : (
-                        <div className="admin-popis">
-                            {zahtjeviNaCekanju.map((zahtjev) => (
-                                <div
-                                    key={zahtjev.id}
-                                    className="admin-kartica admin-kartica-zahtjev"
-                                >
-                                    <h3>{zahtjev.naziv}</h3>
-
-                                    <div className="admin-podaci">
-                                        <p>Email: {zahtjev.email}</p>
-                                        <p>Opis: {zahtjev.opis}</p>
-                                        <p>Datum zahtjeva: {zahtjev.datum}</p>
-                                    </div>
-
-                                    <div className="admin-akcije">
-                                        <button
-                                            type="button"
-                                            className="admin-gumb admin-gumb-odobri"
-                                            onClick={() => odobriZahtjev(zahtjev)}
-                                        >
-                                            Odobri
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            className="admin-gumb admin-gumb-odbij"
-                                            onClick={() => zapocniOdbijanje(zahtjev)}
-                                        >
-                                            Odbij
-                                        </button>
-                                    </div>
-
-                                    {/*obrazac se otvara samo uz odabrani zahtjev*/}
-                                    {zahtjevZaOdbijanje === zahtjev.id && (
-                                        <form
-                                            className="admin-obrazac"
-                                            onSubmit={(x) => {
-                                                x.preventDefault();
-                                                odbijZahtjev(zahtjev);
-                                            }}
-                                        >
-                                            <div className="admin-polje">
-                                                <label htmlFor={`razlog-${zahtjev.id}`}>
-                                                    Razlog odbijanja:
-                                                </label>
-
-                                                <textarea
-                                                    id={`razlog-${zahtjev.id}`}
-                                                    className="admin-unos"
-                                                    name="razlogOdbijanja"
-                                                    rows={4}
-                                                    value={razlogOdbijanja}
-                                                    onChange={(x) =>
-                                                        setRazlogOdbijanja(x.target.value)
-                                                    }
-                                                    placeholder="Unesite razlog odbijanja..."
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="admin-akcije">
-                                                <button
-                                                    type="submit"
-                                                    className="admin-gumb admin-gumb-odbij"
-                                                >
-                                                    Potvrdi odbijanje
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    className="admin-gumb admin-gumb-odustani"
-                                                    onClick={odustaniOdOdbijanja}
-                                                >
-                                                    Odustani
-                                                </button>
-                                            </div>
-                                        </form>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/*odbijeni zahtjevi i razlozi odbijanja*/}
-            {prikaz === "odbijeni" && (
-                <div className="admin-prikaz admin-odbijeni">
-                    <h2>Odbijeni zahtjevi</h2>
-
-                    {odbijeniZahtjevi.length === 0 ? (
-                        <p className="admin-prazno">
-                            Nema odbijenih zahtjeva.
-                        </p>
-                    ) : (
-                        <div className="admin-popis">
-                            {odbijeniZahtjevi.map((zahtjev) => (
-                                <div
-                                    key={zahtjev.id}
-                                    className="admin-kartica admin-kartica-odbijena"
-                                >
-                                    <h3>{zahtjev.naziv}</h3>
-
-                                    <div className="admin-podaci">
-                                        <p>Email: {zahtjev.email}</p>
-                                        <p>Opis: {zahtjev.opis}</p>
-                                        <p>Datum zahtjeva: {zahtjev.datum}</p>
-                                    </div>
-
-                                    <p className="admin-razlog">
-                                        Razlog odbijanja: {zahtjev.razlogOdbijanja}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/*oglasi koje su korisnici prijavili zbog problema*/}
-            {prikaz === "oglasi" && (
-                <div className="admin-prikaz admin-oglasi">
-                    <h2>Prijavljeni oglasi</h2>
-
-                    {prijavljeniOglasi.length === 0 ? (
-                        <p className="admin-prazno">
-                            Nema prijavljenih oglasa.
-                        </p>
-                    ) : (
-                        <div className="admin-popis">
-                            {prijavljeniOglasi.map((oglas) => (
-                                <div
-                                    key={oglas.id}
-                                    className="admin-kartica admin-kartica-oglas"
-                                >
-                                    <h3>{oglas.naziv}</h3>
-
-                                    <div className="admin-podaci">
-                                        <p>Poslodavac: {oglas.poslodavac}</p>
-                                        <p>Datum prijave: {oglas.datum}</p>
-                                    </div>
-
-                                    <p className="admin-razlog">
-                                        Razlog prijave: {oglas.razlogPrijave}
-                                    </p>
-
-                                    <div className="admin-akcije">
-                                        <button
-                                            type="button"
-                                            className="admin-gumb admin-gumb-obrisi"
-                                            onClick={() => obrisiOglas(oglas)}
-                                        >
-                                            Obriši oglas
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-        </main>
-    );
+  function switchTab(next) {
+    setTab(next); setStatus(next === 'reports' ? 'open' : 'pending');
+    setOffset(0); setAction(null); setError(''); setMessage('');
+  }
+  function begin(kind, item) {
+    setAction({ kind, item }); setReason(''); setConfirmation(''); setError(''); setMessage('');
+  }
+  async function run(path, method, body) {
+    setBusy(true); setError(''); setMessage('');
+    try {
+      const data = await moderationRequest(path, { method, body, csrfToken });
+      setAction(null);
+      setMessage(data.deleted ? `Oglas je obrisan. Datoteka za naknadno čišćenje: ${data.cleanupQueued}.` : 'Promjena je spremljena.');
+      setRevision(r => r + 1);
+    } catch (e) {
+      if ([401, 403].includes(e.status)) onDenied(e.status);
+      else setError(e.message);
+    } finally { setBusy(false); }
+  }
+  function submitAction(event) {
+    event.preventDefault();
+    const { kind, item } = action;
+    if (kind === 'delete') return run(`/admin/castings/${item.castingId}`, 'DELETE', { reason, confirmation });
+    if (kind === 'reject') return run(`/admin/verifications/${item.id}`, 'PATCH', { status: 'rejected', reason });
+    return run(`/admin/reports/${item.id}`, 'PATCH', { status: 'dismissed', reason });
+  }
+  return <main className="admin-panel">
+    <h1>Administracijski panel</h1>
+    <div className="admin-navigacija">
+      {[['verifications', 'Verifikacija tvrtki'], ['reports', 'Prijave oglasa'], ['stats', 'Statistika']].map(([name, label]) =>
+        <button type="button" key={name} disabled={busy || tab === name} onClick={() => switchTab(name)}>{label}</button>)}
+      <button type="button" disabled={busy} onClick={() => setRevision(r => r + 1)}>Osvježi</button>
+    </div>
+    {error && <p role="alert">{error}</p>}
+    {message && <p role="status">{message}</p>}
+    {tab !== 'stats' && <label>Status:
+      <select value={status} disabled={busy} onChange={e => { setStatus(e.target.value); setOffset(0); setAction(null); }}>
+        {Object.entries(tab === 'verifications' ? verificationLabels : reportLabels).map(([value, label]) =>
+          <option key={value} value={value}>{label}</option>)}
+      </select>
+    </label>}
+    {!loaded ? <p role="status">Učitavam podatke…</p> : result.data && <>
+      {tab === 'stats' ? <>
+        <p>Aktivni korisnici: {result.data.activeUsers}; deaktivirani: {result.data.disabledUsers}</p>
+        <p>Datoteke na čekanju za čišćenje: {result.data.cleanupPending}</p>
+        {[['usersByRole', 'Korisnici po ulozi'], ['verifications', 'Posljednje verifikacije aktivnih tvrtki'],
+          ['castings', 'Oglasi'], ['applications', 'Prijave kandidata'], ['reports', 'Prijave oglasa']].map(([name, title]) =>
+          <section key={name}><h2>{title}</h2>
+            <table><thead><tr><th>Status / uloga</th><th>Broj</th></tr></thead><tbody>
+              {Object.entries(result.data[name]).map(([label, count]) => <tr key={label}><td>{statLabels[label] || label}</td><td>{count}</td></tr>)}
+            </tbody></table>
+            {!Object.keys(result.data[name]).length && <p>Nema podataka.</p>}
+          </section>)}
+      </> : <>
+        {!result.data.items.length && <p>Nema zapisa za odabrani status.</p>}
+        {result.data.items.map(item => <article className="admin-kartica" key={item.id}>
+          <h2>{tab === 'verifications' ? item.companyName : item.castingTitle}</h2>
+          <p>Status: {(tab === 'verifications' ? verificationLabels : reportLabels)[item.status]}</p>
+          <p>Poslano: {date(item.submittedAt)}</p>
+          {tab === 'verifications' ? <>
+            <p>OIB: {item.submittedData?.reg_num || item.regNum}</p>
+            <p>Kontakt: {item.submittedData?.contact_email || item.contactEmail}</p>
+            <p>Telefon: {item.submittedData?.phone || item.phone}; sjedište: {item.submittedData?.location || item.location}</p>
+            <p>Naziv pri slanju: {item.submittedData?.company_name || 'Stari zahtjev bez snimke podataka'}</p>
+            {item.rejectionReason && <p>Razlog odbijanja: {item.rejectionReason}</p>}
+            {item.status === 'pending' && <button type="button" disabled={busy}
+              onClick={() => run(`/admin/verifications/${item.id}`, 'PATCH', { status: 'under_review' })}>Preuzmi u provjeru</button>}
+            {item.status === 'under_review' && <>
+              <p>Administrator koji je preuzeo zahtjev: {item.reviewedBy}</p>
+              <button type="button" disabled={busy} onClick={() => run(`/admin/verifications/${item.id}`, 'PATCH', { status: 'approved' })}>Odobri</button>
+              <button type="button" disabled={busy} onClick={() => begin('reject', item)}>Odbij uz razlog</button>
+            </>}
+          </> : <>
+            <p>Razlog prijave: {item.reason}</p>
+            {item.reviewNote && <p>Odluka: {item.reviewNote}</p>}
+            {item.status === 'open' && <>
+              <button type="button" disabled={busy} onClick={() => begin('dismiss', item)}>Zatvori bez brisanja</button>
+              {item.castingId && <button type="button" disabled={busy} onClick={() => begin('delete', item)}>Obriši oglas</button>}
+            </>}
+          </>}
+        </article>)}
+        <button type="button" disabled={busy || offset === 0} onClick={() => setOffset(n => Math.max(0, n - 20))}>Prethodna stranica</button>
+        <button type="button" disabled={busy || !result.data.hasMore} onClick={() => setOffset(n => n + 20)}>Sljedeća stranica</button>
+      </>}
+    </>}
+    {action && <form className="admin-obrazac" onSubmit={submitAction}>
+      <h2>{action.kind === 'delete' ? 'Potvrda trajnog brisanja' : 'Obrazloženje odluke'}</h2>
+      {action.kind === 'delete' && <>
+        <p>Oglas „{action.item.castingTitle}”, prijave, termini i rezervacije bit će trajno obrisani. Korisnicima se šalje obavijest u aplikaciji.</p>
+        <label htmlFor="delete-confirmation">Upiši OBRIŠI {action.item.castingId}</label>
+        <input id="delete-confirmation" value={confirmation} onChange={e => setConfirmation(e.target.value)} required disabled={busy} />
+      </>}
+      <label htmlFor="admin-reason">Razlog</label>
+      <textarea id="admin-reason" value={reason} onChange={e => setReason(e.target.value)} maxLength={2000} required disabled={busy} />
+      <button type="submit" disabled={busy || !reason.trim() || (action.kind === 'delete' && confirmation !== `OBRIŠI ${action.item.castingId}`)}>
+        {busy ? 'Spremam…' : action.kind === 'delete' ? 'Trajno obriši oglas' : 'Spremi odluku'}
+      </button>
+      <button type="button" disabled={busy} onClick={() => setAction(null)}>Odustani</button>
+    </form>}
+  </main>;
 }
-
-export default AdminPanel;

@@ -41,7 +41,10 @@
     "test:admin:db": "node --test test/admin-database.test.js",
     "db:migrate:profiles": "node scripts/migrate-profiles.js",
     "media:cleanup": "node scripts/cleanup-profile-media.js",
-    "test:profiles:db": "node scripts/check-profiles-database.js"
+    "test:profiles:db": "node scripts/check-profiles-database.js",
+    "db:migrate:moderation": "node scripts/migrate-moderation.js",
+    "media:cleanup:moderation": "node scripts/cleanup-moderation-media.js",
+    "test:moderation:db": "node --test test/moderation-database.test.js"
   },
   "keywords": [],
   "author": "",

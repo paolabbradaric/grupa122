@@ -48,4 +48,4 @@ Gost pregledava oglas, kandidat se registrira, poslodavac traži verifikaciju, a
 
 ## Stanje admin modula
 
-Faza A daje sigurnu prijavu, automatski ulaz kroz `/admin` i serversku zaštitu `/api/admin`. Panel i dalje koristi jasno označene testne podatke i lokalne radnje. Poslovni tok završnog demoa još ovisi o funkcijama B1–B5: zahtjevima i odlukama verifikacije, slanju prijava oglasa, obradi tih prijava, trajnom brisanju oglasa i statistici. Konkretni preduvjeti i granice su u [admin backlogu](ADMIN_PRISTUP.md#preostali-posao).
+Sigurna Google prijava i serverska zaštita `/api/admin` nadopunjene su poslovnim API-jem za verifikaciju, prijave sadržaja, trajno brisanje i statistiku. Profil poslodavca šalje zahtjev, detalji oglasa omogućuju prijavu, a panel koristi stvarne API podatke. Za postojeću bazu potrebna je migracija `moderation.sql`; čišćenje vanjskih datoteka ima zaseban trajni red i skriptu. Ugovor, provjere i granice opisani su u [API-ju moderacije](MODERACIJA_API.md). Zajednička baza nije automatski nadograđena.

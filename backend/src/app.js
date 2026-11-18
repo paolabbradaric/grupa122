@@ -14,6 +14,7 @@ const { createUserModel } = require('./auth/userModel');
 const { createPassport } = require('./auth/passport');
 const { createAuthRouter } = require('./auth/routes');
 const { createAdminRouter } = require('./admin/routes');
+const { createModerationRouter } = require('./admin/publicRoutes');
 const { AuthError } = require('./auth/errors');
 const { requireRole, protectMutation } = require('./auth/middleware');
 
@@ -88,7 +89,9 @@ function createApp(options = {}) {
     config, users, passport, authLimiter: options.authLimiter
   }));
 
-  app.use('/api/admin', createAdminRouter({ config }));
+  const moderationOptions = { config, pool: options.moderationPool || pool, model: options.moderationModel };
+  app.use('/api/admin', createAdminRouter(moderationOptions));
+  app.use('/api', createModerationRouter(moderationOptions));
 
   app.use('/api', createProfileRouter({
     config, pool: options.profilePool || pool,

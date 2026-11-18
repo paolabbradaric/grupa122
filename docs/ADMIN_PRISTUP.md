@@ -1,6 +1,6 @@
 # Administratorski pristup
 
-Faza A povezuje postojeću Google prijavu s administratorskim ovlastima i putanjom `/admin`. Panel ostaje demonstracijski: njegove verifikacije, prijave i brisanja koriste lokalne testne podatke i nisu poslovne promjene u bazi.
+Postojeća Google prijava povezana je s administratorskim ovlastima i putanjom `/admin`. Panel sada koristi poslovni API za verifikaciju, prijave oglasa, trajno brisanje i statistiku; za postojeću bazu potrebna je [migracija moderacije](MODERACIJA_API.md#pokretanje).
 
 ## Konfiguracija i opoziv
 
@@ -30,11 +30,11 @@ Mariov postojeći Google račun ID 49 ostaje demo administrator. Kandidatski pro
 
 `/api/admin` registriran je nakon sesija i Passporta. Zajednički `requireAdmin` traži autentificiranog, aktivnog DB korisnika s ulogom admin, podudaranje DB subjecta i adrese s Google dokazom u sesiji te članstvo na aktualnom popisu. Sam e-mail, uloga, kontakt tvrtke, body, zaglavlja, URL ili browser storage ne daju ovlasti. Admin nema automatski kandidatske i poslodavačke ovlasti.
 
-`GET /api/admin/session` vraća `200 { admin: true, userId }`, gost dobiva `401`, a autentificirana sesija bez admin ovlasti `403`. Sve admin odgovore, uključujući greške parsiranja, štiti `Cache-Control: no-store`. Sve metode koje mijenjaju stanje prolaze zajedničku Origin i CSRF provjeru. Nepostojeće poslovne rute vraćaju `404`; nema lažnih API odgovora koji tvrde da je provedena verifikacija ili brisanje.
+`GET /api/admin/session` vraća `200 { admin: true, userId }`, gost dobiva `401`, a autentificirana sesija bez admin ovlasti `403`. Sve admin odgovore, uključujući greške parsiranja, štiti `Cache-Control: no-store`. Sve metode koje mijenjaju stanje prolaze zajedničku Origin i CSRF provjeru. Nepostojeće rute vraćaju `404`. Implementirane poslovne rute i njihovi odgovori opisani su u [API-ju moderacije](MODERACIJA_API.md).
 
 Callback potvrđenog administratora otvara `/admin`. Obnova valjane admin sesije na početnom ulazu također otvara panel. Odabir druge javne stranice ne pokreće petlju vraćanja. `/admin`, osvježavanje i browser povijest koriste istu zaštitu; query i hash ne dodjeljuju ovlasti. Prije odgovora admin API-ja prikazuje se samo učitavanje. Gost dobiva postojeći ulaz na Google prijavu, a neovlaštena prijavljena osoba zabranu.
 
-Panel provjerava sesiju pri ulazu, povratku fokusa/vidljivosti i svakih 15 sekundi dok je otvoren. `401`, `403` ili greška provjere uklanjaju panel i njegovo lokalno stanje. Odjava ga također uklanja. Budući poslovni API pozivi moraju jednako obraditi zabrane i nikad se oslanjati na raniji uspjeh provjere. Javna SPA ljuska i JavaScript bundle nisu tajni resursi.
+Panel provjerava sesiju pri ulazu, povratku fokusa/vidljivosti i svakih 15 sekundi dok je otvoren. `401`, `403` ili greška provjere uklanjaju panel i učitane podatke. Odjava ga također uklanja. Poslovni API pozivi također uklanjaju panel nakon `401` ili `403`; ne oslanjaju se na raniji uspjeh provjere. Javna SPA ljuska i JavaScript bundle nisu tajni resursi.
 
 Vite podržava izravni `/admin` i refresh. Produkcijski hosting mora usmjeriti `/api` na Express, a frontend putanje na SPA `index.html`, kako je opisano u instalaciji. Produkcijsko postavljanje nije dio ove provjere.
 
@@ -54,12 +54,6 @@ U ovom Windows okruženju Supabase CLI blokira Application Control. SQL datoteka
 
 Rezultati i granice su u [zapisniku admin provjere](verification/2026-11-17/admin-access.md). Mockirani callback nije dokaz da se svih pet ljudi stvarno prijavilo. Četiri nova računa nastaju tek njihovim prvim stvarnim Google ulazom.
 
-## Preostali posao
+## Poslovni modul
 
-- B1, F-009/F-010: slanje i ponovno slanje zahtjeva za verifikaciju, admin dohvat i trajne odluke pending/approved/rejected. Odbijanje traži razlog; reviewer dolazi iz stvarne sesije, uz vrijeme, transakciju i zaštitu od istodobnih odluka. Uskladiti profil i objavu s posljednjom odlukom po `submitted_at DESC, id DESC`.
-- B2, F-031: tablica i slanje prijave neprimjerenog oglasa, validiran razlog, autor, oglas, vrijeme i status. Sama prijava ne mijenja automatski status oglasa.
-- B3, F-032: admin dohvat i obrada prijava, trajna odluka i obrađivač, zatvaranje neopravdane prijave bez brisanja oglasa, konkurentna obrada, prazna stanja i pogreške.
-- B4, F-025: pažljivo definirano trajno brisanje s potvrdom, svim FK vezama, transakcijom, oporavkom i čišćenjem vanjskog storagea. Bez slijepog CASCADE-a i brisanja dijeljenih ili profilnih medija. Testirati na izoliranim podacima; SQL rollback ne vraća već obrisanu vanjsku datoteku.
-- B5, F-033: zaštićeni statistički endpoint i prikaz stvarnih agregata, uz dosljedna pravila statusa i soft-deletea.
-
-Sve buduće admin operacije ostaju iza zajedničkog routera i njegovih autorizacijskih i CSRF provjera.
+B1–B5 implementirani su zasebnim modulom: slanje/ponovno slanje verifikacije i odluke sa snimkom podataka; prijave oglasa i zatvaranje bez brisanja; transakcijsko brisanje s potvrdom, obavijestima i trajnim redom čišćenja datoteka; statistika iz baze. Sve admin rute ostaju iza zajedničkog routera i njegovih autorizacijskih i CSRF provjera. Upute za migraciju, API ugovor, izolirane testove i preostalu provjeru na zajedničkom okruženju donosi [dokument moderacije](MODERACIJA_API.md).
