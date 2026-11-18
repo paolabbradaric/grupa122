@@ -22,7 +22,7 @@ Održavatelj treba:
 2. U **Google Auth Platform → Branding** provjeriti **App name** (`CastMeIfYouCan`), **User support email** i kontakt održavatelja. Kontakt treba biti stvarna, nadzirana adresa tima. Provjeriti podatke i status u **Verification Center** prema stvarnim zahtjevima projekta.
 3. U **Audience** provjeriti **User type** (`Internal` / `External`) i **Publishing status** (`Testing` / `In production`). `Internal` ograničava pristup na organizaciju projekta. Za širu publiku provjeriti odgovarajuću postavku `External` i pravila organizacijskih Google računa.
 4. U **Data Access** zadržati samo identitet: `openid`, `email`, `profile` (Google ih može prikazati i kao `userinfo.email` / `userinfo.profile`). Prema [Googleovim pravilima publike](https://support.google.com/cloud/answer/15549945?hl=en), za isključivo osnovni identitet vrijedi iznimka od uobičajenog Testing popisa testnih korisnika i sedmodnevnog isteka autorizacije. Dodavanje drugih scopes mijenja uvjete. Organizacijske zabrane i zaštite računa i dalje mogu blokirati pristup. Samo osnovni scopes nisu razlog da se bez provjere zahtijeva objava ili dodatna verifikacija.
-5. U **Clients** odabrati OAuth klijent vrste **Web application**. Njegov **Authorized redirect URIs** mora sadržavati točno `http://localhost:3000/api/auth/google/callback`, bez dodatne kose crte. To mora odgovarati `GOOGLE_CALLBACK_URL`; `localhost` i `127.0.0.1` nisu zamjenjivi. Ovaj serverski tok ne koristi GIS skriptu u pregledniku pa se ne konfigurira kao frontend ID-token tok.
+5. U **Clients** odabrati OAuth klijent vrste **Web application** koji koristi backend. Njegov **Authorized redirect URIs** mora sadržavati lokalni `http://localhost:3000/api/auth/google/callback` i javni `https://grupa122.vercel.app/api/auth/google/callback`, bez dodatne kose crte. Odabrani URI mora odgovarati `GOOGLE_CALLBACK_URL`; protokol, host, port, putanja i završna kosa crta moraju biti jednaki. `localhost` i `127.0.0.1` nisu zamjenjivi. Unos u **Authorized JavaScript origins** ne zamjenjuje callback. Ovaj serverski tok ne koristi GIS skriptu u pregledniku pa se ne konfigurira kao frontend ID-token tok.
 6. Privatno postaviti `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET` tog klijenta u `backend/.env` ili postojeće spremište tajni backenda. Ne unositi secret u razgovor, issue, PR, frontend ni `VITE_*`. Provjeriti `git check-ignore backend/.env`. Nakon unosa restartati backend.
 
 U uskom prozoru detalja klijenta Google skriva **Client secrets** u bočnom panelu: otvoriti ikonu **ⓘ / Information and summary** gore desno pa **Additional information** pomaknuti dolje. Google novi secret prikazuje samo pri izradi; odmah spremiti **Download JSON** izvan repozitorija. Ako secret nije spremljen, za isti klijent koristiti **Add client secret** i novi secret odmah spremiti. Nakon provjere nove konfiguracije onemogućiti stari, nekorišteni secret. Vidjeti [Googleove upute za klijente i rotaciju](https://support.google.com/cloud/answer/15549257?hl=en).
@@ -51,20 +51,26 @@ Bez Google ključeva OAuth navigacija preglednika vraća korisnika na frontend s
 
 ### Produkcija
 
-Stvarna produkcijska domena i platforma nisu potvrđene. Primjer Rendera u `6-Postavljanje-instalacija-i-konfiguracija.md` nije potvrda postavljanja ove aplikacije. Prije postavljanja održavatelj treba zabilježiti stvarnu domenu i provjeriti:
+Javna aplikacija dostupna je na `https://grupa122.vercel.app`, uz Vercel Services konfiguraciju iz repozitorija. Deployment održava kolega na svojem Vercel računu. Dokumentirani preview `https://grupa122-tin-preview-grupa122.vercel.app` zasebno je, zaštićeno okruženje. Vercel target (Production/Preview), točan aktivni deployment/commit i privatne env vrijednosti treba potvrditi u njegovu dashboardu; dostupni konektor nema pristup tom timu. Postavke javne aplikacije:
 
 | Postavka | Uvjet |
 | --- | --- |
 | `NODE_ENV` | `production`. |
-| `FRONTEND_URL` | Stvarna javna HTTPS adresa aplikacije. |
-| `GOOGLE_CALLBACK_URL` | Stvarna javna HTTPS adresa s putanjom `/api/auth/google/callback`; potpuno isti URI dodati web-klijentu u Google konzoli. |
+| `FRONTEND_URL` | `https://grupa122.vercel.app`. |
+| `GOOGLE_CALLBACK_URL` | `https://grupa122.vercel.app/api/auth/google/callback`; potpuno isti URI dodati postojećem web-klijentu u Google konzoli. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Klijent predviđen za to okruženje; tajna samo na backendu. |
-| `SESSION_SECRET` | Zasebna nasumična produkcijska tajna od najmanje 32 znaka. |
+| `SESSION_SECRET` | Stabilna zasebna nasumična tajna od najmanje 32 znaka; sačuvati postojeću valjanu tajnu. |
 | Reverse proxy | `/api` na istoj domeni kao frontend, uz prosljeđivanje cookieja i ispravan HTTPS protokol. Vite proxy vrijedi samo u razvoju. |
-| `TRUST_PROXY_HOPS` | Stvarni broj pouzdanih proxyja; ne postavljati proizvoljno. |
+| `TRUST_PROXY_HOPS` | Dokumentirani izravni Vercel proxy koristi `1`; održavatelj potvrđuje topologiju ciljnog deploymenta. Javni odgovor potvrđeno šalje Secure cookie. |
 | Sesije i baza | Dostupna postojeća PostgreSQL baza i `app_private.sessions`; provjeriti `Secure`, `HttpOnly`, `SameSite=Lax` cookie. |
 
-Nije potrebno mijenjati bazu niti uvoditi drugi auth sustav radi unosa OAuth ključeva. U ovom koraku aplikacija nije objavljena na novu platformu.
+Nije potrebno mijenjati bazu, rotirati tajne niti uvoditi drugi auth sustav radi dodavanja callbacka. Production i Preview vrijednosti održavaju se odvojeno; Preview koristi vlastiti stabilni alias i odgovarajući Google callback. Početak prijave i callback moraju ostati na istom hostu zbog host-only cookieja. Backend ne izvodi callback iz nepouzdanog `Host` zaglavlja. Detalji su u [Vercel uputama](vercel-deployment.md).
+
+### Popravak javne prijave 18. 11. 2026.
+
+Stvarni `/api/auth/google` slao je `https://grupa122.vercel.app/api/auth/google/callback`, a Google je odgovarao s `redirect_uri_mismatch`. Identitet klijenta podudarao se s privatno konfiguriranim lokalnim klijentom. U istom Google klijentu dodan je javni callback uz sačuvan lokalni. Nakon spremanja Google prihvaća URI i otvara stranicu za prijavu. Aplikacijski kod, runtime env vrijednosti i tajne nisu mijenjani; novi deployment nije bio potreban.
+
+Korisnik je na javnoj domeni potvrdio stvarnu administratorsku prijavu, otvaranje `/admin`, očuvanje sesije nakon osvježavanja, odjavu i ponovnu prijavu. Automatizirane mrežne provjere potvrdile su siguran povratak pri otkazivanju te pogrešnom ili nedostajućem stateu. Stvarni novi kandidat/poslodavac i SQL provjera izostanka duplikata nisu izvedeni na deployanoj aplikaciji; ti scenariji pokriveni su simuliranim HTTP testovima. Potpuni rezultati i granice dokaza navedeni su u [zapisniku](verification/2026-11-18/deployed-google-auth.md).
 
 ## Povratak u aplikaciju pri grešci
 
