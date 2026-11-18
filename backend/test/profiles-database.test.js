@@ -39,7 +39,8 @@ test(
     );
     t.after(async () => {
       await pool.end();
-      await admin.query(`DROP DATABASE ${database} WITH (FORCE)`);
+      // A normal DROP waits for closing pool sockets, including the restarted pool.
+      await admin.query(`DROP DATABASE ${database}`);
       await admin.end();
       await fs.rm(directory, { recursive: true, force: true });
     });
@@ -81,7 +82,7 @@ test(
           }
         } finally {
           await freshPool.end();
-          await admin.query(`DROP DATABASE ${fresh} WITH (FORCE)`);
+          await admin.query(`DROP DATABASE ${fresh}`);
         }
       },
     );
