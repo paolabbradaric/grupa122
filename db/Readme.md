@@ -153,6 +153,9 @@ prethodnih `anon`, `authenticated` i `security_observer` uloga. Test provjerava
 lokalni konfigurirani host, stvarnu serversku adresu, ime klastera i očekivani
 `system_identifier` prije CREATE/DROP DATABASE ili ROLE. Koristite lokalnog
 `postgres` superusera samo za taj testni klaster; nikad zajednički Supabase.
+CI kroz lokalno objavljen Docker port dodatno postavlja
+`SECURITY_TEST_SERVER_ADDRESS` iz `docker inspect` inventara vlastitog servisa;
+server mora odgovarati toj adresi te istom imenu i identitetu klastera.
 
 Primjer za novi lokalni klaster, iz `backend/`, uz PostgreSQL alate na PATH-u:
 

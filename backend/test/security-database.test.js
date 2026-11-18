@@ -129,7 +129,9 @@ test('application security: dedicated PostgreSQL bootstrap and upgrades', {
   const { rows: [server] } = await admin.query(`SELECT host(inet_server_addr()) AS ip,
     current_setting('cluster_name') AS name, system_identifier::text AS id, version()
     FROM pg_control_system()`);
-  assert.ok(['127.0.0.1','::1'].includes(server.ip));
+  const expectedAddress = process.env.SECURITY_TEST_SERVER_ADDRESS;
+  if (expectedAddress) assert.equal(server.ip,expectedAddress,'Dedicated container address must match its inventory');
+  else assert.ok(['127.0.0.1','::1'].includes(server.ip));
   assert.equal(server.name, 'castme_security_test');
   assert.equal(server.id, process.env.SECURITY_TEST_CLUSTER_ID);
   t.diagnostic(server.version);

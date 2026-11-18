@@ -30,7 +30,18 @@ test('public casting SQL and shared submission quota: isolated local castme_test
   });
   const { rows: [server] } = await db.query('SELECT current_database() AS name, host(inet_server_addr()) AS ip');
   assert.equal(server.name, 'castme_test');
-  assert.ok(['127.0.0.1', '::1'].includes(server.ip));
+  if (process.env.SECURITY_TEST_SERVER_ADDRESS) {
+    // A published local Docker port reaches the container's network address.
+    // Verify the independently supplied container address AND cluster identity.
+    assert.equal(server.ip, process.env.SECURITY_TEST_SERVER_ADDRESS);
+    assert.match(process.env.SECURITY_TEST_CLUSTER_ID || '', /^\d+$/);
+    const { rows: [cluster] } = await db.query(`SELECT current_setting('cluster_name') AS name,
+      system_identifier::text AS id FROM pg_control_system()`);
+    assert.equal(cluster.name, 'castme_security_test');
+    assert.equal(cluster.id, process.env.SECURITY_TEST_CLUSTER_ID);
+  } else {
+    assert.ok(['127.0.0.1', '::1'].includes(server.ip));
+  }
   await db.query(`CREATE SCHEMA ${businessSchema}`);
   businessCreated = true;
   await db.query(`CREATE SCHEMA ${privateSchema}`);
