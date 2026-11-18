@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { authRequest } from './auth';
 
-const guest = { user: null, identity: null, onboardingRequired: false, csrfToken: null };
+const guest = { admin: false, user: null, identity: null, onboardingRequired: false, csrfToken: null };
 const oauthErrors = {
+  google_not_configured: 'Google prijava trenutačno nije dostupna. Pokušaj ponovno kasnije.',
+  rate_limited: 'Previše pokušaja prijave. Pokušaj ponovno za 15 minuta.',
   access_denied: 'Google prijava je otkazana. Možeš pokušati ponovno.',
   oauth_failed: 'Google prijava nije uspjela. Pokušaj ponovno.',
 };
@@ -45,5 +47,9 @@ export function useAuth() {
     setError('');
   }
 
-  return { ...session, loading, error, setError, completeProfile, logout };
+  function updateUser(user) {
+    setSession(previous => previous.user?.id === user.id ? {...previous,user} : previous);
+  }
+
+  return { updateUser, ...session, loading, error, setError, completeProfile, logout };
 }

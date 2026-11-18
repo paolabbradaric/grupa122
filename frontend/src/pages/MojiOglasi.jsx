@@ -4,7 +4,7 @@ import { zahtjevPoslodavca } from "../services/poslodavac";
 
 const statusi = { draft: "nacrt", published: "objavljen", closed: "prijaveZatvorene", filled: "popunjen", cancelled: "otkazan" };
 
-function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava, csrfToken}) {
+function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava, onAudicije, csrfToken}) {
     const [oglasi, setOglasi] = useState([]);
     const [ucitavanje, setUcitavanje] = useState(true);
     const [greska, setGreska] = useState("");
@@ -167,6 +167,12 @@ function MojiOglasi({onNoviOglas, onUrediOglas, onPregledPrijava, csrfToken}) {
                                         Pregled prijava
                                     </button>
                                 )}
+
+                                {(oglas.status === "objavljen" || oglas.status === "prijaveZatvorene") && (
+                                    <button type="button" disabled={spremanje !== null} onClick={() => onAudicije(oglas)}>
+                                        Audicije
+                                    </button>
+                                )} 
 
                                 {oglas.status === "objavljen" && (
                                     <button type="button" disabled={spremanje !== null} onClick={() => promijeniStatus(oglas, "close")}>

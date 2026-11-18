@@ -4,6 +4,7 @@ const PgStore = require('connect-pg-simple')(session);
 const pool = require('./config/db');
 
 const castingRoutes = require('./routes/castingRoutes');
+const { createProfileRouter } = require('./profiles/routes');
 const { createAuditionRouter } = require('./routes/auditionRoutes');
 const applicationController = require('./controllers/applicationController');
 const { createEmployerCastingRouter } = require('./routes/employerCastingRoutes');
@@ -13,6 +14,8 @@ const { loadAuthConfig } = require('./auth/config');
 const { createUserModel } = require('./auth/userModel');
 const { createPassport } = require('./auth/passport');
 const { createAuthRouter } = require('./auth/routes');
+const { createAdminRouter } = require('./admin/routes');
+const { createModerationRouter } = require('./admin/publicRoutes');
 const { AuthError } = require('./auth/errors');
 const { requireRole, protectMutation } = require('./auth/middleware');
 
@@ -58,6 +61,11 @@ function createApp(options = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
+  // I greške parsiranja i obnove sesije moraju imati zabranu predmemoriranja.
+  app.use('/api/admin', (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
   app.use(express.json({ limit: '16kb' }));
 
   // Javni pregled objavljenih oglasa.
@@ -80,6 +88,15 @@ function createApp(options = {}) {
 
   app.use('/api/auth', createAuthRouter({
     config, users, passport, authLimiter: options.authLimiter
+  }));
+
+  const moderationOptions = { config, pool: options.moderationPool || pool, model: options.moderationModel };
+  app.use('/api/admin', createAdminRouter(moderationOptions));
+  app.use('/api', createModerationRouter(moderationOptions));
+
+  app.use('/api', createProfileRouter({
+    config, pool: options.profilePool || pool,
+    storage: options.profileStorage, model: options.profileModel
   }));
 
   // Rute poslodavca moraju biti nakon sesija/Passporta.

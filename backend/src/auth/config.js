@@ -1,4 +1,5 @@
 const path = require('node:path');
+const { parseAdminEmails } = require('./adminPolicy');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 
@@ -18,6 +19,7 @@ function loadAuthConfig(env = process.env) {
   const trustProxy = Number(env.TRUST_PROXY_HOPS || 0);
   if (!Number.isSafeInteger(trustProxy) || trustProxy < 0) throw new Error('Neispravan TRUST_PROXY_HOPS.');
   return {
+    adminEmails: parseAdminEmails(env.ADMIN_EMAILS),
     production,
     trustProxy,
     secret: env.SESSION_SECRET,

@@ -1,0 +1,29 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+title CastMeIfYouCan — razvojni razmještaj
+node "Razvojno računalo" {
+  node "Preglednik" as Browser {
+    artifact "React aplikacija" as UI
+  }
+  node "Vite razvojni poslužitelj\nlocalhost:5173" as Vite
+  node "Node.js / Express\nlocalhost:3000" as Express {
+    artifact "Auth i poslovne rute\nPassport / express-session / pg" as API
+  }
+}
+cloud "Google\nvanjski pružatelj identiteta" as Google
+node "Supabase — zajednička razvojna baza" {
+  database "PostgreSQL\npublic + app_private" as DB
+}
+Browser --> Vite : HTTP / aplikacija i resursi
+Vite --> Express : HTTP proxy /api
+Browser --> Google : HTTPS autorizacija
+Google --> Browser : povratno preusmjeravanje
+Browser --> Express : HTTP OAuth callback\n/api/auth/google/callback
+Express --> Google : HTTPS razmjena koda i profil
+Express --> DB : PostgreSQL preko TLS-a\nCA provjera, pooler port 5432
+note bottom of DB
+  Tajne ostaju u backend konfiguraciji.
+  app_private nije izložena Data API-ju.
+end note
+@enduml

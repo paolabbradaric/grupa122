@@ -1,138 +1,83 @@
-# [Naziv aplikacije] — Projektna dokumentacija
+# CastMeIfYouCan — projektna dokumentacija
 
-**Kolegij:** Programsko inženjerstvo, Fakultet elektrotehnike i računarstva Sveučilišta u Zagrebu  
-**Akademska godina:** [20XX./20XX.]  
-**Tim:** [Oznaka i naziv tima]  
-**Nastavnik:** Vlado Sruk  
-**Asistent / demonstrator:** [Ime i uloga u ovom izvođenju kolegija]
+Kolegij: Programsko inženjerstvo, FER, Sveučilište u Zagrebu. Tim: grupa 12.2. Dopuna baze i autentifikacije: 17. 11. 2026.
 
-## Pregled projekta
+CastMeIfYouCan povezuje kandidate koji traže casting uloge i poslodavce koji objavljuju oglase, obrađuju prijave i organiziraju audicije. Dokumentacija razlikuje planirane zahtjeve od implementacije i stvarno izvedenih provjera.
 
-**Cilj:** Omogućiti čitatelju koji prvi put vidi projekt da u dvije ili tri rečenice prepozna aplikaciju, njezine ciljane korisnike i glavnu svrhu.
+## Kazalo
 
-[Opis projekta.]
+[1. Projekt](1-Projekt.md). Zajednički opseg; preostali predložak treba dopuniti na razini tima.
 
-<details>
-<summary><strong>Sažet pregled projekta</strong></summary>
+[2. Analiza zahtjeva](2-Analiza-zahtjeva.md). Zahtjevi i sljedivost; auth/DB provjere povezane su s konkretnim dokazima.
 
-Za projekt na temu CrisisMap sažet pregled može navesti građane kojima trebaju informacije o kriznim događajima povezane s njihovom lokacijom te cilj aplikacije da prijave kriznih događaja prikaže na karti. Funkcionalnost spomenite samo ako pripada odobrenom zadatku tima; bez dokaza nemojte tvrditi da aplikacija poboljšava odgovor hitnih službi. Ovo je primjer informativnog pregleda, a ne tekst za prepisivanje niti dokaz da je funkcionalnost ostvarena.
+[3. Obrasci uporabe](3-Obrasci-uporabe.md). UC-001 i UC-002 određuju registraciju, prijavu i odjavu; specifikacija ne znači da je sve izvršeno.
 
-</details>
+[4. Arhitektura i oblikovanje](4-Arhitektura-i-oblikovanje.md). Implementirani temelji auth/DB, šest pogleda/dijagrama i odluke.
 
-**Aplikacija i osnovno postavljanje:** README repozitorija  
-**Javno dostupna aplikacija:** pogledajte README – Postavljanje
+[5. Ispitivanje](5-Ispitivanje.md). Auth/DB slučajevi, početni zapisnik na bd785d4, naknadni Google rezultati i preostale sustavske provjere.
 
-## Članovi tima i uloge
+[6. Postavljanje i konfiguracija](6-Postavljanje-instalacija-i-konfiguracija.md). Lokalno pokretanje, PostgreSQL, OAuth, migracije i kontrole upisa.
 
-Ažurirani popis članova, njihovih GitHub profila i glavnih uloga ili doprinosa nalazi se u README-u repozitoriju.
+[7. Zaključak i budući rad](7-Zakljucak-i-buduci-rad.md). Rezultat i preostali rad auth/DB područja; nije proglašenje dovršenosti cijelog projekta.
 
-## Kazalo dokumentacije
+[A. Aktivnosti grupe](A-Pregled-aktivnosti-grupe.md). Podjela rada i dokazivi Mariovi doprinosi bez izmišljenih sati/sastanaka.
 
-| Stranica | Svrha |
-| --- | --- |
-| 1. Opseg projekta | Problem, cilj i granice projekta |
-| 2. Analiza zahtjeva | Zahtjevi, ograničenja i sljedivost |
-| 3. Obrasci uporabe | Akteri i reprezentativne interakcije korisnika |
-| 4. Arhitektura i oblikovanje | Glavne odluke oblikovanja, struktura, podaci i ponašanje |
-| 5. Ispitivanje | Pristup ispitivanju, stvarni rezultati i poznati nedostaci |
-| 6. Postavljanje, instalacija i konfiguracija | Lokalna instalacija, konfiguracija, javno postavljanje i administracija |
-| 7. Zaključak i budući rad | Zaključak i moguća daljnja poboljšanja |
-| A. Pregled aktivnosti grupe | Aktivnosti tima, doprinosi i izazovi |
-| [Autentifikacija](AUTENTIFIKACIJA.md) | Google prijava, registracija, sesije, API ugovor i konfiguracija |
+[Autentifikacija](AUTENTIFIKACIJA.md). API ugovor, sesije, validacija, integracija i status zadatka #12.
 
-## Ključne točke projekta
+[Google prijava](GOOGLE_PRIJAVA.md). Lokalna OAuth konfiguracija, povratak pri pogrešci i potvrđeni stvarni kandidatski scenariji iz PR-a #44.
 
-| Kontrolna točka | Demonstracija | Video |
-| --- | --- | --- |
-| Iteracija 1 | [Poveznica na demonstraciju ili inačicu projekta] | [Poveznica na video Demo 1, ako je snimljen] |
-| Završni pregled | [Poveznica na završnu inačicu projekta] | [Poveznica na video završne demonstracije, ako je snimljen] |
+[Baza podataka](BAZA_PODATAKA.md). Entiteti, ograničenja, migracijski put i TLS/RLS granice.
 
-Dokumentacija se kontinuirano ažurira kako se aplikacija razvija.
+[Razvojni plan](RAZVOJNI_PLAN.md). Dogovoreni redoslijed i zaduženja tima.
 
-## Organizacija projekta i razvojni proces
+[Zapisnik 17. 11. 2026.](verification/2026-11-17/README.md). Revizija, okruženje i puni ispisi provjera.
 
-**Način rada:** [Stvarni način rada i trajanje iteracije, ako je relevantno.]  
-**Praćenje trenutačnih zadataka i nedostataka:** [Poveznica na GitHub Issues ili stvarno korištenu ploču zadataka.]
+## Tim i praćenje zadataka
 
-<details>
-<summary><strong>Opis načina rada tima</strong></summary>
+Podjela je preuzeta iz razvojnog plana i GitHub zadataka; tablica ne tvrdi da su sva zaduženja dovršena.
 
-**Primjer — CrisisMap:**
+Rea Gavranović radi na sljedećem području: Frontend prijave, navigacija i profili — [#9](https://github.com/paolabbradaric/grupa122/issues/9).
 
-Navedite pristup koji tim stvarno koristi. Tim koji razvija CrisisMap može organizirati prijave, rad na karti i provjere kao GitHub Issues, jednom tjedno raspraviti prioritete i iznad postaviti poveznicu na svoju aktivnu ploču zadataka. Takav je konkretan opis procesa informativniji od tvrdnje da tim koristi „Scrum” ako zapravo ne primjenjuje njegove prakse. Stvarni tim treba navesti vlastiti ritam rada i odgovornosti; dokumentacija ne treba duplicirati ploču zadataka. Primjer opisuje mogući tijek rada (engl. workflow), a ne tvrdi da je objavljeni tim CrisisMapa radio upravo tako.
+Nina Jonjić radi na sljedećem području: Javni oglasi i prijave — [#10](https://github.com/paolabbradaric/grupa122/issues/10).
 
-</details>
+Tara Fošnar radi na sljedećem području: Poslodavčevo sučelje i admin panel — [#11](https://github.com/paolabbradaric/grupa122/issues/11).
 
-## Pravila dokumentacije
+Mario Halužan radi na sljedećem području: Baza, autentifikacija, sesije i ovlasti — [#12](https://github.com/paolabbradaric/grupa122/issues/12).
 
-Dokumentacija se sastoji od međusobno povezanih Markdown stranica. Obavezni UML dijagrami izrađuju se u PlantUML-u, uz PlantUML izvor u dokumentaciji sačuvajte i čitljivu sliku. Primjeri u ovom predlošku kolegija pokazuju kako nešto dokumentirati; nisu dio rezultata studentskog projekta.
+Lucija Šprljan radi na sljedećem području: Audicije i obavijesti — [#13](https://github.com/paolabbradaric/grupa122/issues/13).
 
-<details>
-<summary><strong>Izvori dijagrama i nastavni primjeri</strong></summary>
+Paola Bradarić radi na sljedećem području: Verifikacija, moderacija i integracija — [#14](https://github.com/paolabbradaric/grupa122/issues/14).
 
-Nastavni primjeri pretpostavljaju React/Vite klijentski dio, Node.js poslužiteljski dio, PostgreSQL, smještaj aplikacije na Renderu i Selenium WebDriver (JavaScript). Vaš tehnološki skup može biti drukčiji; u dokumentaciji opišite ono što stvarno koristite.
+Tin Škarpa radi na sljedećem području: Backend oglasa i prijava — [#16](https://github.com/paolabbradaric/grupa122/issues/16).
 
-Za obrazac uporabe podnošenja prijave kriznog događaja u CrisisMapu tim može čuvati UML izvor u `.puml` datoteci, prikazati odgovarajuću sliku na relevantnoj stranici dokumentacije te ažurirati oboje kada se interakcija promijeni. Koristite stvarni dijagram i stvarno postavljanje vlastitog projekta. Domena ili tehnologija prikazana u primjeru ne postaje zahtjev osim ako je dio odobrenog zadatka.
+Zadaci se prate kroz [GitHub Issues](https://github.com/paolabbradaric/grupa122/issues), a promjene kroz [pull requestove](https://github.com/paolabbradaric/grupa122/pulls). Ritam sastanaka ili formalna Scrum praksa nisu potvrđeni ovim zapisom. Javni URL, videosnimke demonstracija i povratne informacije asistenta trebaju biti zasebno evidentirani kada ih tim potvrdi.
 
->Napomena o primjerima: Blokovi „Primjer — CrisisMap" nastavni su scenarij, a ne rezultat ičijeg projekta; ne prepisujte ih. U primjerima se koriste React, Node.js, PostgreSQL, Render i Selenium samo radi dosljednosti. Vaš stog može biti drukčiji (npr. Java/Spring); dokumentirajte ono što stvarno koristite.</details>
+## Pravila dokumentacije i izvori
 
-## Akademski integritet, ponašanje i licenciranje
+Prema README-u repozitorija projektna dokumentacija vodi se u docs/ kao povezani Markdown dokumenti. UML izvori čuvaju se u [puml/](puml/), a čitljive slike u [assets/diagrams/](assets/diagrams/). Nastavni primjeri CrisisMapa nisu rezultati CastMeIfYouCan projekta.
 
-README repozitorija sadrži projektnu izjavu o uporabi umjetne inteligencije, informacije o kodeksu ponašanja i podršci te status licence ili ponovne uporabe. Pristupni podaci i druge tajne nikada se ne objavljuju u dokumentaciji niti dijele u običnim porukama.
+Dopuna od 17. 11. pokriva Mariovo područje iz zadatka #12, spojene PR-ove #23, #25, #29, #31 i #44 te početni SQL/ER model. Dokumentacijska grana ne mijenja poslovni kod, bazu ni tajne; opisuje i auth promjene već spojene kroz PR #44. Stari zahtjev iz issuea za vlastite lozinke razjašnjen je prema novijim F-001–F-005 i NF-02: koristi se Google prijava.
+
+Licenca predloška dokumentacije i kodeks ponašanja opisani su u [README-u](../README.md) i [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md). Licenca nastavnog predloška ne određuje automatski licencu studentske aplikacije.
 
 ## Izjava o uporabi umjetne inteligencije
 
-<!-- UPUTA: Ovo je detaljan zapis uporabe umjetne inteligencije; README sadrži kratak sažetak i poveznicu na ovaj odjeljak. Unesite samo ono što se stvarno dogodilo i uklonite neupotrijebljene retke. Ako nije korišten nijedan alat generativne umjetne inteligencije, zamijenite cijeli odjeljak jednom rečenicom koja to jasno navodi. Svaki redak mora upućivati na stranicu, datoteku, zahtjev za uključivanje promjena (PR) ili zadatak. Nikada ne unosite pristupne podatke, osobne podatke ni tuđi zaštićeni sadržaj u alate umjetne inteligencije. -->
+Ovaj zapis odnosi se na dokumentacijsku dopunu baze i autentifikacije od 17. 11. 2026. Raniji [PR #29](https://github.com/paolabbradaric/grupa122/pull/29) već navodi AI pomoć pri auth uputama. Povijest uporabe AI-ja u ostalim dijelovima tima nije utvrđena ovim pregledom.
 
-Kratak sažetak: README – Uporaba umjetne inteligencije. Ovaj odjeljak bilježi koji su alati korišteni, za koju dokumentaciju ili kod te kako je tim provjerio rezultat. Slijedi FER-ova pravila o primjerenoj uporabi umjetne inteligencije.
+Codex korišten je za sljedeće: Na zahtjev Marija Halužana: pregled izvornog koda, zadataka i PR-ova, priprema i usklađivanje dokumentacije te izvođenje postojećih provjera. Povezani su artefakti Ova stranica, poglavlja 4–7, A, dopune 2/3 i AUTENTIFIKACIJA.md, BAZA_PODATAKA.md i zapisnik.
 
-### Korišteni alati
+Codex i PlantUML 1.2025.4 korišten je za sljedeće: Priprema šest projektnih PlantUML izvora i lokalno iscrtavanje SVG-a; tri izvora koriste raniji lokalni nacrt dokumentacije. Povezani su artefakti mario-*.puml i istoimeni SVG-ovi povezani iz poglavlja 4 i 6.
 
-| Alat | Inačica ili model | Koristio/la | Glavna svrha |
-| --- | --- | --- | --- |
-| [Naziv alata] | [Inačica ili model, ako je poznat] | [Član/članovi tima] | [npr. izrada nacrta dokumentacije, generiranje izvora dijagrama] |
+Mario je zadao područje autentifikacije i baze te pregled uputa i otvaranje PR-a. Codex je usporedio početne tvrdnje s kodom revizije `bd785d4` i pokrenuo postojeće testove. Nakon spajanja PR-a #44 dokumentacija je dopunjena prema kodu na `f42e73d` i zabilježenim stvarnim Google provjerama. Ova dokumentacijska dopuna ne mijenja implementaciju. Neovisni pregled člana tima ostaje predmet PR pregleda i nije prikazan kao proveden.
 
-### Opseg doprinosa umjetne inteligencije
+Stvarna implementacija. Poveznice iz poglavlja 4, auth ugovora i baze vode na odgovarajuće module i SQL.
 
-| Stranica, datoteka ili artefakt | Vrsta pomoći | Što je alat proizveo | Što je tim zadao i promijenio | Lokacija |
-| --- | --- | --- | --- | --- |
-| [npr. 3. Obrasci uporabe, UC-002] | [Izrada nacrta / preoblikovanje / prijevod / izvor dijagrama / sažimanje] | [Kratak opis] | [Ulaz zadan alatu; dodane, ispravljene ili uklonjene činjenice] | [Stranica dokumentacije, `.puml` datoteka, PR] |
+Testovi i simulacije. [Puni ispisi početne provjere](verification/2026-11-17/README.md) pripadaju reviziji `bd785d4`; Google i korisnički model u HTTP testovima simulirani su, a SQL provjeren zasebno. Naknadna [Google dopuna](GOOGLE_PRIJAVA.md) bilježi novije rezultate i zasebnu stvarnu kandidatsku prijavu.
 
-Stranice i artefakti koji nisu navedeni iznad izrađeni su bez pomoći generativne umjetne inteligencije. [Po želji: kao dodatne retke navedite kod ili ispitivanja izrađena uz pomoć umjetne inteligencije.]
+Dijagrami. PUML izvori i SVG slike iscrtani su i pregledani; ne prikazuju izmišljene ORM razrede ni potvrđenu produkcijsku objavu.
 
-### Provjera generiranog sadržaja
+Granice provjere. Lokalni stvarni kandidatski Google tok potvrđen je za registraciju, ponovnu prijavu, osvježavanje i odjavu. Stvarni poslodavački tok, restart s postojećom prijavom i produkcija ostaju neprovjereni. Profili i demo admin imaju zaseban status u auth dokumentaciji, ispitivanju i zaključku.
 
-| Provjera | Kako je provedena | Dokaz |
-| --- | --- | --- |
-| Činjenična točnost | [Svaka tvrdnja o funkcionalnostima, ponašanju ili arhitekturi uspoređena je s pokrenutom aplikacijom i kodom] | [Imena pregledavatelja; poveznice na zahtjev za uključivanje promjena (PR) ili zadatak] |
-| Nema tvrdnji o neostvarenim funkcionalnostima | [Provjereno je da opisane funkcionalnosti, ispitivanja i rezultati stvarno postoje; planirani rad označen je kao planiran] | [Usporedba s odjeljkom 5.4 (Ispitivanje) i odjeljkom 7.1 (Zaključak)] |
-| Dosljednost s drugim stranicama | [Nazivi, ID-ovi i dijagrami provjereni su prema Analizi zahtjeva, Obrascima uporabe, Arhitekturi i oblikovanju te Ispitivanju] | [Kontrolni popis ili bilješka pregleda] |
-| Izvori dijagrama | [Generirani PlantUML je iscrtan, ispravljen i odgovara implementiranom sustavu] | [`.puml` datoteka i izrađena slika] |
-| Povjerljivi sadržaj | [Kako je tim osigurao da u upite ili dokumentaciju nisu unesene tajne, pristupni podaci ni osobni podaci] | [Primijenjeni postupak] |
+Povjerljivost. .env nije kopiran u granu; dokument sadrži nazive varijabli i sintetičke testne rezultate bez njihovih privatnih vrijednosti.
 
-### Pogreške pronađene u izlazu umjetne inteligencije
-
-| Problem | Kako je pronađen | Rješenje |
-| --- | --- | --- |
-| [Netočna, izmišljena ili iz predloška preuzeta tvrdnja] | [Pregled, ispitivanje ili usporedba s aplikacijom] | [Ispravak s poveznicom] |
-
-<!-- UPUTA: Zabilježite stvarne ispravke ili napišite „Nisu utvrđene”. Općenita tvrdnja poput „sav tekst je pregledan” nije dokaz; dokaz su prethodne tablice. Tim mora moći objasniti svaku rečenicu koju objavi. -->
-
-<details>
-<summary><strong>Primjer zapisa uporabe umjetne inteligencije</strong></summary>
-
-**Primjer — CrisisMap:**
-
-| Stranica ili artefakt | Vrsta pomoći | Što je alat proizveo | Što je tim zadao i promijenio | Lokacija |
-| --- | --- | --- | --- | --- |
-| 3. Obrasci uporabe, UC-002 | Izrada nacrta | Prvu inačicu glavnog i alternativnih tijekova | Tim je zadao stvarna polja obrasca i uklonio granu prijave u sustav koja u aplikaciji ne postoji | Primjer PR #31 |
-| Sekvencijski dijagram, podnošenje prijave | Izvor dijagrama | Nacrt PlantUML-a | Tim je uskladio nazive sudionika s komponentama i uklonio korak slanja obavijesti koji nije implementiran | `diagrams/report-submission.puml` (primjer) |
-
-| Problem | Kako je pronađen | Rješenje |
-| --- | --- | --- |
-| U tekstu je stajalo da se obavijesti dostavljaju unutar jedne minute | Usporedba s Ispitivanjem (5.4): dostava nikada nije ispitana | Tvrdnja je uklonjena; obavijesti su navedene pod Budućim radom |
-| Nacrt je kopirao primjer zahtjeva F-005 iz predloška kao projektni zahtjev | Usporedba s vlastitim popisom zahtjeva tima | Zamijenjeno stvarnim zahtjevom tima |
-
-**Analiza primjera:** Svaki redak navodi stranicu ili datoteku, ono što je alat generirao i ono što je tim promijenio. Pogreške su tipične za generiranu dokumentaciju: funkcionalnost koja ne postoji i tekst predloška prikazan kao činjenica o projektu. Tvrdnje poput „AI je korišten svugdje” ili „sav tekst je pregledan” nije moguće provjeriti. Ovo je nastavni scenarij, a ne opis objavljenog projekta.
-
-</details>
+Ispravljeni navodi ranijih uputa: „postoje samo javne GET rute”, „simulira se samo Google”, „pružatelja tek treba odabrati” i općenito „testovi nisu provedeni”. Aktualna dokumentacija navodi postojeće poslovne module, simulirani model, odabrani Google i konkretne rezultate. Nema tvrdnje da je sav sadržaj neovisno pregledan niti da su nepopisani dijelovi nastali bez AI pomoći.

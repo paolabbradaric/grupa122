@@ -1,0 +1,51 @@
+@startuml
+!pragma layout smetana
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+title CastMeIfYouCan — baza i autentifikacija
+
+actor Korisnik
+rectangle "CastMeIfYouCan" {
+  component "React / Vite\nApp, useAuth, GoogleSignIn,\nCompleteRegistration" as UI
+  rectangle "Jedan Express backend" {
+    component "Auth rute\nroutes.js" as Routes
+    component "Passport / GoogleStrategy\npassport.js" as Passport
+    component "Validacija registracije\nvalidation.js" as Validation
+    component "Korisnici i transakcije\nuserModel.js" as Users
+    component "Sesije\nexpress-session / connect-pg-simple" as Sessions
+    component "Poslovne rute drugih članova\nrequireAuth / requireRole / protectMutation" as Business
+    component "pg Pool\nconfig/db.js" as Pool
+  }
+  database "PostgreSQL na Supabaseu" {
+    component "public\nusers, candidate_profiles, organisations\ni domenske tablice" as Public
+    component "app_private.sessions" as Private
+  }
+}
+cloud "Google\nvanjski pružatelj identiteta" as Google
+
+Korisnik --> UI
+UI --> Routes : /api/auth, cookie, CSRF
+Routes --> Passport : OAuth prijava
+Passport --> Google : kod + PKCE / potvrđeni profil
+Routes --> Validation : podaci registracije
+Routes --> Users : dohvat / registracija
+Passport --> Users : deserijalizacija lokalnog ID-a
+Routes --> Sessions : otvaranje / odjava
+UI --> Business : /api, cookie, CSRF
+Business --> Sessions : prijavljeni korisnik
+Users --> Pool : parametrizirani SQL
+Sessions --> Pool : pohrana sesije
+Pool --> Public : PostgreSQL preko TLS-a
+Pool --> Private : PostgreSQL preko TLS-a
+
+note bottom of Google
+  Google tokeni ne spremaju se.
+  Aplikacija koristi vlastitu serversku sesiju;
+  Supabase Auth JWT nije dio ovog rješenja.
+end note
+note bottom of Business
+  Svaka poslovna ruta mora dodatno provjeriti
+  vlasništvo zapisa i vlastita domenska pravila.
+end note
+@enduml

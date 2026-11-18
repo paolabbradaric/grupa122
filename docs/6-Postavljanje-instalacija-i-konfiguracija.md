@@ -1,185 +1,174 @@
 # 6. Postavljanje, instalacija i konfiguracija
 
-**Cilj:** Detaljno dokumentirati topologiju izvođenja, postupak lokalne instalacije i konfiguracije iz izvornog koda te način javnog postavljanja i administracije programa. README navodi javnu adresu i sažeti postupak lokalnog pokretanja; ova stranica donosi potpun inženjerski postupak koji osigurava točnu ponovljivost na drugom računalu.
+Provjereno okruženje: Windows, Node.js 24.14.0 i npm 11.9.0; početna provjera na kodu `bd785d4`, 17. 11. 2026. Google upute uključuju naknadne promjene iz [PR-a #44](https://github.com/paolabbradaric/grupa122/pull/44), spojenog u `f42e73d`. PostgreSQL je dostupan preko zajedničke Supabase veze. Točne inačice paketa određuju lockfileovi u backend/ i frontend/.
 
-Zamijenite oglednu topologiju, naredbe i postavke onima koje vaš tim stvarno koristi (u primjeru se koristi Render; dokumentirajte platformu odabranu za vaš projekt).
-
----
+Ovdje su razvojne upute za bazu i autentifikaciju. Javni URL i produkcijski razmještaj nisu potvrđeni ovim zapisom.
 
 ## 6.1 Prikaz razmještaja
 
-**Cilj:** Prikazati okruženja izvođenja, raspodijeljene dijelove programa, spremište podataka i relevantne vanjske usluge. Njihovu komunikaciju i mrežne protokole prikažite jednim UML dijagramom razmještaja. Dok dijagram komponenata iz Poglavlja 4 prikazuje logičke odgovornosti, dijagram razmještaja pokazuje gdje se izvršni artefakti fizički ili virtualno izvode.
+![Razvojni razmještaj](assets/diagrams/mario-razvojni-razmjestaj.svg)
 
-**Dijagram razmještaja:** [Ugradite čitljivu sliku UML dijagrama razmještaja.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]  
-**Javno dostupna aplikacija:** [Poveznica na javnu adresu navedenu u README-u ili na njegov odjeljak o postavljanju.]
+PlantUML: [mario-razvojni-razmjestaj.puml](puml/mario-razvojni-razmjestaj.puml).
 
-*Pravila izrade prikaza:*
-* Označite stvarne čvorove na kojima se program izvodi (korisnički uređaj, poslužitelj, baza podataka) i protokole među njima.
-* Bazu podataka ili vanjskog pružatelja usluga uključite samo ako ih postavljeni program stvarno koristi.
-* Razvojno računalo nije javni poslužitelj; prikažite isključivo produkcijsko okruženje.
-* Ako se planirana arhitektura tijekom implementacije promijenila, ovdje prikažite stvarni razmještaj i odgovarajuće ažurirajte opis arhitekture.
-
-<details>
-<summary><strong>Primjer: Javno postavljanje programa za prijave i obavijesti </strong></summary>
-
-**Primjer — CrisisMap:**
-Predloženi klijentski dio gradi se kao statičko web-mjesto. Poslužiteljska web-usluga obrađuje prijave i asinkrono šalje obavijesti unutar **iste postavljene poslužiteljske aplikacije**. PostgreSQL sprema podatke prijava, pružatelj kartografskih usluga isporučuje kartografske pločice pregledniku, a Firebase Cloud Messaging prima zahtjeve za slanje upozorenja iz poslužiteljskog dijela. Primjer pretpostavlja da obavijesti pripadaju opsegu tog konkretnog projekta.
-
-![UML dijagram razmještaja sustava CrisisMap](./assets/diagrams/6-1-crisismap-DD.svg)
-
-**Slika 6.1. UML dijagram razmještaja sustava CrisisMap**
-
-**PlantUML izvor:** izvor
-**Analiza razmještaja:**
-* **Korisnički uređaj:** Web-preglednik izvršava klijentski kod nakon preuzimanja statičkih datoteka.
-* **Poslužiteljski čvor:** Poslužiteljski API i pozadinski zadaci nalaze se unutar jedne usluge (jednog izvršnog procesa).
-* **Baza podataka:** Veza s bazom uspostavlja se isključivo iz poslužiteljskog dijela putem interne mreže, a nikada izravno iz klijentskog preglednika.
-* **Vanjske usluge:** Pružatelj kartografskih usluga i pružatelj obavijesti nalaze se izvan infrastrukture koju postavlja tim.
-</details>
-
----
+Preglednik otvara Vite na http://localhost:5173; proxy prosljeđuje /api Expressu na portu 3000. Google autorizacija koristi vanjsku HTTPS uslugu, a razvojni callback dolazi na backend. Veza prema Supabaseu koristi TLS i CA provjeru. Lokalni HTTP vrijedi za opisano razvojno okruženje.
 
 ## 6.2 Lokalna instalacija i konfiguracija
 
-**Cilj:** Omogućiti novom članu tima ili ocjenjivaču da iz čiste radne kopije repozitorija instalira i lokalno pokrene cijeli programski sustav, uključujući bazu podataka i početne podatke.
+### Preduvjeti i paketi
 
-1. **Preduvjeti i preuzimanje izvornog koda:**
-   * Navedite podržane verzije izvršnog okruženja, upravitelja paketa, baze podataka i CLI alata.
-   * Navedite točne naredbe za kloniranje repozitorija i radni direktorij; naznačite koje se naredbe pokreću iz korijena repozitorija, a koje iz poddirektorija.
-2. **Ovisnosti i konfiguracijske varijable:**
-   * Navedite točne naredbe za instalaciju ovisnosti za klijentski i poslužiteljski dio.
-   * Povežite predložak `.env.example`, opišite ulogu svake varijable, koje vrijednosti smiju biti javne i kako ovlašteni korisnik dobiva tajne vrijednosti.
-   * *Upozorenje:* Nikada ne objavljujte stvarne pristupne podatke i tajne ključeve.
-3. **Inicijalizacija baze podataka i migracije:**
-   * Navedite redoslijed naredbi za stvaranje lokalne baze, dodjelu korisničkih prava i izvođenje migracija sheme; navedite izvode li se migracije ručno ili pri pokretanju te stvarne putanje verzioniranih skripti.
-   * Objasnite kako se učitavaju nužni početni podaci (samo oni nužni) i kako spriječiti višestruko izvođenje početnih skripti.
-4. **Pokretanje i verifikacija:**
-   * Prikažite točan redoslijed pokretanja procesa i lokalne mrežne adrese na kojima su dostupni.
-   * Navedite točan korak provjere (npr. slanje probnog zahtjeva ili pregled u pregledniku) koji dokazuje da klijentski dio uspješno komunicira s poslužiteljskim API-jem i bazom te da se važni podaci trajno pohranjuju.
-   * Navedite gdje čitatelj može provjeriti pogreške ako neki korak ne uspije.
+Potrebni su Git, Node.js/npm, dostupna PostgreSQL baza i serverski pristupni podaci. Za stvarnu prijavu potreban je Google OAuth klijent. Za SQL se može koristiti psql ili drugi pouzdani PostgreSQL alat. Java/PlantUML potreban je samo za izradu dijagrama.
 
-Uključite samo korake koje aplikacija stvarno zahtijeva. Ako README već sadrži potpun i ponovljiv postupak, povežite ga i ovdje dodajte samo ono što nedostaje umjesto održavanja dviju potpunih kopija istih uputa.
-
-<details>
-<summary><strong>Primjer: Instalacija programa s lokalnom PostgreSQL bazom (CrisisMap)</strong></summary>
-
-Ovaj nastavni primjer koristi klijentski dio temeljen na radnom okviru React/Vite (`frontend/`), poslužiteljski dio temeljen na Node.js okruženju (`backend/`) i PostgreSQL bazu podataka.
-
-#### 1. Inicijalizacija baze podataka
-
-U terminalu stvorite razvojnu bazu podataka i pokrenite početnu SQL skriptu iz korijena repozitorija:
-
-```bash
-createdb crisismap_dev
-psql -d crisismap_dev -f backend/db/001_create_schema.sql
-psql -d crisismap_dev -c '\dt'
-```
-
-Verzionirana SQL datoteka u ovom primjeru stvara tablice u **novoj** bazi podataka; provjera `\dt` treba ih prikazati. Konfigurirajte lokalni PostgreSQL račun koji može koristiti tu shemu; ako je riječ o zasebnom računu, zabilježite naredbe za njegovo stvaranje i dodjelu prava. Node.js poslužiteljski dio čita `DATABASE_URL`: lokalno ga postavite tako da se putem PostgreSQL URL-a povezuje na `crisismap_dev`, a potrebne pristupne podatke čuvajte u lokalnoj postavci koja se ne uključuje u repozitorij. Nemojte objaviti puni URL veze ako sadrži lozinku. Ako druga aplikacija koristi automatske migracije, pokrenite je prema uputama i provjerite jesu li migracije provedene umjesto zasebnog izvršavanja skripte početne sheme. Ako ogledne prijave zahtijevaju početne podatke, navedite stvarnu naredbu tog projekta i objasnite kada se treba koristiti.
-
-#### 2. Konfiguracija i pokretanje poslužiteljskog dijela (backend)
-
-U prvom terminalu postavite ovisnosti, pripremite varijable okruženja i pokrenite poslužitelj:
-
-```bash
+```powershell
+git clone https://github.com/paolabbradaric/grupa122.git
+cd grupa122
 cd backend
 npm ci
-cp .env.example .env
-# Uredite .env datoteku: postavite DATABASE_URL=postgresql://localhost:5432/crisismap_dev
+Copy-Item .env.example .env
+```
+
+Kopiranje je za novu konfiguraciju; postojeću .env datoteku urediti bez prepisivanja. Tajne se ne dodaju u Git. U drugom terminalu, iz korijena repozitorija:
+
+```powershell
+cd frontend
+npm ci
+```
+
+### Varijable backenda
+
+Vrijednosti su u backend/.env; [primjer](../backend/.env.example) ne sadrži lozinke. Backend konfiguraciju učitava neovisno o radnom direktoriju.
+
+Postavka PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD određuje sljedeće: PostgreSQL veza; zajednička adresa je u primjeru, lozinka se pribavlja sigurnim kanalom od vlasnika projekta.
+
+Postavka PGSSL određuje sljedeće: true za zajedničku Supabase vezu; false samo za odgovarajuću lokalnu vezu bez TLS-a.
+
+Postavka PGSSLROOTCERT određuje sljedeće: certs/supabase-ca.crt, relativno prema backend/. Provjera certifikata ostaje uključena.
+
+Postavka PORT određuje sljedeće: 3000; pri promjeni uskladiti Vite proxy i callback.
+
+Postavka NODE_ENV određuje sljedeće: development lokalno; production uključuje Secure cookie i zahtijeva HTTPS auth URL-ove.
+
+Postavka FRONTEND_URL određuje sljedeće: http://localhost:5173.
+
+Postavka GOOGLE_CALLBACK_URL određuje sljedeće: http://localhost:3000/api/auth/google/callback.
+
+Postavka GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET određuje sljedeće: OAuth klijent ovog projekta.
+
+Postavka ADMIN_EMAILS određuje potpune Google adrese pet administratora, odvojene zarezom. Popis se postavlja samo na backendu, privatno za svako okruženje. Primjer sintakse je `admin.one@example.com,admin.two@example.com`; stvarne adrese pribaviti od održavatelja. Normaliziraju se samo rubni razmaci i veličina slova. Prazan popis onemogućuje admin pristup, neispravna stavka zaustavlja pokretanje. Nakon promjene popisa restartati sve backend instance. Uklonjena adresa tada gubi pristup već na sljedećem admin zahtjevu postojeće sesije. Vidjeti [admin pristup](ADMIN_PRISTUP.md).
+
+Postavka SESSION_SECRET određuje sljedeće: Zasebna nasumična tajna s najmanje 32 znaka; bez nje backend odbija pokretanje.
+
+Postavka TRUST_PROXY_HOPS određuje sljedeće: Lokalno 0, drugdje stvaran broj pouzdanih proxy poslužitelja.
+
+Generirati lokalnu sesijsku tajnu i pohraniti je u privatnu konfiguraciju:
+
+```powershell
+node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"
+```
+
+### Nova i postojeća baza
+
+Za novu praznu bazu, iz korijena repozitorija:
+
+```powershell
+psql -v ON_ERROR_STOP=1 -f db/schema.sql
+```
+
+Naredba pretpostavlja da je psql sigurno konfiguriran za namjeravanu bazu; psql sam ne učitava backend/.env. Node skripte koriste tu datoteku. Ne stavljati lozinku u verzioniranu naredbu.
+
+Za postojeću bazu prvo utvrditi primijenjene promjene i slijediti [migracijski put](BAZA_PODATAKA.md#migracijski-put). Ne ponavljati inicijalizacijsku shemu nad zajedničkim podacima. Iz backend/ dostupne su zasebne nadogradnje:
+
+```powershell
+npm run db:migrate:auth
+npm run db:migrate:casting-drafts
+npm run db:migrate:admin
+```
+
+Ovo nisu obavezne naredbe svakog pokretanja. Draft migracija ima preduvjete, a starija migracija limita nije ponovljiva. Sesijska tablica mora postojati prije prijave jer aplikacija ne stvara tablicu automatski.
+
+Admin migracija mijenja samo `users`: nepoznat datum rođenja, ime i prezime dopušteni su samo ulozi admin, a normalizirana adresa mora biti jedinstvena. Ne stvara račune niti mijenja njihove subjecte, profile i odluke verifikacije. Postojeće sukobljene adrese sigurno zaustavljaju cijelu transakciju; ne čistiti ih automatski. Nove instalacije koriste ažurirani `db/schema.sql`.
+
+Frontend putanja `/admin` mora pri izravnom otvaranju i osvježavanju dobiti SPA `index.html`; `/api` mora ostati usmjeren na Express. Vite razvojni server to podržava. Na statičkom hostingu postaviti odgovarajući SPA fallback, a na nginxu nakon odvojene `/api` lokacije koristiti `try_files $uri $uri/ /index.html`. Produkcijski hosting nije konfiguriran ovim zadatkom. Dostupnost SPA ljuske ne daje ovlasti nad zaštićenim API-jem.
+
+### Google OAuth
+
+Pripremiti Google OAuth klijent vrste Web application i consent screen. U autorizirane redirect URI-je upisati točan GOOGLE_CALLBACK_URL. Publiku, osnovne scopes i pravila načina Testing provjeriti prema [Google prijavi — postavljanje i provjera](GOOGLE_PRIJAVA.md). Ključevi ostaju u privatnoj konfiguraciji backenda. Za postojeći lokalni klijent postupak i potvrđeno stanje opisani su u toj dopuni.
+
+Bez ključeva OAuth navigacija preglednika na `GET /api/auth/google` ili callback dobiva `302` na frontend s `authError=google_not_configured`. JSON API zahtjev zadržava `503 GOOGLE_NOT_CONFIGURED`. Pri ograničenju pokušaja OAuth navigacija dobiva `302` s `authError=rate_limited`, a JSON API i onboarding zadržavaju `429 AUTH_RATE_LIMITED`; `Retry-After` ostaje dostupan. Frontend prikazuje odgovarajuću poruku i uklanja parametar iz URL-a. Nijedan od tih neuspjeha ne otvara prijavljenu sesiju; javni dio može raditi ako su baza i ostala konfiguracija dostupni.
+
+Početni [zapisnik na reviziji bd785d4](verification/2026-11-17/README.md) nije uključivao stvarni Google ulazak. Naknadna [Google provjera](GOOGLE_PRIJAVA.md#stanje-provjere-17-11-2026) potvrđuje lokalni kandidatski tok: registraciju, ponovnu prijavu, osvježavanje i odjavu. Stvarni poslodavački tok, restart s postojećom prijavom i produkcijsko postavljanje nisu potvrđeni tim scenarijima.
+
+### Pokretanje i osnovna provjera
+
+U terminalu za backend iz korijena repozitorija:
+
+```powershell
+cd backend
 npm start
 ```
 
-*Poslužiteljski API pokreće se i sluša na:* `http://localhost:8080`
+U drugom terminalu iz korijena repozitorija:
 
-#### 3. Pokretanje klijentskog dijela (frontend)
-
-U drugom terminalu instalirajte ovisnosti klijenta i pokrenite razvojni poslužitelj:
-
-```bash
+```powershell
 cd frontend
-npm ci
-VITE_API_BASE_URL=http://localhost:8080 npm run dev
+npm run dev
 ```
 
-*Klijentska aplikacija dostupna je u pregledniku na:* `http://localhost:5173`
+Otvoriti http://localhost:5173. Vite koristi fiksni port i strictPort: true. Ako je zauzet, osloboditi ga ili svjesno uskladiti sve povezane postavke. Dosljedno koristiti localhost, bez miješanja s 127.0.0.1.
 
-#### 4. Provjera rada sustava
+Gost za GET /api/auth/me dobiva 401; nakon vanjske prijave endpoint vraća korisnika ili podatke za dovršavanje registracije. Auth POST zahtjevi trebaju svježi CSRF token iz /me i dopušteni Origin. Javni oglasi dohvaćaju se preko /api/castings; prazan rezultat može značiti nedostatak odgovarajućih objavljenih podataka.
 
-Otvorite adresu klijenta koju ispiše Vite, podnesite probnu prijavu s odabranom lokacijom, provjerite prikazuje li se potvrda s novim identifikatorom prijave i ponovno je dohvatite. Samo učitavanje početne stranice klijenta bez slanja i dohvata podataka ne dokazuje ispravnost rada poslužiteljskog dijela i baze podataka.
+Provjere iz backend/:
 
-Ako se adresa poslužiteljskog dijela razlikuje od `http://localhost:8080`, koristite adresu koju aplikacija stvarno ispiše. Ako podnošenje ne uspije, pregledajte API zahtjev u pregledniku i zapis poslužiteljskog dijela; ako pokretanje ne uspije, provjerite postavke veze s bazom podataka i je li shema stvorena. Nemojte kopirati putanje ili naredbe iz ovog primjera ako se vaš repozitorij razlikuje.
+```powershell
+npm test
+node --test test/auth.test.js
+npm run test:db
+npm run test:db:casting
+```
 
-**Analiza primjera:** Postupak ima jasan redoslijed: stvoriti bazu podataka, uspostaviti shemu i pristup, konfigurirati veze, pokrenuti oba procesa i provjeriti spremljenu prijavu. Naredbe i očekivani rezultati dovoljno su konkretni da se može dijagnosticirati nepotpuno postavljanje. Oni nadopunjuju kratki put iz README-a do pokrenute aplikacije umjesto da tvrde kako samo učitana web-stranica dokazuje uspješnu instalaciju.
-</details>
+Provjere iz frontend/:
 
----
+```powershell
+npm run lint
+npm run build
+```
+
+Auth/draft DB provjere koriste privremene tablice konfigurirane veze. Pojedini testovi drugih modula traže zasebnu lokalnu bazu i eksplicitne zastavice; [Ispitivanje](5-Ispitivanje.md) razlikuje te rezultate.
+
+### Kontrole poslovnih upisa
+
+Za postavke APPLICATION_WRITES_ENABLED, APPLICATION_WRITES_CONFIRMED vrijedi sljedeće: Zadano false; za upise prijava obje trebaju biti true.
+
+Za postavke APPLICATION_WRITES_ALLOW_REMOTE vrijedi sljedeće: Dodatni uvjet za upise prijava izvan lokalnog castme_test; nije potreban za privremene auth/draft testove.
+
+Za postavke EMPLOYER_CASTING_WRITES_ENABLED, EMPLOYER_CASTING_WRITES_CONFIRMED vrijedi sljedeće: Zadano false; kod dopušta uključivanje samo za localhost/127.0.0.1, port 5432 i bazu castme_test.
+
+Ove postavke nisu globalna zabrana svih upisa. Registracija i sesije imaju vlastite upise, a druge rute treba provjeriti prema njihovu kodu. Ne uključivati poslovne upise u zajedničkoj bazi samo radi demonstracije instalacije.
 
 ## 6.3 Javno postavljanje i administracija
 
-**Cilj:** Dokumentirati točne korake za ponovljivo postavljanje cjelovitog programskog sustava na produkcijsku infrastrukturu u oblaku, uključujući smještenu bazu podataka i veze među postavljenim dijelovima. Kada je jasnije, povežite konfiguraciju koja već postoji u Gitu umjesto njezina prepisivanja.
+Javni URL aplikacije i produkcijska provjera nisu potvrđeni ovim doprinosom. Udaljena baza sama ne dokazuje javno postavljenu web aplikaciju.
 
-| **Postavljeni podsustav** | **Infrastruktura i izvor koda** | **Naredbe izgradnje i pokretanja** | **Konfiguracija i varijable okruženja** |
-| --- | --- | --- | --- |
-| **Klijentski dio** | [Usluga smještaja, grana i putanja mape] | [Naredba izgradnje i izlazni direktorij] | [Javne varijable vidljive pregledniku] |
-| **Poslužiteljski dio** | [Usluga smještaja, grana i putanja mape] | [Naredba izgradnje i naredba pokretanja] | [Port, veza s bazom podataka, tajni ključevi] |
-| **Baza podataka** | [Upravljana baza podataka i regija smještaja] | [Mehanizam izvođenja migracija sheme i trenutak uspostavljanja sheme] | [Zaštićeni pristupni podaci baze] |
+Prije produkcije treba pripremiti HTTPS frontend/backend, točan Google callback, zasebnu tajnu, pouzdanu proxy topologiju i /api na istoj domeni. Cookie tada ima Secure i SameSite=Lax. Za više instanci potreban je zajednički limiter; sesijski store već je izvan memorije procesa.
 
-**CI i CD:** Kontinuirana integracija (engl. *continuous integration*, CI) automatizira izgradnju i provjere pri integriranju promjena. Kratica CD može označavati dva različita postupka. **Kontinuirana isporuka** (engl. *continuous delivery*) održava provjerenu inačicu spremnom za postavljanje, ali postavljanje u produkciju može zahtijevati ručnu odluku. **Kontinuirano postavljanje** (engl. *continuous deployment*) automatski postavlja uspješno provjerenu promjenu u produkciju. Navedite postupak koji projekt stvarno koristi; nemojte koristiti oznaku CI/CD samo zato što alat podržava automatizaciju.
-U tablici i opisu navedite **nazive i svrhu** varijabli, gdje ovlašteni održavatelj dobiva njihove vrijednosti i kojoj se usluzi svaka postavlja. Razlikujte konfiguraciju vidljivu pregledniku od tajnih podataka poslužiteljskog dijela.
+Vlasnik baze treba odrediti aplikacijski račun s manjim pravima, povratne kopije i postupak obnove. app_private se ne izlaže Data API-ju. Produkcijska objava, migracije i promjene prava nisu provedene ovom dokumentacijskom dopunom.
 
-### Postupak postavljanja
+## 6.4 Česte konfiguracijske pogreške
 
-1. **Infrastruktura baze podataka:** [Postupak kreiranja instance baze i primjene migracija.]
-2. **Postavljanje poslužiteljskog dijela:** [Povezivanje repozitorija, postavljanje tajnih varijabli i pokretanje.]
-3. **Izgradnja i objava klijentskog dijela:** [Postavljanje javnog URL-a poslužitelja i generiranje statičkih datoteka.]
-4. **Završno povezivanje:** [Postavljanje dozvoljenih ishodišta (CORS) i verifikacija javne domene.]
+Ako se pojavi problem „backend odbija pokretanje zbog tajne”, treba napraviti sljedeću provjeru: SESSION_SECRET mora postojati i imati najmanje 32 znaka.
 
-### Pristup i administracija
+Ako se pri Google prijavi preglednik vrati s porukom da prijava nije dostupna (`authError=google_not_configured`) ili JSON API vrati `503 GOOGLE_NOT_CONFIGURED`, provjeriti oba OAuth ključa u privatnoj konfiguraciji i restartati backend nakon izmjene.
 
-- **Nadzor rada i zapisi pogrešaka:** [Objasnite gdje i kako ovlašteni članovi tima pristupaju zapisima poslužitelja (engl. *logs*) te kako pregledati pogreške aplikacije.]
-- **Upravljanje administratorskim ovlastima:** [Ako aplikacija ima administratorsku ili moderatorsku ulogu, navedite putanju do sučelja i proceduru dodjele uloge bez javnog otkrivanja pristupnih podataka. Ako nema administratorskog sučelja, to kratko navedite.]
-- **Postupak ažuriranja:** [Opišite kako izmjena iz glavne grane dolazi do postavljene aplikacije. Navedite izvodi li se postavljanje ručno, kontinuiranom isporukom ili kontinuiranim postavljanjem te koje provjere prethode postavljanju.]
-- **Sigurnosne kopije i oporavak:** [Dokumentirajte samo ako ga je tim stvarno konfigurirao i koristio.]
+Ako se preglednik vrati s `authError=rate_limited` ili JSON API vrati `429 AUTH_RATE_LIMITED`, pričekati vrijeme iz `Retry-After` prije novog pokušaja.
 
-Opisujte samo okruženja i automatizirane postupke koji stvarno postoje. Okruženje za pripremu, kontinuirana integracija (CI), kontinuirana isporuka ili kontinuirano postavljanje (CD), krajnja točka za provjeru stanja, sigurnosne kopije i druge operativne mogućnosti navode se samo ako ih tim stvarno koristi.
-<details>
-<summary><strong>Primjer konfiguriranja statičkog web-mjesta, poslužiteljskog dijela i baze podataka na Renderu</strong></summary>
+Ako se pojavi problem „google odbija callback”, treba napraviti sljedeću provjeru: Usporediti protokol, host, port i punu putanju redirect URI-ja.
 
-**Primjer — CrisisMap:**
+Ako se pojavi problem „pOST vraća 403”, treba napraviti sljedeću provjeru: Provjeriti sesiju, svježi CSRF token i Origin; ne miješati lokalne hostove.
 
-Jedno izvedivo postavljanje prethodno opisanog Node.js nastavnog primjera koristi sljedeće usluge Rendera. Lokalna PostgreSQL baza iz odjeljka 6.2 odvojena je od upravljane baze koja poslužuje javnu aplikaciju.
+Ako se pojavi problem „tLS veza ne prolazi”, treba napraviti sljedeću provjeru: Provjeriti adresu, dostupnost i CA putanju; ne gasiti provjeru certifikata kao zamjenu za ispravnu konfiguraciju.
 
-| **Postavljeni podsustav** | **Izvor i konfiguracija izgradnje / pokretanja** | **Potrebne varijable i mrežne veze** |
-| --- | --- | --- |
-| **Statičko web-mjesto** (klijent) | Mapa `frontend/`; grana `main`; izgradnja `npm ci && npm run build`; direktorij objave `dist/`. | `VITE_API_BASE_URL` postavljen na javni URL poslužiteljskog dijela. To je konfiguracija vidljiva pregledniku, a ne tajna vrijednost. |
-| **Web-usluga** (poslužitelj) | Mapa `backend/`; Node.js okruženje; izgradnja `npm ci`; pokretanje `npm start`. | `DATABASE_URL` (**interni** URL Render baze), `PORT` (dodjeljuje platforma). Poslužitelj mora slušati `PORT` na `0.0.0.0`. Po potrebi konfigurirajte dopušteno ishodište klijenta (CORS). |
-| **Upravljani PostgreSQL** | Baza stvorena u istoj Render regiji kao i web-usluga; početnu shemu primijenite na **novu** bazu prije posluživanja zahtjeva za prijave. | Podatke veze dohvatite iz nadzorne ploče baze i čuvajte ih privatnima. Kasnije migracije primjenjujte zasebno umjesto ponovnog izvođenja početne skripte. |
-| **Pružatelj obavijesti** | Integraciju konfigurirajte u poslužiteljskom dijelu samo ako pripada odobrenom projektu i implementirana je. | Poslužiteljski pristupni podatak unesite kroz tajne postavke platforme; dokumentirajte njegov **naziv**, nikada vrijednost. |
+Ako se pojavi problem „sesijska tablica ne postoji”, treba napraviti sljedeću provjeru: Provjeriti shemu i auth migraciju prije prijave.
 
-#### Koraci izvođenja na Renderu
+Ako se pojavi problem „poslovni upis odbijen iako prijava radi”, treba napraviti sljedeću provjeru: Provjeriti zastavice i dopuštenu ciljnu bazu; autentifikacija i poslovni upisi odvojeni su mehanizmi.
 
-1. **Stvaranje baze podataka:** U nadzornoj ploči Rendera stvorite PostgreSQL bazu u regiji u kojoj će se izvoditi poslužiteljski dio. Interni URL baze čuvajte za poslužiteljski dio; nemojte ga unositi u dokumentaciju ni u postavke klijenta.
-2. **Inicijalizacija produkcijske sheme:** Ako baza dopušta vanjsku vezu, iz pouzdanog terminala u korijenu repozitorija povežite se uputom za PSQL iz nadzorne ploče. U otvorenoj `psql` sesiji pokrenite:
-
-   ```sql
-   \i backend/db/001_create_schema.sql
-   \dt
-   ```
-
-   *Napomena:* Naredbu za povezivanje koja sadrži pristupne podatke nikada ne kopirajte u repozitorij ni dokumentaciju. Ako su vanjske veze onemogućene, opišite stvarni ovlašteni mehanizam migracije svog tima. Početnu skriptu ne pokrećite ponovno pri svakom postavljanju.
-3. **Pokretanje poslužiteljske web-usluge:** Povežite repozitorij, odaberite Node.js okruženje i odgovarajuću granu, postavite korijenski direktorij na `backend/`, naredbu izgradnje na `npm ci` i naredbu pokretanja na `npm start`. U privatne postavke okruženja dodajte `DATABASE_URL` s **internim** URL-om baze. Poslužitelj konfigurirajte da sluša na `0.0.0.0` i portu iz varijable `PORT`. Nakon uspješnog postavljanja zabilježite javnu adresu usluge (npr. `https://crisismap-api.onrender.com`).
-4. **Izgradnja klijentskog web-mjesta:** Povežite repozitorij, odaberite `frontend/`, naredbu izgradnje `npm ci && npm run build` i mapu objave `dist/`. Prije izgradnje postavite `VITE_API_BASE_URL` na **javnu adresu poslužitelja**; ovdje nikada ne koristite privatni URL baze. Zabilježite generiranu javnu adresu web-mjesta.
-5. **Povezivanje i verifikacija produkcijskog rada:** Ako poslužitelj ograničava ishodišta preglednika, dopustite javnu adresu statičkog web-mjesta i ponovno postavite poslužiteljski dio. Otvorite javnu adresu klijenta, podnesite prijavu i ponovno je dohvatite kako biste potvrdili trajno spremanje. Zabilježite javni URL web-mjesta u `README.md`.
-6. **Održavanje:** Ako postavljanje ne uspije, pregledajte izlaz i zapise postavljanja usluge u Renderu. Za novu reviziju koristite konfigurirano automatsko postavljanje iz repozitorija ili ručnu radnju postavljanja iz nadzorne ploče. Pristupni podatak za obavijesti konfigurirajte samo u poslužiteljskom dijelu i samo ako je ta funkcionalnost stvarno implementirana. Automatsko pokretanje postavljanja nakon promjene u repozitoriju samo po sebi nemojte nazivati kontinuiranim postavljanjem (CD) ako projekt nema definiran automatizirani tijek provjera koji promjena mora uspješno proći prije postavljanja.
-
-Tim zamjenjuje ogledne nazive direktorija, naredbe, mehanizam sheme i postavke vrijednostima koje rade u vlastitom repozitoriju. Ako obavijesti nisu dostupne, integraciju dokumentirajte iskreno; uspješno podnošenje prijave ne dokazuje uspješnu dostavu obavijesti.
-
-Ako aplikacija uključuje moderatorsko sučelje, navedite njegovu putanju i objasnite kako se moderatorski račun dodjeljuje kroz aplikaciju ili odobreni postupak tima. Nemojte objaviti zadanu lozinku. Oporavak baze podataka opisujte samo ako je tim uspostavio uporabljiv postupak sigurnosnog kopiranja; nemojte implicirati da upravljani smještaj automatski jamči oporavak.
-
-**Analiza primjera:** API i obrada obavijesti ostaju u jednom postavljanju poslužiteljskog dijela, kao na dijagramu. Postupak razlikuje Renderovu internu vezu s bazom od javnog URL-a poslužitelja koji koristi klijent te uspostavlja shemu prije obrade prijava. Izgradnja klijenta dobiva samo konfiguraciju vidljivu pregledniku; tajni podaci baze i pružatelja ostaju u poslužiteljskom dijelu. Render je samo jedan nastavni primjer pa druga platforma zahtijeva opis vlastitog postupka.
-</details>
-
----
-
->**Završna provjera:** Upute za lokalno pokretanje omogućuju podizanje cjelokupnog sustava iz čiste kopije repozitorija bez neprenosivih lokalnih staza. Dijagram razmještaja prikazuje samo stvarno produkcijsko okruženje, njegove čvorove i protokole. Poveznica na javnu aplikaciju provjerena je, vodi na postavljenu verziju programa i jednaka je onoj u `README.md`. Administracijske upute opisuju samo mogućnosti koje tim stvarno pruža. Nijedna datoteka dokumentacije, konfiguracijski primjer niti zapis promjene ne sadrži stvarne pristupne podatke, privatne tokene ili lozinke.
+[Autentifikacija](AUTENTIFIKACIJA.md), [Baza](BAZA_PODATAKA.md), [Kazalo](Home.md)

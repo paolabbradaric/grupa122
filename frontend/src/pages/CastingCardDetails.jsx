@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import ReportCasting from "../components/ReportCasting";
 
-function CastingCardDetails({ id }) {
+function CastingCardDetails({ id, user, csrfToken }) {
   const [casting, setCasting] = useState(null);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ function CastingCardDetails({ id }) {
       <p>Broj traženih osoba: {casting.positions_count}</p>
       <p>Rok prijave: {casting.application_deadline}</p>
       <p>Status prijave: {casting.status}</p>
+      {casting.id === Number(id) && ["candidate", "employer"].includes(user?.role) && <ReportCasting key={id} castingId={id} csrfToken={csrfToken} />}
     </main>
   );
 }

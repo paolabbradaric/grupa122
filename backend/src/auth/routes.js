@@ -4,6 +4,7 @@ const { rateLimit } = require('express-rate-limit');
 const { AuthError } = require('./errors');
 const { validateProfile } = require('./validation');
 const { protectMutation } = require('./middleware');
+const { isAdmin } = require('./adminPolicy');
 
 const call = (object, method, ...args) => new Promise((resolve, reject) => {
   object[method](...args, error => error ? reject(error) : resolve());
@@ -14,22 +15,37 @@ function pendingIdentity(req) {
   return identity && identity.expiresAt > Date.now() ? identity : null;
 }
 
-async function establishSession(req, user, config) {
+async function establishSession(req, user, config, identity) {
   // Passport 0.7 regenerira ID sesije u logIn; ne čuvamo staru OAuth/pending sesiju.
   await call(req, 'logIn', user);
   req.session.cookie.maxAge = config.cookie.maxAge;
   req.session.csrfToken = randomBytes(32).toString('hex');
+  req.session.googleIdentity = { authId: identity.authId, email: identity.email, verified: true };
   await call(req.session, 'save');
 }
 
 function createAuthRouter({ config, passport, users, authLimiter }) {
   const router = Router();
+  const failureUrl = code => {
+    const url = new URL(config.frontendUrl);
+    url.searchParams.set('authError', code);
+    return url.toString();
+  };
+  // Samo OAuth navigacija preglednika dobiva povratak na frontend.
+  // API zahtjevi i onboarding zadržavaju JSON i odgovarajući HTTP status.
+  const browserNavigation = req => req.method === 'GET' &&
+    ['/google', '/google/callback'].includes(req.path) &&
+    req.get('Accept')?.includes('text/html') && req.accepts(['html', 'json']) === 'html';
   const limiter = authLimiter || rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 20,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     message: { code: 'AUTH_RATE_LIMITED', error: 'Previše pokušaja. Pokušaj ponovno za 15 minuta.' },
+    handler(req, res, _next, options) {
+      if (browserNavigation(req)) return res.redirect(failureUrl('rate_limited'));
+      res.status(options.statusCode).json(options.message);
+    },
   });
   const protect = protectMutation(config);
   router.use((req, res, next) => {
@@ -40,14 +56,10 @@ function createAuthRouter({ config, passport, users, authLimiter }) {
 
   const configured = (req, res, next) => {
     if (!config.googleClientId || !config.googleClientSecret) {
+      if (browserNavigation(req)) return res.redirect(failureUrl('google_not_configured'));
       return next(new AuthError(503, 'GOOGLE_NOT_CONFIGURED', 'Google prijava još nije konfigurirana.'));
     }
     next();
-  };
-  const failureUrl = code => {
-    const url = new URL(config.frontendUrl);
-    url.searchParams.set('authError', code);
-    return url.toString();
   };
 
   router.get('/google', limiter, configured, passport.authenticate('google'));
@@ -57,9 +69,11 @@ function createAuthRouter({ config, passport, users, authLimiter }) {
         return res.redirect(failureUrl(req.query.error === 'access_denied' ? 'access_denied' : 'oauth_failed'));
       }
       (async () => {
-        const user = await users.findByAuthId(identity.authId);
+        const user = config.adminEmails?.has(identity.email)
+          ? await users.provisionAdmin(identity)
+          : await users.findByAuthId(identity.authId);
         if (user) {
-          await establishSession(req, user, config);
+          await establishSession(req, user, config, identity);
         } else {
           await call(req.session, 'regenerate');
           req.session.pendingIdentity = { ...identity, expiresAt: Date.now() + 10 * 60 * 1000 };
@@ -67,7 +81,7 @@ function createAuthRouter({ config, passport, users, authLimiter }) {
           req.session.cookie.maxAge = 10 * 60 * 1000;
           await call(req.session, 'save');
         }
-        res.redirect(config.frontendUrl);
+        res.redirect(isAdmin(req, config) ? new URL('/admin', config.frontendUrl).toString() : config.frontendUrl);
       })().catch(async error => {
         // Ne ostavljamo djelomično otvorenu sesiju ako pohrana/prijava ne uspije.
         try { await call(req.session, 'destroy'); } catch { /* glavni odgovor ostaje generičan */ }
@@ -86,6 +100,7 @@ function createAuthRouter({ config, passport, users, authLimiter }) {
     }
     res.json({
       user: req.user || null,
+      admin: isAdmin(req, config),
       onboardingRequired: !req.user && Boolean(pending),
       identity: !req.user && pending ? { email: pending.email, firstName: pending.firstName, lastName: pending.lastName } : null,
       csrfToken: req.session.csrfToken,
@@ -98,8 +113,8 @@ function createAuthRouter({ config, passport, users, authLimiter }) {
     if (!identity) throw new AuthError(401, 'AUTH_REQUIRED', 'Ponovno se prijavi putem Googlea.');
     const profile = validateProfile(req.body);
     const user = await users.register(identity, profile);
-    await establishSession(req, user, config);
-    res.status(201).json({ user, onboardingRequired: false, identity: null, csrfToken: req.session.csrfToken });
+    await establishSession(req, user, config, identity);
+    res.status(201).json({ user, admin: isAdmin(req, config), onboardingRequired: false, identity: null, csrfToken: req.session.csrfToken });
   });
 
   router.post('/logout', protect, async (req, res) => {

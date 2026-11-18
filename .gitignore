@@ -83,3 +83,6 @@ out
 
 # pnpm
 .pnpm-store
+
+# Local Vercel state and build output
+.vercel/

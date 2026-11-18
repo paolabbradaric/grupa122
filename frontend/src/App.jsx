@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import EmployerLogin from "./pages/EmployerLogin";
@@ -12,21 +12,44 @@ import "./App.css";
 import Home from "./pages/Home";
 import MojiOglasi from "./pages/MojiOglasi"
 import NoviOglas from "./pages/NoviOglas";
-import AdminPanel from "./pages/AdminPanel";
+import AdminAccess from "./pages/AdminAccess";
 import PregledPrijava from "./pages/PregledPrijava";
+import Audicije from "./pages/Audicije";
 import CompleteRegistration from "./pages/CompleteRegistration";
 import CastingCardDetails from "./pages/CastingCardDetails";
 import { useAuth } from "./services/useAuth";
 
+function readPage() {
+  return window.location.pathname.replace(/\/+$/, '') === '/admin'
+    ? 'admin-panel' : window.history.state?.page || 'pocetna';
+}
+
 function App() {
-  const [stranica, setStranica] = useState("pocetna");
-  const [odabraniOglas, setOdabraniOglas] = useState(null);
   const auth = useAuth();
+  if (auth.loading) return <main><p role="status">Provjeravam prijavu…</p></main>;
+  return <Application auth={auth} />;
+}
+
+function Application({ auth }) {
+  const [stranica, updatePage] = useState(() => readPage() === 'pocetna' && auth.admin ? 'admin-panel' : readPage());
+  useEffect(() => {
+    if (stranica === 'admin-panel' && window.location.pathname !== '/admin') {
+      window.history.replaceState({ page: 'admin-panel' }, '', '/admin');
+    }
+    const onPopState = () => updatePage(readPage());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [stranica]);
+
+  function setStranica(page) {
+    if (page !== stranica) window.history.pushState({ page }, '', page === 'admin-panel' ? '/admin' : '/');
+    updatePage(page);
+  }
+  const [odabraniOglas, setOdabraniOglas] = useState(null);
   const candidatePages = ['profil-kandidata', 'obavijesti-kandidata', 'prijave-kandidata'];
-  const employerPages = ['profil-poslodavca', 'moji-oglasi', 'novi-oglas', 'pregled-prijava'];
+  const employerPages = ['profil-poslodavca', 'moji-oglasi', 'novi-oglas', 'pregled-prijava', 'audicije'];
   const allowed = (!candidatePages.includes(stranica) || auth.user?.role === "candidate") &&
-   (!employerPages.includes(stranica) || auth.user?.role === "employer") &&
-   (stranica !== "admin-panel" || auth.user?.role === "admin");
+   (!employerPages.includes(stranica) || auth.user?.role === "employer");
   const page = allowed ? stranica : 'prijava';
 
   async function logout() {
@@ -37,12 +60,11 @@ function App() {
     } catch (error) { auth.setError(error.message); }
   }
 
-  if (auth.loading) return <main><p role="status">Provjeravam prijavu…</p></main>;
-
   return (
     <>
       <Navbar
         user={auth.user}
+        admin={auth.admin}
         onOdjava={logout}
         onPrijava={() => setStranica("prijava")}
         onRegistracija={() => setStranica("registracija")}
@@ -73,15 +95,15 @@ function App() {
       ) : page === "registracija-poslodavac" ? (
         <EmployerRegister onPrijava={() => setStranica("prijava-poslodavac")} onKorisnik={() => setStranica("registracija")} />
       ) : page === "profil-kandidata" ? (
-        <CandidateProfile key={auth.user.id} user={auth.user} />
+        <CandidateProfile key={auth.user.id} user={auth.user} csrfToken={auth.csrfToken} onUserUpdated={auth.updateUser} />
       ) : page === "profil-poslodavca" ? (
-        <EmployerProfile key={auth.user.id} user={auth.user} />
+        <EmployerProfile key={auth.user.id} user={auth.user} csrfToken={auth.csrfToken} onUserUpdated={auth.updateUser} />
       ) : page === "obavijesti-kandidata" ? (
         <CandidateNotifications />
       ) : page === "prijave-kandidata" ? (
         <CandidateApplications />
       ) : page === "admin-panel" ? (
-        <AdminPanel />
+        <AdminAccess csrfToken={auth.csrfToken} />
       ) : page === "moji-oglasi" ? (
         <MojiOglasi csrfToken={auth.csrfToken} onNoviOglas={() => {
           setOdabraniOglas(null);
@@ -92,12 +114,17 @@ function App() {
         }} onPregledPrijava={(oglas) => {
           setOdabraniOglas(oglas);
           setStranica("pregled-prijava");
-        }}/>
+        }} onAudicije={(oglas) => {
+          setOdabraniOglas(oglas);
+          setStranica("audicije");
+        }} />
       ) : page === "novi-oglas" ? (
         <NoviOglas 
           key={odabraniOglas?.id ?? "novi"}
           onMojiOglasi={() => setStranica("moji-oglasi")} 
-          oglasZaUredivanje={odabraniOglas}/>
+          oglasZaUredivanje={odabraniOglas}
+          csrfToken={auth.csrfToken}
+        />
       ) : page === "pregled-prijava" ? (
         <PregledPrijava
           key={odabraniOglas?.id}
@@ -106,7 +133,14 @@ function App() {
           onMojiOglasi={() => setStranica("moji-oglasi")}
         />
       ) : page === "detalji" ? (
-        <CastingCardDetails id={odabraniOglas} />
+        <CastingCardDetails id={odabraniOglas} user={auth.user} csrfToken={auth.csrfToken} />
+      ) : page === "audicije" ? (
+        <Audicije
+          key={odabraniOglas?.id}
+          oglas={odabraniOglas}
+          csrfToken={auth.csrfToken}
+          onMojiOglasi={() => setStranica("moji-oglasi")}
+        />
       ) : (
         <Home 
           CastingCardDetails={(id) =>{

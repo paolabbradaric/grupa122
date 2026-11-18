@@ -1,69 +1,54 @@
 //administracijska stranica za pregled zahtjeva i prijavljenih oglasa
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { moderationRequest, moderationList } from "../services/moderation";
+import ModerationStats from "../components/ModerationStats";
 
-function AdminPanel() {
+function AdminPanel({ csrfToken, onDenied }) {
     const [prikaz, setPrikaz] = useState("zahtjevi");
-
-    //testni zahtjevi za verifikaciju poslodavaca
-    const [zahtjevi, setZahtjevi] = useState([
-        {
-            id: 1,
-            naziv: "Studio Sjever",
-            email: "studio@example.com",
-            opis: "Produkcijska kuća za film i televiziju.",
-            datum: "2026-11-10",
-            status: "naCekanju",
-            razlogOdbijanja: ""
-        },
-        {
-            id: 2,
-            naziv: "Kazalište Primjer",
-            email: "kazaliste@example.com",
-            opis: "Organizacija kazališnih predstava i audicija.",
-            datum: "2026-11-11",
-            status: "naCekanju",
-            razlogOdbijanja: ""
-        },
-        {
-            id: 3,
-            naziv: "Demo produkcija",
-            email: "produkcija@example.com",
-            opis: "Produkcija reklamnih sadržaja.",
-            datum: "2026-11-09",
-            status: "odbijen",
-            razlogOdbijanja: "Nisu dostavljeni potrebni podaci."
-        }
-    ]);
-
-    //testni oglasi koje su korisnici prijavili
-    const [prijavljeniOglasi, setPrijavljeniOglasi] = useState([
-        {
-            id: 1,
-            naziv: "Reklama za sportski brend",
-            poslodavac: "Demo agencija",
-            razlogPrijave: "Oglas sadržava neprimjeren sadržaj.",
-            datum: "2026-11-11"
-        },
-        {
-            id: 2,
-            naziv: "Casting za kratkometražni film",
-            poslodavac: "Filmski studio Primjer",
-            razlogPrijave: "Sumnja na lažno predstavljanje.",
-            datum: "2026-11-12"
-        }
-    ]);
-
+    const [podaci, setPodaci] = useState(null);
+    const [revizija, setRevizija] = useState(0);
+    const [spremanje, setSpremanje] = useState(false);
+    const [greska, setGreska] = useState("");
+    const [poruka, setPoruka] = useState("");
     const [zahtjevZaOdbijanje, setZahtjevZaOdbijanje] = useState(null);
     const [razlogOdbijanja, setRazlogOdbijanja] = useState("");
+    const ucitano = podaci?.revizija === revizija;
+    const zahtjevi = ucitano ? podaci.zahtjevi : [];
+    const prijavljeniOglasi = ucitano ? podaci.oglasi : [];
 
-    //izdvajanje zahtjeva prema statusu
-    const zahtjeviNaCekanju = zahtjevi.filter((zahtjev) => {
-        return zahtjev.status === "naCekanju";
-    });
+    // Zadržavamo postojeće nazive polja i prikaze; probne podatke zamjenjuje API.
+    useEffect(() => {
+        const controller = new AbortController();
+        Promise.all([
+            moderationList("/admin/verifications", controller.signal),
+            moderationList("/admin/reports?status=open", controller.signal),
+        ]).then(([verifikacije, oglasi]) => {
+            if (controller.signal.aborted) return;
+            const statusi = { pending: "naCekanju", under_review: "uProvjeri", approved: "odobren", rejected: "odbijen" };
+            setPodaci({ revizija, zahtjevi: verifikacije.map(v => ({
+                id: v.id,
+                naziv: v.submittedData?.company_name || v.companyName,
+                email: v.submittedData?.contact_email || v.contactEmail,
+                opis: `OIB: ${v.submittedData?.reg_num || v.regNum}; telefon: ${v.submittedData?.phone || v.phone}; sjedište: ${v.submittedData?.location || v.location}`,
+                datum: new Date(v.submittedAt).toLocaleString("hr-HR"),
+                status: statusi[v.status],
+                razlogOdbijanja: v.rejectionReason || "",
+            })), oglasi: oglasi.map(o => ({
+                id: o.id, castingId: o.castingId, naziv: o.castingTitle,
+                poslodavac: o.companyName, razlogPrijave: o.reason,
+                datum: new Date(o.submittedAt).toLocaleString("hr-HR"),
+            })) });
+            setGreska("");
+        }).catch(error => {
+            if (controller.signal.aborted) return;
+            if ([401, 403].includes(error.status)) onDenied(error.status);
+            else { setGreska(error.message); setPodaci({ revizija, zahtjevi: [], oglasi: [] }); }
+        });
+        return () => controller.abort();
+    }, [revizija, onDenied]);
 
-    const odbijeniZahtjevi = zahtjevi.filter((zahtjev) => {
-        return zahtjev.status === "odbijen";
-    });
+    const zahtjeviNaCekanju = zahtjevi.filter(zahtjev => ["naCekanju", "uProvjeri"].includes(zahtjev.status));
+    const odbijeniZahtjevi = zahtjevi.filter(zahtjev => zahtjev.status === "odbijen");
 
     function promijeniPrikaz(noviPrikaz) {
         setPrikaz(noviPrikaz);
@@ -71,29 +56,29 @@ function AdminPanel() {
         setRazlogOdbijanja("");
     }
 
-    function odobriZahtjev(zahtjev) {
-        //mijenja se samo zahtjev s odgovarajućim id-em
-        setZahtjevi((prethodniZahtjevi) => {
-            return prethodniZahtjevi.map((trenutniZahtjev) => {
-                if (trenutniZahtjev.id === zahtjev.id) {
-                    return {
-                        ...trenutniZahtjev,
-                        status: "odobren",
-                        razlogOdbijanja: ""
-                    };
-                }
-
-                return trenutniZahtjev;
-            });
-        });
-
-        //zatvaranje obrasca ako je otvoren za odobreni zahtjev
-        if (zahtjevZaOdbijanje === zahtjev.id) {
+    async function spremi(path, method, body) {
+        if (spremanje) return;
+        setSpremanje(true);
+        setGreska("");
+        setPoruka("");
+        try {
+            await moderationRequest(path, { method, body, csrfToken });
             setZahtjevZaOdbijanje(null);
             setRazlogOdbijanja("");
-        }
+            setPoruka("Promjena je spremljena.");
+            setRevizija(prethodna => prethodna + 1);
+        } catch (error) {
+            if ([401, 403].includes(error.status)) onDenied(error.status);
+            else setGreska(error.message);
+        } finally { setSpremanje(false); }
+    }
 
-        console.log("Odobren zahtjev:", zahtjev.id);
+    function preuzmiZahtjev(zahtjev) {
+        return spremi(`/admin/verifications/${zahtjev.id}`, "PATCH", { status: "under_review" });
+    }
+
+    function odobriZahtjev(zahtjev) {
+        return spremi(`/admin/verifications/${zahtjev.id}`, "PATCH", { status: "approved" });
     }
 
     function zapocniOdbijanje(zahtjev) {
@@ -107,52 +92,35 @@ function AdminPanel() {
     }
 
     function odbijZahtjev(zahtjev) {
-        //razlog ne smije biti prazan niti sadržavati samo razmake
         if (razlogOdbijanja.trim() === "") {
             alert("Morate unijeti razlog odbijanja zahtjeva!");
             return;
         }
-
-        const razlog = razlogOdbijanja.trim();
-
-        setZahtjevi((prethodniZahtjevi) => {
-            return prethodniZahtjevi.map((trenutniZahtjev) => {
-                if (trenutniZahtjev.id === zahtjev.id) {
-                    return {
-                        ...trenutniZahtjev,
-                        status: "odbijen",
-                        razlogOdbijanja: razlog
-                    };
-                }
-
-                return trenutniZahtjev;
-            });
+        return spremi(`/admin/verifications/${zahtjev.id}`, "PATCH", {
+            status: "rejected", reason: razlogOdbijanja.trim(),
         });
+    }
 
-        console.log("Odbijen zahtjev:", zahtjev.id);
-        console.log("Razlog odbijanja:", razlog);
-
-        setZahtjevZaOdbijanje(null);
-        setRazlogOdbijanja("");
+    function zatvoriPrijavu(oglas) {
+        const razlog = window.prompt("Unesite razlog zatvaranja prijave bez brisanja oglasa:");
+        if (!razlog?.trim()) return;
+        return spremi(`/admin/reports/${oglas.id}`, "PATCH", { status: "dismissed", reason: razlog.trim() });
     }
 
     function obrisiOglas(oglas) {
         const potvrda = window.confirm(
-            `Jeste li sigurni da želite nepovratno obrisati oglas "${oglas.naziv}"?`
+            `Jeste li sigurni da želite nepovratno obrisati oglas "${oglas.naziv}" i povezane prijave, termine i rezervacije?`
         );
-
-        if (!potvrda) {
+        if (!potvrda) return;
+        const razlog = window.prompt("Unesite razlog uklanjanja oglasa:");
+        if (!razlog?.trim()) return;
+        const tekst = `OBRIŠI ${oglas.castingId}`;
+        const confirmation = window.prompt(`Za potvrdu trajnog brisanja upišite ${tekst}:`);
+        if (confirmation !== tekst) {
+            setGreska("Potvrda nije ispravna. Oglas nije obrisan.");
             return;
         }
-
-        //uklanjanje oglasa iz testnog popisa
-        setPrijavljeniOglasi((prethodniOglasi) => {
-            return prethodniOglasi.filter((trenutniOglas) => {
-                return trenutniOglas.id !== oglas.id;
-            });
-        });
-
-        console.log("Oglas uklonjen iz testnog popisa:", oglas.id);
+        return spremi(`/admin/castings/${oglas.castingId}`, "DELETE", { reason: razlog.trim(), confirmation });
     }
 
     return (
@@ -166,10 +134,15 @@ function AdminPanel() {
                 </p>
 
                 <p className="admin-napomena">
-                    Trenutno se koriste testni podaci.
-                    Promjene se ne spremaju u bazu.
+                    Podaci se dohvaćaju iz baze. Odluke se spremaju nakon potvrde.
                 </p>
             </div>
+
+            {greska && <p role="alert">{greska}</p>}
+            {poruka && <p role="status">{poruka}</p>}
+            {!ucitano && <p role="status">Učitavam podatke…</p>}
+            <button type="button" className="admin-gumb" disabled={spremanje}
+                onClick={() => setRevizija(prethodna => prethodna + 1)}>Osvježi</button>
 
             {/*odabir prikaza*/}
             <div className="admin-navigacija">
@@ -177,7 +150,7 @@ function AdminPanel() {
                     type="button"
                     className="admin-gumb admin-gumb-prikaz"
                     onClick={() => promijeniPrikaz("zahtjevi")}
-                    disabled={prikaz === "zahtjevi"}
+                    disabled={spremanje || prikaz === "zahtjevi"}
                 >
                     Zahtjevi za verifikaciju ({zahtjeviNaCekanju.length})
                 </button>
@@ -186,7 +159,7 @@ function AdminPanel() {
                     type="button"
                     className="admin-gumb admin-gumb-prikaz"
                     onClick={() => promijeniPrikaz("odbijeni")}
-                    disabled={prikaz === "odbijeni"}
+                    disabled={spremanje || prikaz === "odbijeni"}
                 >
                     Odbijeni zahtjevi ({odbijeniZahtjevi.length})
                 </button>
@@ -195,14 +168,17 @@ function AdminPanel() {
                     type="button"
                     className="admin-gumb admin-gumb-prikaz"
                     onClick={() => promijeniPrikaz("oglasi")}
-                    disabled={prikaz === "oglasi"}
+                    disabled={spremanje || prikaz === "oglasi"}
                 >
                     Prijavljeni oglasi ({prijavljeniOglasi.length})
                 </button>
+                <button type="button" className="admin-gumb admin-gumb-prikaz"
+                    onClick={() => promijeniPrikaz("statistika")}
+                    disabled={spremanje || prikaz === "statistika"}>Statistika</button>
             </div>
 
             {/*zahtjevi koji čekaju verifikaciju*/}
-            {prikaz === "zahtjevi" && (
+            {ucitano && prikaz === "zahtjevi" && (
                 <div className="admin-prikaz admin-zahtjevi">
                     <h2>Zahtjevi za verifikaciju</h2>
 
@@ -226,8 +202,12 @@ function AdminPanel() {
                                     </div>
 
                                     <div className="admin-akcije">
+                                        {zahtjev.status === "naCekanju" && <button type="button"
+                                            className="admin-gumb" disabled={spremanje}
+                                            onClick={() => preuzmiZahtjev(zahtjev)}>Preuzmi u provjeru</button>}
                                         <button
                                             type="button"
+                                            disabled={spremanje || zahtjev.status !== "uProvjeri"}
                                             className="admin-gumb admin-gumb-odobri"
                                             onClick={() => odobriZahtjev(zahtjev)}
                                         >
@@ -237,6 +217,7 @@ function AdminPanel() {
                                         <button
                                             type="button"
                                             className="admin-gumb admin-gumb-odbij"
+                                            disabled={spremanje || zahtjev.status !== "uProvjeri"}
                                             onClick={() => zapocniOdbijanje(zahtjev)}
                                         >
                                             Odbij
@@ -268,12 +249,15 @@ function AdminPanel() {
                                                     }
                                                     placeholder="Unesite razlog odbijanja..."
                                                     required
+                                                    maxLength={2000}
+                                                    disabled={spremanje}
                                                 />
                                             </div>
 
                                             <div className="admin-akcije">
                                                 <button
                                                     type="submit"
+                                                    disabled={spremanje}
                                                     className="admin-gumb admin-gumb-odbij"
                                                 >
                                                     Potvrdi odbijanje
@@ -282,6 +266,7 @@ function AdminPanel() {
                                                 <button
                                                     type="button"
                                                     className="admin-gumb admin-gumb-odustani"
+                                                    disabled={spremanje}
                                                     onClick={odustaniOdOdbijanja}
                                                 >
                                                     Odustani
@@ -297,7 +282,7 @@ function AdminPanel() {
             )}
 
             {/*odbijeni zahtjevi i razlozi odbijanja*/}
-            {prikaz === "odbijeni" && (
+            {ucitano && prikaz === "odbijeni" && (
                 <div className="admin-prikaz admin-odbijeni">
                     <h2>Odbijeni zahtjevi</h2>
 
@@ -331,7 +316,7 @@ function AdminPanel() {
             )}
 
             {/*oglasi koje su korisnici prijavili zbog problema*/}
-            {prikaz === "oglasi" && (
+            {ucitano && prikaz === "oglasi" && (
                 <div className="admin-prikaz admin-oglasi">
                     <h2>Prijavljeni oglasi</h2>
 
@@ -358,8 +343,11 @@ function AdminPanel() {
                                     </p>
 
                                     <div className="admin-akcije">
+                                        <button type="button" className="admin-gumb" disabled={spremanje}
+                                            onClick={() => zatvoriPrijavu(oglas)}>Zatvori prijavu bez brisanja</button>
                                         <button
                                             type="button"
+                                            disabled={spremanje || !oglas.castingId}
                                             className="admin-gumb admin-gumb-obrisi"
                                             onClick={() => obrisiOglas(oglas)}
                                         >
@@ -372,6 +360,7 @@ function AdminPanel() {
                     )}
                 </div>
             )}
+            {prikaz === "statistika" && <ModerationStats onDenied={onDenied} key={revizija} />}
         </main>
     );
 }
