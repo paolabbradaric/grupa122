@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { profileRequest } from "../services/profiles";
 import ChangePassword from "./ChangePassword";
 import VerificationRequest from "./VerificationRequest";
+import "./ProfileEditor.css";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGE_PIXELS = 20_000_000;
@@ -344,7 +345,7 @@ export default function ProfileEditor({
   }
 
   return (
-    <main>
+    <main className="profile-editor">
       <h1>Moj profil — {role === "candidate" ? "kandidat" : "poslodavac"}</h1>
 
       {error && <p role="alert">{error}</p>}
