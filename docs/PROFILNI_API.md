@@ -40,7 +40,7 @@ Greške zadržavaju {code,error}: 400 validacija ili neispravan multipart, 401 n
 
 ## Slike i trajna pohrana
 
-Odabran je privatni Supabase Storage bucket. Provjera infrastrukture 17. 11. 2026. pronašla je projekt CastMeIfYouCan, ali storage.buckets nije sadržavao nijedan bucket. Produkcijski upload nije provjeren niti je bucket automatski stvoren. Serverski adapter prije operacije provjerava da bucket postoji i nije javan. Serverski privilegirani ključ zaobilazi Storage RLS; Express zato uvijek provjerava vlasništvo. Passport cookie nije Supabase JWT.
+Odabran je privatni Supabase Storage bucket. Naknadna provjera 18. 11. 2026. potvrdila je postojeći privatni bucket `profiles`. Stvarni adapter uspješno je učitao, preuzeo i uklonio vlastitu privremenu PNG sliku, a javno čitanje bilo je odbijeno. Vercel Production ima serversku konfiguraciju i novu objavu; serverski ključ je Sensitive. Upload kroz prijavljeno produkcijsko sučelje još nije potvrđen. Ranija provjera od 17. 11. na kraju dokumenta opisuje povijesno stanje bez bucketa. Serverski adapter prije operacije provjerava da bucket postoji i nije javan. Serverski privilegirani ključ zaobilazi Storage RLS; Express zato uvijek provjerava vlasništvo. Passport cookie nije Supabase JWT.
 
 Upload koristi multipart polje file za avatar/logo i files za portfolio. Implementacijski zadani limit je 5 MiB po ulaznoj datoteci, konfigurabilan preko PROFILE_IMAGE_MAX_BYTES do najviše 20 MiB. Najviše 20 milijuna piksela i samo statički JPG/PNG. Sharp potpuno dekodira i ponovno kodira sliku, uklanja EXIF i odbija oštećen sadržaj i lažni MIME. Spremljena veličina može se razlikovati od ulazne. Naziv je ograničen i očišćen; objekt dobiva nasumični UUID ključ.
 
@@ -51,6 +51,8 @@ Pohrana i SQL nisu jedna transakcija. Trajni profile_storage_objects ledger bilj
 Pokretati npm run media:cleanup redovito, primjerice svakih sat vremena na backendu s istom konfiguracijom. Jedan prolaz obrađuje do 100 objekata bez media_files reference, starijih od sat vremena. Neuspjesi ostaju u ledgeru i naredba vraća neuspješan izlazni status. Ponavljati dok backlog nije prazan. Sat vremena je zaštitni prozor za upload; povezani objekti se nikad ne brišu. Odvajanje uklanjanja veze i fizičkog čišćenja znači da objekt može još kratko postojati, ali više nije dostupan profilnom rutom.
 
 ## Postavljanje i migracija
+
+Profilna migracija na zajedničkoj bazi i konfiguracija privatnog Storagea izvršene su 18. 11. 2026.; vidi [aktualni status](TIN_BACKEND_STATUS.md). Sljedeći koraci ostaju upute za novo okruženje, a ne zahtjev da se produkcijska migracija ponavlja. Redoviti cleanup raspored još treba operativno potvrditi.
 
 1. U backendu pokrenuti npm ci. Postaviti PG varijable prema postojećim uputama.
 2. Najprije na izoliranoj testnoj bazi pokrenuti npm run db:migrate:profiles. Migracija je transakcijska i ponovljiva. db/schema.sql sadrži iste dodatke za novu bazu.

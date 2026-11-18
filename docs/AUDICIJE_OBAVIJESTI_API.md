@@ -1,6 +1,6 @@
 # Audicije, rezervacije, obavijesti i administratorski pregled
 
-Backend nadogradnja od 18. 11. 2026. Frontend ovim zadatkom nije mijenjan.
+Nadogradnja iz [PR-a #58](https://github.com/paolabbradaric/grupa122/pull/58), spojena 18. 11. 2026. Migracije i produkcijska aktivacija su izvršene; vidi [aktualni status](TIN_BACKEND_STATUS.md). Frontend ovim zadatkom nije mijenjan.
 Sve privatne rute zahtijevaju postojeću Passport sesiju. Mutacije zahtijevaju
 dopušteni Origin i `X-CSRF-Token`. Identitet i uloga dolaze iz sesije.
 
@@ -91,7 +91,7 @@ koristi zadnji ID kao `before`; manje od `limit` redaka znači kraj.
 obavijest jednako daje 404. Svaki odgovor ima `Cache-Control: no-store`.
 Statusne promjene, povlačenje, prihvaćanje, završetak oglasa te rezervacije i
 promjene audicija stvaraju obavijesti u istoj transakciji. E-pošta se ne šalje:
-F-023 još nema odabranog pružatelja ni ugovorenih događaja dostave.
+F-023 (ranije F-034) još nema odabranog pružatelja ni ugovorenih događaja dostave.
 
 ## Admin pregled pojedinačnih prijava
 

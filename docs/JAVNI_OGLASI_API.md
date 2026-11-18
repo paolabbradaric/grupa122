@@ -1,6 +1,6 @@
 # Javni oglasi i filtri
 
-API za F-008. Obje rute su javne, bez sesije ili CSRF tokena, i vraćaju
+API za F-008 (prije objedinjavanja zahtjeva: F-011–F-013). Obje rute su javne, bez sesije ili CSRF tokena, i vraćaju
 samo `published` oglase. Ne vraćaju podatke kandidata, prijava, kontakte
 organizacije ni interne limite prijava. Nema promjene pravila isteka roka:
 oglas sa statusom `published` ostaje vidljiv i nakon roka, ali postojeći POST
@@ -90,11 +90,13 @@ Greške baze vraćaju `500` s generičnim `error` tekstom, bez SQL poruke.
 
 ## Frontend integracija
 
-Rein PR #51 već je u osnovi ove grane. `Home` dohvaća javni popis i lokalno
-pretražuje naziv projekta, ulogu i lokaciju; novi aliasi omogućuju da pročita
-naziv projekta i uloge. Strukturirani filtri još trebaju biti povezani s
-ovim query parametrima. Kartice i detalji i dalje dobivaju stara JSON polja.
-Frontend datoteke ovim backend zadatkom nisu mijenjane.
+Na mainu `2ca2602` nalazi se Ninin [PR #59](https://github.com/paolabbradaric/grupa122/pull/59):
+`Home` šalje filtre `location`, `age` i `requirements` ovom API-ju. Višestruki
+odabir tipova projekta i pretraga iz navigacije filtriraju dohvaćene rezultate
+lokalno; ne šalju ponovljene `projectType` parametre. Detalji koriste javni GET
+i povezuju predaju prijave s postojećom sesijom i CSRF tokenom. Ovo je potvrda
+iz koda; nije nova potvrda cijelog produkcijskog UI tijeka.
 
-Greška profila `42P01` navedena u Reinu PR-u ostaje odvojena infrastrukturna
-provjera s Mariom: ne izvršavati migracije zajedničke baze radi ove rute.
+Ranija profilna greška `42P01` obrađena je kroz PR #56 i kontroliranu primjenu
+profilne/moderacijske sheme. Nije preostala migracijska obveza javnih oglasa.
+Aktualne provjere i otvorena pitanja vodi [Tinov status backenda](TIN_BACKEND_STATUS.md).
