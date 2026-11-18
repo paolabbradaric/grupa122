@@ -107,7 +107,7 @@ Migracija je provjerena na izoliranoj lokalnoj bazi i u CI-ju. Dana 18. 11. 2026
 
 ## Povezivanje s Nininim frontendom i bilješka za Taru
 
-- Nina: `CandidateApplications` treba dohvatiti ovaj GET, koristiti podatke iz `applications` i osvježiti prijavu nakon uspješnog PATCH-a. Ne skrivati završene/povučene prijave. Za radnju slati postojeću sesiju i CSRF; prikazati 409 za aktivnu rezervaciju. Frontend ovim zadatkom nije mijenjan.
+- Rein PR #66 sada povezuje `CandidateApplications` s ovim GET-om i PATCH-om povlačenja, uz postojeću sesiju, CSRF i prikaz 409. Povezani su i dohvat obavijesti te oznaka pročitanosti. Potvrđeno iz koda maina `c05f46f`; završni produkcijski UI prihvat ostaje otvoren. Frontend ovim backend zadatkom nije mijenjan.
 - Tara: PR #62 već povezuje statusni PATCH i konačni odabir `AUDITIONED → ACCEPTED`, prikazuje i završne statuse te koristi JSON helper sa sesijom i CSRF-om. Brojanje odabranih uključuje `ACCEPTED` i stare `SELECTED` zapise. To je potvrđeno iz koda aktualnog maina; cijeli produkcijski UI tijek još treba provjeriti.
 
 ## Testiranje

@@ -31,6 +31,7 @@ test('sprječava nedopuštena polja i neispravne vrijednosti', () => {
     { status: 'published' }, { orgId: 3 }, { maxApplications: 0 },
     { maxApplications: 1001 }, { positionsCount: -2 }, { minAge: 17 },
     { maxAge: 20, minAge: 30 }, { roleTitle: 12 }, { projectType: 'x'.repeat(21) },
+    { roleGenre: 'x'.repeat(101) }, { roleGenre: ['drama'] }, { roleGenre: 12 },
     { applicationDeadline: '2026-02-30' }, { applicationDeadline: 'tomorrow' }
   ]) assert.ok(validateDraft(body).error, JSON.stringify(body));
   assert.match(validateDraft({}).error, /Nema promjena/);
@@ -138,5 +139,34 @@ test('ne dopušta uređivanje tuđeg ni objavljenog oglasa', async () => {
     assert.equal((await createEmployerCastingModel(db).updateDraft(7, 4, { roleTitle: 'A' })).outcome, expected);
     assert.ok(!queries.some(q => q.sql.includes('UPDATE projects')));
     assert.ok(queries.some(q => q.sql === 'ROLLBACK'));
+  }
+});
+
+
+test('rok odbija nepostojeći kalendarski datum i uz ISO vremensku zonu', () => {
+  for (const value of ['2030-02-30T12:00:00Z', '2030-02-29T12:00:00+01:00', '2032-04-31T23:00:00-02:00']) {
+    assert.ok(validateDraft({ applicationDeadline: value }).error, value);
+  }
+  assert.equal(validateDraft({ applicationDeadline: '2032-02-29T23:30:00-02:00' }).data.applicationDeadline,
+    '2032-03-01T01:30:00.000Z');
+});
+
+
+test('opcionalni žanr prihvaća tekst, null i prazno bez promjene scenarija', () => {
+  assert.deepEqual(validateDraft({roleGenre:'drama',auditionText:'Scena'}).data,
+    {roleGenre:'drama',auditionText:'Scena'});
+  assert.deepEqual(validateDraft({roleGenre:'  '}).data,{roleGenre:null});
+  assert.deepEqual(validateDraft({roleGenre:null}).data,{roleGenre:null});
+});
+
+test('uređivanje nacrta čuva žanr kad nije poslan te dopušta brisanje', async () => {
+  const original={id:4,project_id:6,status:'draft',projectTitle:'Film',projectType:'film',
+    roleGenre:'drama',auditionText:'Postojeća scena'};
+  for(const patch of [{roleTitle:'Nova uloga'},{roleGenre:null},{roleGenre:'komedija'}]) {
+    const {db,queries}=mockDb(async sql=>({rows:sql.includes('FOR UPDATE')?[original]:[]}));
+    assert.equal((await createEmployerCastingModel(db).updateDraft(7,4,patch)).outcome,'updated');
+    const params=queries.find(q=>q.sql.includes('UPDATE casting_calls')).params;
+    assert.equal(params[11],Object.hasOwn(patch,'roleGenre')?patch.roleGenre:'drama');
+    assert.equal(params[8],'Postojeća scena');
   }
 });

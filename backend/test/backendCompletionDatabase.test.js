@@ -123,6 +123,28 @@ test(
     const status = async (table, id) =>
       (await db.query(`SELECT status FROM ${table} WHERE id=$1`, [id])).rows[0]
         .status;
+    await t.test("genre migration preserves data, repeats and rejects a mismatched existing type", async () => {
+      const client=await db.connect();
+      const sql=fs.readFileSync(path.resolve(__dirname,"../../db/migrations/20261118_casting_role_genre.sql"),"utf8");
+      try {
+        await client.query("CREATE TEMP TABLE casting_calls(id int PRIMARY KEY,title text)");
+        await client.query("INSERT INTO pg_temp.casting_calls VALUES(1,'Existing row')");
+        await client.query(sql);
+        assert.deepEqual((await client.query("SELECT * FROM pg_temp.casting_calls")).rows,[{id:1,title:'Existing row',role_genre:null}]);
+        await client.query("UPDATE pg_temp.casting_calls SET role_genre='drama' WHERE id=1");
+        await client.query(sql);
+        assert.equal((await client.query("SELECT role_genre FROM pg_temp.casting_calls")).rows[0].role_genre,'drama');
+        await client.query("ALTER TABLE pg_temp.casting_calls ALTER COLUMN role_genre TYPE text");
+        await assert.rejects(client.query(sql),/Review the existing role_genre column type/);
+        await client.query('ROLLBACK');
+        assert.equal((await client.query("SELECT format_type(atttypid,atttypmod) AS type FROM pg_attribute WHERE attrelid='pg_temp.casting_calls'::regclass AND attname='role_genre'")).rows[0].type,'text');
+        assert.deepEqual((await client.query("SELECT * FROM pg_temp.casting_calls")).rows,[{id:1,title:'Existing row',role_genre:'drama'}]);
+      } finally {
+        await client.query('ROLLBACK');
+        await client.query('DROP TABLE IF EXISTS pg_temp.casting_calls');
+        client.release();
+      }
+    });
     await t.test(
       "only owner/invited candidate reads slots; admin application read is separate",
       async () => {
@@ -427,6 +449,7 @@ test(
         const f = await httpFixture(t, {
           writesEnabled: true,
           employerWrites: true,
+          publicModel: require('../src/models/castingModel').createCastingModel(db),
           applicationModel: {
             async getCandidateProfileByUserId(userId) {
               return (
@@ -474,6 +497,8 @@ test(
           {
             projectTitle: "HTTP integration",
             projectType: "film",
+            roleGenre: "drama",
+            auditionText: "Postojeći dio scenarija",
             projectDescription: "Local",
             roleTitle: "Role",
             roleDescription: "Local",
@@ -491,11 +516,23 @@ test(
             (row) => row.id === draft.id,
           ),
         );
+        const ownBefore = await request('/api/employer/castings','GET',employer);
+        assert.equal(ownBefore.find(row=>row.id===draft.id).roleGenre,'drama');
+        await request(`/api/employer/castings/${draft.id}`,'PATCH',employer,{roleGenre:null});
+        assert.equal((await request('/api/employer/castings','GET',employer)).find(row=>row.id===draft.id).roleGenre,null);
+        await request(`/api/employer/castings/${draft.id}`,'PATCH',employer,{roleGenre:'komedija'});
+        await request(`/api/employer/castings/${draft.id}`,'PATCH',employer,{roleGenre:'x'.repeat(101)},400);
+        await request(`/api/employer/castings/${draft.id}`,'PATCH',employer,{applicationDeadline:'2030-02-30T12:00:00Z'},400);
         await request(
           `/api/employer/castings/${draft.id}/publish`,
           "POST",
           employer,
         );
+        const publicRow=await request(`/api/castings/${draft.id}`,'GET',employer);
+        assert.equal(publicRow.roleGenre,'komedija');
+        assert.equal(publicRow.role_genre,'komedija');
+        assert.equal(publicRow.audition_text,'Postojeći dio scenarija');
+        await request(`/api/employer/castings/${draft.id}`,'PATCH',employer,{roleGenre:'drama'},409);
         const submitted = await request(
           `/api/castings/${draft.id}/applications`,
           "POST",

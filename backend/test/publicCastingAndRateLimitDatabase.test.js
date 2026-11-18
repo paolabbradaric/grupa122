@@ -103,7 +103,7 @@ test('public casting SQL and shared submission quota: isolated local castme_test
     assert.deepEqual((await model.getPublishedCastings()).map(row => row.id), [3, 2, 1]);
     const row = await model.getCastingById(1);
     assert.deepEqual(Object.keys(row).sort(), ['id','title','description','location','positions_count',
-      'application_deadline','accepted_count','status','project_id','project_title','project_type','project_description',
+      'application_deadline','accepted_count','status','role_genre','roleGenre','project_id','project_title','project_type','project_description',
       'audition_text','min_age','max_age','appearance_req','exp_req','projectTitle','roleTitle','projectType'].sort());
     assert.equal(row.projectTitle, 'Projekt Mjesec');
     assert.equal(row.roleTitle, 'Uloga 1');

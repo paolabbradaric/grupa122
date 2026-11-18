@@ -38,6 +38,8 @@ Odgovor `200` je JSON polje, odnosno `[]` kada nema rezultata. Postojeća polja
   "project_type": "film",
   "projectTitle": "Projekt Mjesec",
   "roleTitle": "Glavna uloga",
+  "role_genre": "drama",
+  "roleGenre": "drama",
   "projectType": "film",
   "project_description": "Opis projekta",
   "audition_text": "Tekst za audiciju",
@@ -51,8 +53,9 @@ Odgovor `200` je JSON polje, odnosno `[]` kada nema rezultata. Postojeća polja
 `projectTitle`, `roleTitle` i `projectType` su dodatni aliasi za postojeće
 frontend potrošače. `title`/`description` i dalje označavaju ulogu, a
 `project_title`/`project_description` projekt. Opcionalni tekstovi mogu biti
-`null`. Zasebna polja za žanr i scenarij nisu dodana u bazu;
-`audition_text` predstavlja postojeći tekst audicije.
+`null`. Opcionalni žanr uloge vraća se kao `role_genre` i alias `roleGenre`
+(tekst do 100 znakova ili null). Dio scenarija i dalje je `audition_text`;
+nije uvedeno dodatno polje za scenarij.
 
 | Query parametar | Pravilo |
 | --- | --- |

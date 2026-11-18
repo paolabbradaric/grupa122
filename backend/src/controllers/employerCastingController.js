@@ -2,7 +2,7 @@ const { createEmployerCastingModel } = require('../models/employerCastingModel')
 
 const fields = {
   projectTitle: 200, projectType: 20, projectDescription: 2000,
-  roleTitle: 200, roleDescription: 2000, location: 200,
+  roleTitle: 200, roleGenre: 100, roleDescription: 2000, location: 200,
   auditionText: 5000, appearanceReq: 1000, experienceReq: 1000
 };
 const counts = new Set(['positionsCount', 'maxApplications', 'minAge', 'maxAge']);
@@ -43,7 +43,8 @@ function validateDraft(body, creating = false) {
         }
         data[key] = date.toISOString();
       } else if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) &&
-          Number.isFinite(Date.parse(value))) {
+          Number.isFinite(Date.parse(value)) &&
+          new Date(value.slice(0, 10) + 'T00:00:00Z').toISOString().slice(0, 10) === value.slice(0, 10)) {
         data[key] = new Date(value).toISOString();
       } else return { error: 'Neispravan datum roka prijave.' };
     }
