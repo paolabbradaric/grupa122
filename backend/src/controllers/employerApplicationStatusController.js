@@ -24,7 +24,7 @@ function createEmployerApplicationStatusController({
 
       if (
         ![castingId, applicationId].every(
-          id => Number.isSafeInteger(id) && id > 0
+          id => Number.isSafeInteger(id) && id > 0 && id <= 2147483647
         )
       ) {
         return res.status(400).json({

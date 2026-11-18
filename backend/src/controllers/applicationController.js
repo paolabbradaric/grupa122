@@ -53,7 +53,7 @@ function createApplicationHandler({
       // Provjera ID-ja oglasa
       const castingId = Number(req.params?.id);
 
-      if (!Number.isSafeInteger(castingId) || castingId <= 0) {
+      if (!Number.isSafeInteger(castingId) || castingId <= 0 || castingId > 2147483647) {
         return res.status(400).json({
           error: 'Neispravan ID casting oglasa.'
         });
@@ -127,7 +127,7 @@ function createApplicationHandler({
       });
 
     } catch (error) {
-      console.error('Greška pri prijavi na casting:', error);
+      console.error('Greška pri prijavi na casting:', error.code || 'INTERNAL_ERROR');
 
       return res.status(500).json({
         error: 'Došlo je do greške pri obradi prijave.'

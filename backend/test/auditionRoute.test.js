@@ -7,7 +7,6 @@ const session = require('express-session');
 const { createApp } = require('../src/app');
 const { loadAuthConfig } = require('../src/auth/config');
 const { createPassport } = require('../src/auth/passport');
-const { getAuditionSlots, createAuditionSlot, cancelAuditionSlot } = require('../src/models/auditionModels');
 const { resolve } = require('node:dns');
 
 const config = loadAuthConfig({
@@ -17,6 +16,11 @@ const config = loadAuthConfig({
 });
 
 async function createFixture(t, role = 'employer'){
+    for(const [key,value] of Object.entries({PGHOST:'127.0.0.1',PGPORT:'5432',PGDATABASE:'castme_test',
+        EMPLOYER_CASTING_WRITES_ENABLED:'true',EMPLOYER_CASTING_WRITES_CONFIRMED:'true'})){
+        const before=process.env[key];process.env[key]=value;
+        t.after(()=>{if(before===undefined)delete process.env[key];else process.env[key]=before;});
+    }
     const user ={
         id:10,
         email:'test@example.test',

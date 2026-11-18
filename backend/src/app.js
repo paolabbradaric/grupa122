@@ -7,6 +7,8 @@ const { createCastingRouter } = require('./routes/castingRoutes');
 const { createApplicationRateLimiter } = require('./middleware/applicationRateLimit');
 const { createProfileRouter } = require('./profiles/routes');
 const { createAuditionRouter } = require('./routes/auditionRoutes');
+const { createBookingRouter } = require('./routes/bookingRoutes');
+const { createNotificationRouter } = require('./routes/notificationRoutes');
 const applicationController = require('./controllers/applicationController');
 const { createEmployerCastingRouter } = require('./routes/employerCastingRoutes');
 const { createCandidateApplicationsRouter } = require('./routes/candidateApplicationsRoutes');
@@ -31,6 +33,9 @@ function getApplicationWritesEnabled(env = process.env) {
   const allowRemote = env.APPLICATION_WRITES_ALLOW_REMOTE === 'true';
   if (!isLocalTestDatabase(env) && !allowRemote) {
     throw new Error('Spremanje prijava je blokirano: dopuštena je samo lokalna baza castme_test bez dodatne potvrde za udaljenu bazu.');
+  }
+  if (!isLocalTestDatabase(env) && env.PGSSL !== 'true') {
+    throw new Error('Spremanje prijava u udaljenu bazu zahtijeva TLS.');
   }
   if (env.APPLICATION_WRITES_CONFIRMED !== 'true') {
     throw new Error('Spremanje prijava nije potvrdeno. Potrebna je izrazita potvrda konfiguracije.');
@@ -98,7 +103,8 @@ function createApp(options = {}) {
     config, users, passport, authLimiter: options.authLimiter
   }));
 
-  const moderationOptions = { config, pool: options.moderationPool || pool, model: options.moderationModel };
+  const moderationOptions = { config, pool: options.moderationPool || pool, model: options.moderationModel,
+    applicationsModel: options.adminApplicationsModel };
   app.use('/api/admin', createAdminRouter(moderationOptions));
   app.use('/api', createModerationRouter(moderationOptions));
 
@@ -110,7 +116,10 @@ function createApp(options = {}) {
   // Rute poslodavca moraju biti nakon sesija/Passporta.
   app.use('/api/employer', createEmployerCastingRouter({
     config,
-    writesEnabled: employerCastingWritesEnabled
+    writesEnabled: employerCastingWritesEnabled,
+    model:options.employerCastingModel,statusModel:options.employerStatusModel,
+    selectionModel:options.employerSelectionModel,applicationsModel:options.employerApplicationsModel,
+    applicationStatusModel:options.employerApplicationStatusModel
   }));
 
   app.use('/api/candidate', createCandidateApplicationsRouter({
@@ -122,7 +131,9 @@ function createApp(options = {}) {
     createApplicationRateLimiter({ writesEnabled: applicationWritesEnabled, store: options.applicationRateLimitStore }),
     applicationHandler);
   // Rute za audicije.
-  app.use('/api/auditions', createAuditionRouter({ config, controller: options.auditionController }));
+  app.use('/api/auditions', createAuditionRouter({ config, controller: options.auditionController, writesEnabled: employerCastingWritesEnabled }));
+  app.use('/api',createBookingRouter({config,candidateWrites:applicationWritesEnabled,employerWrites:employerCastingWritesEnabled,model:options.auditionWorkflowModel}));
+  app.use('/api/notifications',createNotificationRouter({config,model:options.notificationModel}));
 
   app.use((error, req, res, _next) => {
     if (error instanceof AuthError) {

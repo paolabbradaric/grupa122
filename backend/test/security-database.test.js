@@ -101,9 +101,9 @@ async function seed(db) {
     INSERT INTO casting_calls(id,title,description,positions_count,min_age,max_age,location,
       application_deadline,status,project_id)
       VALUES(500,'Public role','Description',1,18,65,'Zagreb',now()+interval '1 day','published',400);
-    INSERT INTO applications(id,status,candidate_id,casting_call_id) VALUES(600,'SUBMITTED',300,500);
+    INSERT INTO applications(id,status,candidate_id,casting_call_id) VALUES(600,'INVITED',300,500);
     INSERT INTO audition_slots(id,starts_at,ends_at,location,capacity,status,casting_call_id)
-      VALUES(900,now(),now()+interval '1 hour','Zagreb',1,'open',500);
+      VALUES(900,now()+interval '1 day',now()+interval '25 hours','Zagreb',1,'scheduled',500);
     INSERT INTO audition_bookings(id,status,booked_at,audition_slot_id,application_id)
       VALUES(901,'booked',now(),900,600);
     INSERT INTO notifications(id,type,title,message,user_id,application_id,casting_call_id,booking_id)

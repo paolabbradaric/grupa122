@@ -5,7 +5,7 @@ function createEmployerCandidateSelectionController({ model = createEmployerCand
     async select(req, res, next) {
       const castingId = Number(req.params.id);
       const applicationId = Number(req.params.applicationId);
-      if (![castingId, applicationId].every(x => Number.isSafeInteger(x) && x > 0)) {
+      if (![castingId, applicationId].every(x => Number.isSafeInteger(x) && x > 0 && x <= 2147483647)) {
         return res.status(400).json({ error: 'Neispravan ID oglasa ili prijave.' });
       }
       if (!writesEnabled) {

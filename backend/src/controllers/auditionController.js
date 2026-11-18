@@ -1,124 +1,66 @@
-const auditionModel = require('../models/auditionModels');
-
-async function getAuditionSlots(req, res) {
-    try{
-        const casting_call_id = Number(req.params.casting_call_id);
-
-        if(!Number.isInteger(casting_call_id) || casting_call_id <= 0){
-            return res.status(400).json({
-               error: "Neispravan id oglasa."
-            });
-        }
-
-        const termini = await auditionModel.getAuditionSlots(casting_call_id);
-
-        res.json(termini);
-    }catch(error){
-        console.error('Greška pri dohvaćanju termina', error);
-
-        res.status(500).json({
-            error: 'Nije moguće dohvatiti termine audicija.'
-        });
-    }
+const { createAuditionWorkflowModel } = require("../models/auditionModels");
+const validId = (value) =>
+  /^[1-9]\d*$/.test(String(value)) && Number(value) <= 2147483647;
+const calendar = (value) =>
+  typeof value === "string" &&
+  /^\d{4}-\d{2}-\d{2}T/.test(value) &&
+  Number.isFinite(Date.parse(value.slice(0, 10) + "T00:00:00Z")) &&
+  new Date(value.slice(0, 10) + "T00:00:00Z").toISOString().slice(0, 10) ===
+    value.slice(0, 10);
+function createAuditionController({
+  model = createAuditionWorkflowModel(),
+} = {}) {
+  return {
+    async getAuditionSlots(req, res) {
+      if (!validId(req.params.casting_call_id))
+        return res.status(400).json({ error: "Neispravan ID oglasa." });
+      res.json(await model.list(req.user, Number(req.params.casting_call_id)));
+    },
+    async createAuditionSlot(req, res) {
+      const { starts_at, ends_at, location, capacity } = req.body || {};
+      const start = new Date(starts_at),
+        end = new Date(ends_at);
+      if (
+        !validId(req.params.casting_call_id) ||
+        !calendar(starts_at) ||
+        !calendar(ends_at) ||
+        !Number.isFinite(start.getTime()) ||
+        !Number.isFinite(end.getTime()) ||
+        start <= new Date() ||
+        end <= start ||
+        !/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(starts_at) ||
+        !/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(ends_at) ||
+        typeof location !== "string" ||
+        !location.trim() ||
+        location.length > 200 ||
+        !Number.isInteger(Number(capacity)) ||
+        Number(capacity) < 1 ||
+        Number(capacity) > 2147483647 ||
+        !["string", "number"].includes(typeof capacity)
+      )
+        return res.status(400).json({ error: "Neispravni podaci termina." });
+      res.status(201).json(
+        await model.create(req.user.id, Number(req.params.casting_call_id), {
+          starts_at: start.toISOString(),
+          ends_at: end.toISOString(),
+          location: location.trim(),
+          capacity: Number(capacity),
+        }),
+      );
+    },
+    async cancelAuditionSlot(req, res) {
+      if (!validId(req.params.casting_call_id) || !validId(req.params.slot_id))
+        return res
+          .status(400)
+          .json({ error: "Neispravan ID oglasa ili termina." });
+      res.json(
+        await model.cancel(
+          req.user.id,
+          Number(req.params.casting_call_id),
+          Number(req.params.slot_id),
+        ),
+      );
+    },
+  };
 }
-
-async function createAuditionSlot(req, res) {
-    try{
-        const casting_call_id = Number(req.params.casting_call_id);
-        const{starts_at, ends_at, location, capacity} = req.body;
-
-        if(!Number.isInteger(casting_call_id) || casting_call_id <=0){
-            return res.status(400).json({
-                error: "Neispravan id oglasa."
-            });
-        }
-        const pocetak = new Date(starts_at);
-        const kraj = new Date(ends_at);
-        const brojMjesta = Number(capacity);
-
-        if(!starts_at || !ends_at || Number.isNaN(pocetak.getTime()) || Number.isNaN(kraj.getTime()) || kraj<=pocetak){
-            return res.status(400).json({
-                error: "Neispravan početak i završetak termina."
-            });
-        }
-
-        if(typeof location!== "string" || location.trim() === "" || !Number.isInteger(brojMjesta) || brojMjesta<=0){
-            return res.status(400).json({
-                error: "Neispravan unos."
-            });
-        }
-
-        const termin = await auditionModel.createAuditionSlot(
-            casting_call_id, pocetak.toISOString(), kraj.toISOString(), location.trim(), brojMjesta, req.user.id
-        );
-
-        if (!termin){
-            return res.status(404).json({
-                error: "Oglas nije pronađen ili stvaranje termina nije dopušteno."
-            });
-        }
-
-        res.status(201).json(termin);
-    } catch(error){
-        console.error("Greška pri dodavanju termina.", error);
-
-        res.status(500).json({
-            error: "Nije moguće dodati termin audicije."
-        });
-    }
-}
-
-async function cancelAuditionSlot(req, res) {
-    try{
-        const casting_call_id = Number(req.params.casting_call_id);
-        const slot_id = Number(req.params.slot_id);
-
-        if (!Number.isInteger(casting_call_id) || casting_call_id <=0 || !Number.isInteger(slot_id) || slot_id <= 0){
-            return res.status(400).json({
-                error: 'Neispravan id oglasa ili termina'
-            });
-        }
-
-        const result = await auditionModel.cancelAuditionSlot(
-            casting_call_id,
-            slot_id,
-            req.user.id
-        );
-
-        if(result.outcome === 'not_found'){
-            return res.status(404).json({
-                error: 'Termin nije pronađen.'
-            });
-        }
-
-        if(result.outcome === 'invalid_status'){
-            return res.status(409).json({
-                error: 'Termin nije moguće otkazati'
-            });
-        }
-
-        if(result.outcome === 'active_bookings'){
-            return res.status(409).json({
-                error: 'Termin ima aktivnih rezervacija.'
-            });
-        }
-
-        return res.status(200).json({
-            massage: 'Termin je otkazan.',
-            id: result.id
-        });
-
-    }catch (error){
-        console.error('Greška pri otkazivanju termina: ', error);
-
-        return res.status(500).json({
-            error: 'Nije moguće otkazati termin audicije.'
-        });
-    }
-}
-
-module.exports = {
-    getAuditionSlots,
-    createAuditionSlot,
-    cancelAuditionSlot
-};
+module.exports = { createAuditionController, ...createAuditionController() };

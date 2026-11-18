@@ -61,12 +61,12 @@ test('otkazivanje zatvorenog oglasa je dopušteno', async () => {
   assert.equal((await createEmployerCastingStatusModel(m.db).cancel(4, 9)).status, 'cancelled');
 });
 
-test('otkazivanje nije dopušteno kod aktivnih budućih rezervacija audicija', async () => {
+test('otkazivanje obrađuje aktivne buduće rezervacije i obavijesti', async () => {
   const m = mockDb({ activeBookings: true });
-  assert.equal((await createEmployerCastingStatusModel(m.db).cancel(4, 9)).outcome, 'active_bookings');
-  assert.ok(!m.calls.some(x => x.sql.includes('UPDATE casting_calls')));
-  assert.ok(!m.calls.some(x => x.sql.includes('UPDATE audition_slots')));
-  assert.equal(m.calls.at(-1).sql, 'ROLLBACK');
+  assert.equal((await createEmployerCastingStatusModel(m.db).cancel(4, 9)).outcome, 'updated');
+  assert.ok(m.calls.some(x => x.sql.includes('UPDATE audition_bookings')));
+  assert.ok(m.calls.some(x => x.sql.includes('INSERT INTO notifications')));
+  assert.equal(m.calls.at(-1).sql, 'COMMIT');
 });
 
 test('otkazivanje nacrta, popunjenog i već otkazanog oglasa nije dopušteno', async () => {
@@ -95,7 +95,7 @@ test('controller odbija neispravan ID i isključene upise', async () => {
 });
 
 test('controller mapira poslovne ishode u HTTP statuse', async () => {
-  for (const [outcome, status] of [['not_found',404],['invalid_status',409],['active_bookings',409]]) {
+  for (const [outcome, status] of [['not_found',404],['invalid_status',409]]) {
     const c = createEmployerCastingStatusController({ writesEnabled: true, model: { cancel: async () => ({ outcome }) } });
     const r = res();
     await c.cancel({ user: { id: 3 }, params: { id: '5' } }, r, assert.fail);

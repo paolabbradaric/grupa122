@@ -3,15 +3,15 @@ const pool = require('../config/db');
 
 function createEmployerApplicationsModel(database = pool) {
   return {
-    async listByCasting(employerId, castingId) {
+    async listByCasting(employerId, castingId, { adminRead = false } = {}) {
       // Provjeravamo pripada li casting prijavljenom poslodavcu.
       const castingResult = await database.query(`
         SELECT c.id, c.title, c.status
         FROM casting_calls c
         JOIN projects p ON p.id = c.project_id
         JOIN organisations o ON o.id = p.org_id
-        WHERE c.id = $1 AND o.owner_id = $2
-      `, [castingId, employerId]);
+        WHERE c.id = $1 AND (o.owner_id = $2 OR $3::boolean)
+      `, [castingId, employerId, adminRead]);
 
       if (castingResult.rows.length === 0) {
         return { outcome: 'not_found' };

@@ -13,7 +13,7 @@ function createEmployerApplicationsController({
       // Provjera je li ID oglasa ispravan.
       if (
         !Number.isSafeInteger(castingId) ||
-        castingId <= 0
+        castingId <= 0 || castingId > 2147483647
       ) {
         return res.status(400).json({
           error: 'Neispravan ID oglasa.'

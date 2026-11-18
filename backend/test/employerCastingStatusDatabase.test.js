@@ -31,6 +31,8 @@ test('Statusi oglasa: integracija iskljucivo s lokalnim castme_test', {
 
   t.after(async () => {
     try {
+      if (ids.castings.length) await db.query('DELETE FROM notifications WHERE casting_call_id=ANY($1::int[])',[ids.castings]);
+      if (ids.applications.length) await db.query('DELETE FROM application_status_history WHERE application_id=ANY($1::int[])',[ids.applications]);
       // Brisu se samo zapisi koje je stvorio ovaj test.
       if (ids.castings.length) {
         await db.query(
@@ -199,15 +201,15 @@ test('Statusi oglasa: integracija iskljucivo s lokalnim castme_test', {
     assert.equal((await history(id))[0].old_status, 'closed');
   });
 
-  await t.test('aktivna buduca rezervacija blokira otkazivanje', async () => {
+  await t.test('aktivna buduca rezervacija otkazuje se s oglasom i obavijestima', async () => {
     const id = await makeCasting();
     const slotId = await makeSlot(id, 'booked');
-    assert.equal((await model.cancel(owner.userId, id)).outcome, 'active_bookings');
-    assert.equal(await state(id), 'published');
+    assert.equal((await model.cancel(owner.userId, id)).outcome, 'updated');
+    assert.equal(await state(id), 'cancelled');
     const { rows: [slot] } = await db.query(
       'SELECT status FROM audition_slots WHERE id = $1', [slotId]);
-    assert.equal(slot.status, 'open');
-    assert.equal((await history(id)).length, 0);
+    assert.equal(slot.status, 'cancelled');
+    assert.equal((await history(id)).length, 1);
   });
 
   await t.test('SQL greska pri pisanju povijesti vraca cijelu transakciju', async () => {

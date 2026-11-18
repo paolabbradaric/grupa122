@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { closeCastingDependents } = require('./castingClosure');
 
 // Statusi su na engleskom, jednako kao u ostalom backendu.
 function createEmployerCastingStatusModel(database = pool) {
@@ -30,20 +31,6 @@ function createEmployerCastingStatusModel(database = pool) {
 
       // Ne otkazuj aktivne audicije / rezervacije bez dogovorenog
       // postupka s modulom audicija i obavijesti. Ne ostavljaj siročad.
-      if (action === 'cancel') {
-        const { rows: [row] } = await client.query(`
-          SELECT EXISTS (
-            SELECT 1 FROM audition_bookings b
-            JOIN audition_slots s ON s.id = b.audition_slot_id
-            WHERE s.casting_call_id = $1
-              AND s.starts_at > NOW()
-              AND b.status NOT IN ('cancelled', 'canceled')
-          ) AS has_active_bookings`, [castingId]);
-        if (row?.has_active_bookings) {
-          await client.query('ROLLBACK'); begun = false;
-          return { outcome: 'active_bookings' };
-        }
-      }
 
       const newStatus = action === 'close' ? 'closed' : 'cancelled';
       await client.query(`
@@ -52,11 +39,7 @@ function createEmployerCastingStatusModel(database = pool) {
         WHERE id = $2`, [newStatus, castingId]);
 
       if (action === 'cancel') {
-        // Nema aktivnih budućih rezervacija; preostali termini se otkazuju.
-        await client.query(`
-          UPDATE audition_slots
-          SET status = 'cancelled'
-          WHERE casting_call_id = $1 AND starts_at > NOW()`, [castingId]);
+        await closeCastingDependents(client, castingId, 'cancelled', userId);
       }
 
       await client.query(`

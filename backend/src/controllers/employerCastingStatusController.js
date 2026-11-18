@@ -7,7 +7,7 @@ function createEmployerCastingStatusController({
   function action(method) {
     return async (req, res, next) => {
       const id = Number(req.params.id);
-      if (!Number.isSafeInteger(id) || id <= 0) {
+      if (!Number.isSafeInteger(id) || id <= 0 || id > 2147483647) {
         return res.status(400).json({ error: 'Neispravan ID oglasa.' });
       }
       if (!writesEnabled) {
@@ -20,11 +20,6 @@ function createEmployerCastingStatusController({
         }
         if (result.outcome === 'invalid_status') {
           return res.status(409).json({ error: 'Oglas nije u odgovarajućem statusu.' });
-        }
-        if (result.outcome === 'active_bookings') {
-          return res.status(409).json({
-            error: 'Postoje buduće rezervacije audicija. Prije otkazivanja treba ih riješiti s modulom audicija.'
-          });
         }
         if (result.outcome !== 'updated') {
           return res.status(500).json({ error: 'Neuspješna promjena statusa.' });

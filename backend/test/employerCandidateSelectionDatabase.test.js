@@ -20,6 +20,7 @@ test('Odabir kandidata: samo lokalni castme_test', {
   const ids = { users: [], orgs: [], projects: [], castings: [], applications: [] };
   t.after(async () => {
     try {
+      if (ids.castings.length) await db.query('DELETE FROM notifications WHERE casting_call_id=ANY($1::int[])',[ids.castings]);
       // Brisi samo vlastite testne zapise, prvo ovisne tablice.
       if (ids.applications.length) {
         await db.query('DELETE FROM application_status_history WHERE application_id = ANY($1::int[])', [ids.applications]);
