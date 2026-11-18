@@ -606,6 +606,37 @@
 }
 
 /* svako polje obrasca zauzima cijeli red */
+.audicije-kandidati {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rub);
+}
+
+.audicije-kandidati h4 {
+  margin: 0 0 16px;
+  font-size: 17px;
+}
+
+.audicije-kandidat {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid var(--rub);
+  border-radius: 12px;
+  background: var(--svijetla);
+}
+
+.audicije-kandidat .audicije-akcije {
+  margin-top: 12px;
+}
+
 .novi-oglas fieldset > div {
   grid-column: 1 / -1;
+}
+
+.pregled-prijava .prijave-gumb-odbij {
+  background: #b91c1c;
+}
+
+.pregled-prijava .prijave-gumb-odbij:hover:not(:disabled) {
+  background: #991b1b;
 }
