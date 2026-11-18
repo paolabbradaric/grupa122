@@ -1,4 +1,122 @@
 
+.casting-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 20px 0 28px;
+  padding: 20px;
+  background-color: #faf7ff;
+  border: 1px solid #e8ddfa;
+  border-radius: 12px;
+}
+
+.casting-filters label,
+.casting-project-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 140px;
+  min-width: 0;
+  gap: 6px;
+  text-align: left;
+  color: #31264a;
+  font-weight: 600;
+}
+
+.casting-filters input:not([type="checkbox"]),
+.casting-filters button,
+.casting-project-types summary {
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #d8cbe8;
+  border-radius: 8px;
+  background-color: white;
+  color: #31264a;
+  font: inherit;
+}
+
+.casting-filters button {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.casting-filters button[type="submit"] {
+  background-color: #6d28d9;
+  border-color: #6d28d9;
+  color: white;
+}
+
+.casting-filters button[type="submit"]:hover {
+  background-color: #5b21b6;
+}
+
+.casting-filters button[type="reset"]:hover {
+  background-color: #f1e8fd;
+}
+
+.casting-filters :focus-visible {
+  outline: 2px solid #6d28d9;
+  outline-offset: 2px;
+}
+
+.casting-project-types {
+  position: relative;
+  text-align: left;
+}
+
+.casting-project-types summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.casting-project-options {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: max-content;
+  padding: 6px;
+  background-color: white;
+  border: 1px solid #d8cbe8;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(49, 38, 74, 0.12);
+}
+
+.casting-project-types label {
+  flex-direction: row;
+  align-items: center;
+  padding: 6px;
+  border-radius: 4px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.casting-project-types label:hover {
+  background-color: #faf7ff;
+}
+
+.casting-project-types input {
+  accent-color: #6d28d9;
+}
+
+@media (max-width: 600px) {
+  .casting-filters {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .casting-project-field {
+    flex-basis: 100%;
+  }
+
+  .casting-project-options {
+    position: static;
+    margin-top: 6px;
+    box-shadow: none;
+  }
+}
+
 .casting-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

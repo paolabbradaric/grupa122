@@ -220,9 +220,11 @@ function Application({ auth }) {
         />
       ) : page === "detalji" ? (
         <CastingCardDetails
+          key={odabraniOglas}
           id={odabraniOglas}
           user={auth.user}
           csrfToken={auth.csrfToken}
+          onLogin={() => setStranica("prijava")}
         />
       ) : page === "audicije" ? (
         <Audicije
