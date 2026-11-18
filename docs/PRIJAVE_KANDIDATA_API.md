@@ -5,7 +5,9 @@ Postojeći POST predaje prijave sada ima zasebno
 [ograničenje pokušaja i migraciju brojača](OGRANICENJE_PRIJAVA_API.md).
 GET vlastitih prijava i PATCH povlačenja ne troše tu kvotu.
 
-Implementacija F-010 iz `2-Analiza-zahtjeva.md` i issuea #16. Precizni prijelazi povlačenja nisu bili definirani u specifikaciji; za ovu implementaciju potvrđeno je povlačenje **prije održane audicije**, iz `SUBMITTED`, `UNDER_REVIEW`, `SHORTLISTED` i `INVITED` u `WITHDRAWN`.
+Aktualno stanje implementacije, migracija i otvorenih provjera vodi se u [Tinov status backenda](TIN_BACKEND_STATUS.md), ažurirano 18. 11. 2026. Povijesni rezultati na kraju dokumenta odnose se na označene datume.
+
+Implementacija F-010 iz `2-Analiza-zahtjeva.md` i issuea #16 (prije objedinjavanja: F-016 i F-026). Precizni prijelazi povlačenja nisu bili definirani u specifikaciji; za ovu implementaciju potvrđeno je povlačenje **prije održane audicije**, iz `SUBMITTED`, `UNDER_REVIEW`, `SHORTLISTED` i `INVITED` u `WITHDRAWN`.
 
 ## Dohvat vlastitih prijava
 
@@ -62,11 +64,11 @@ Odgovor `200`:
 | Trenutačni status | Povlačenje |
 | --- | --- |
 | `SUBMITTED`, `UNDER_REVIEW`, `SHORTLISTED`, `INVITED` | Dopušteno ako nema aktivne rezervacije |
-| `AUDITIONED`, `ACCEPTED`, stari `SELECTED`, `REJECTED`, `WITHDRAWN` i nepoznati statusi | `409`, bez upisa |
+| `AUDITIONED`, `ACCEPTED`, stari `SELECTED`, `REJECTED`, `WITHDRAWN`, `CANCELLED` i nepoznati statusi | `409`, bez upisa |
 
 Status oglasa i rok nisu dodatni uvjet povlačenja: to nije nova predaja prijave i ne otvara oglas. Oglas se ne mijenja. Prijava i njezina povijest ostaju u bazi; ponovno povlačenje vraća `409`. Postojeća zabrana duple prijave i brojanje ukupnih zapisa za `max_applications` ostaju nepromijenjeni. Povlačenje ne omogućuje novu prijavu na isti oglas. Eventualna promjena tih pravila zaseban je timski dogovor.
 
-Upis `WITHDRAWN`, `updated_at` i retka u `application_status_history` s izvornim statusom i `changed_by` iz sesije čini jednu transakciju. Greška poništava cijelu promjenu. Zaključava se prvo oglas, zatim prijava, kao u postojećim poslodavčevim promjenama statusa i konačnom odabiru; vlasništvo se provjerava pri oba čitanja. Povučena prijava više nije podobna za poslodavčeve prijelaze ni konačni odabir.
+Upis `WITHDRAWN`, `updated_at`, retka u `application_status_history` s izvornim statusom i `changed_by` iz sesije te privatne obavijesti kandidatu čini jednu transakciju. Greška poništava cijelu promjenu. Zaključava se prvo oglas, zatim prijava, kao u postojećim poslodavčevim promjenama statusa i konačnom odabiru; vlasništvo se provjerava pri oba čitanja. Povučena prijava više nije podobna za poslodavčeve prijelaze ni konačni odabir.
 
 ## Odgovori i zaštite
 
@@ -81,19 +83,19 @@ Upis `WITHDRAWN`, `updated_at` i retka u `application_status_history` s izvornim
 | `503` | Upisi su blokirani konfiguracijom ili potrebna DB zaštita nije spremna |
 | `500` | Interna pogreška; odgovor ne otkriva podatke baze |
 
-Povlačenje koristi istu konfiguracijsku zaštitu `getApplicationWritesEnabled` kao postojeća predaja prijave. Nisu uvedene nove zastavice za omogućavanje upisa niti je ublažena postojeća provjera baze i potvrde. `.env` se ne mijenja. Za spajanje frontenda ne uključivati upise u zajednički Supabase.
+Povlačenje koristi istu konfiguracijsku zaštitu `getApplicationWritesEnabled` kao predaja prijave: ENABLED i CONFIRMED, a za udaljenu bazu dodatno ALLOW_REMOTE i TLS. Produkcijski upisi kontrolirano su aktivirani 18. 11. 2026. nakon migracija; preview nije aktiviran. Uključivanje opt-in DB testova i dalje je dopušteno samo na potvrđenoj izoliranoj lokalnoj testnoj bazi.
 
 ## Ovisnost o Lucijinu modulu audicija
 
 Rezervacija je za ovu provjeru aktivna ako joj status nije `cancelled` ili `canceled`, jednako kao u postojećim provjerama audicija. Aktivna rezervacija **blokira povlačenje s 409**; rezervacije, termini i obavijesti pritom se ne mijenjaju. Već otkazana rezervacija ne blokira povlačenje i ostaje nepromijenjena.
 
-Automatsko otkazivanje rezervacije, oslobađanje mjesta i slanje obavijesti nisu implementirani ovim zadatkom. Lucijine rute i modeli nisu mijenjani; nova DB zaštita provjerava i njegove buduće upise rezervacija. Za prethodno otkazivanje vlastite buduće rezervacije sada postoji `DELETE /api/candidate/applications/:applicationId/booking`; vidi [audicije i obavijesti](AUDICIJE_OBAVIJESTI_API.md). Povlačenje i dalje vraća 409 dok je rezervacija aktivna.
+Povlačenje samo ne otkazuje aktivnu rezervaciju. Za prethodno otkazivanje vlastite buduće rezervacije postoji `DELETE /api/candidate/applications/:applicationId/booking`; taj API oslobađa mjesto i zapisuje obavijesti u istoj transakciji. Booking rute i model nadograđeni su u PR-u #58; vidi [audicije i obavijesti](AUDICIJE_OBAVIJESTI_API.md). Povlačenje i dalje vraća 409 dok je rezervacija aktivna.
 
 Nova DB zaštita serijalizira stvaranje i reaktivaciju aktivne rezervacije preko retka prijave. Trigger na rezervaciji radi verzijski upis `id = id` na prijavi: poslovne vrijednosti, `updated_at` i povijest ostaju nepromijenjeni, ali nastaje nova verzija retka. Zatim odbija aktivnu rezervaciju na `WITHDRAWN` prijavi. Trigger na prijavi odbija povlačenje uz aktivnu rezervaciju. Time se štite oba redoslijeda konkurentnog INSERT-a/UPDATE-a, uključujući zastarjele `REPEATABLE READ` transakcije koje dobivaju grešku serijalizacije. API za povlačenje izričito koristi `READ COMMITTED`.
 
 Obje funkcije su `SECURITY INVOKER`, s fiksnim `search_path=pg_catalog` i kvalificiranjem tablica prema shemi triggera. Ne podižu ovlasti, ne isključuju RLS i ne dodjeljuju nove privilegije. Pozivatelj upisa rezervacija mora imati odgovarajuće postojeće SELECT/UPDATE ovlasti na prijavi; inače se upis odbija.
 
-Buduća rezervacija i dalje treba u transakciji zaključati isti oglas pa prijavu, provjeriti vlasništvo, `INVITED`, termin i kapacitet. Nova zaštita rješava sukob s povlačenjem; ne zamjenjuje Lucijina pravila rezervacije i obavijesti. Samo provjera statusa prije otvaranja transakcije nije dovoljna.
+Booking model sada u transakciji zaključava isti oglas pa prijavu, provjerava vlasništvo, `INVITED`, termin i kapacitet. Dodatni capacity guard i jedinstveni indeks iz PR-a #58 štite rezervacije na razini baze; zaštita povlačenja ostaje aktivna. Samo provjera statusa prije otvaranja transakcije nije dovoljna.
 
 ## Obavezna migracija prije omogućavanja povlačenja
 
@@ -101,12 +103,12 @@ Za postojeću bazu uključena je ponovljiva transakcijska migracija `db/migratio
 
 PATCH provjerava jesu li oba očekivana triggera uključena i koriste li funkcije bez podizanja ovlasti te je li sesija u standardnom `origin` režimu. Ako zaštita nedostaje ili je isključena, vraća `503` i radi rollback bez promjene prijave i povijesti. GET nastavlja raditi. Migracija se ne pokreće automatski iz aplikacije.
 
-Migracija je testirana samo u jednokratnoj vlastitoj shemi lokalnog `castme_test`, koja se briše nakon testa. Nije primijenjena na zajednički Supabase niti na postojeće lokalne poslovne tablice. Kontrolirana primjena migracije u ciljnom okruženju obavezna je prije uključivanja upisa; ovaj pregled to ne izvršava.
+Migracija je provjerena na izoliranoj lokalnoj bazi i u CI-ju. Dana 18. 11. 2026. primijenjena je i na potvrđeni zajednički Supabase, u jednoj kontroliranoj transakciji s migracijama brojača, booking kapaciteta i sigurnosti, uz korisnikovo izričito odobrenje. Postojeći poslovni retci sačuvani su; provjereni su omogućeni invoker triggeri, indeks i RLS. To ne mijenja zabranu pokretanja integracijskih testova s upisima nad zajedničkom bazom.
 
 ## Povezivanje s Nininim frontendom i bilješka za Taru
 
 - Nina: `CandidateApplications` treba dohvatiti ovaj GET, koristiti podatke iz `applications` i osvježiti prijavu nakon uspješnog PATCH-a. Ne skrivati završene/povučene prijave. Za radnju slati postojeću sesiju i CSRF; prikazati 409 za aktivnu rezervaciju. Frontend ovim zadatkom nije mijenjan.
-- Tara: poslodavčev pregled još koristi stari odabir `SUBMITTED → SELECTED`; stvarni odabir je `AUDITIONED → ACCEPTED`. Treba prikazati i `WITHDRAWN` te ga izuzeti iz radnji. Brojanje odabranih uključuje `ACCEPTED` i stare `SELECTED` zapise. Poslodavčev PATCH statusa i dalje koristi `{ status, rejectionReason? }` te zasebnu rutu; helper mora podržati JSON tijelo i `Content-Type`. Bilješka nije poslana članovima tima.
+- Tara: PR #62 već povezuje statusni PATCH i konačni odabir `AUDITIONED → ACCEPTED`, prikazuje i završne statuse te koristi JSON helper sa sesijom i CSRF-om. Brojanje odabranih uključuje `ACCEPTED` i stare `SELECTED` zapise. To je potvrđeno iz koda aktualnog maina; cijeli produkcijski UI tijek još treba provjeriti.
 
 ## Testiranje
 
@@ -129,4 +131,4 @@ Pregled 12. 11. 2026. na branchu `codex/tin-moje-prijave`, izvedenom iz čistog 
 
 Pri završnom spremanju 12. 11. 2026. migracija nije izvršavana, a sve DB integracijske zastavice bile su isključene. Ciljani testovi: **48 uspješnih, 0 neuspješnih, 1 DB test preskočen**. Cijeli backend: **196 ukupno, 187 uspješnih, 0 neuspješnih, 9 DB integracija preskočeno**. `git diff --check` prolazi. Raniji rezultati lokalne DB provjere iz prethodnog odjeljka ostaju zasebno evidentirani.
 
-Prije aktivacije u ciljnom okruženju obavezni su pregled i dogovor s Mariom o kontroliranoj migraciji. Bez instalirane DB zaštite PATCH vraća 503.
+Ovaj odjeljak opisuje spremanje rada 12. 11. 2026. Naknadna kontrolirana produkcijska primjena i aktivacija 18. 11. evidentirane su u [aktualnom statusu](TIN_BACKEND_STATUS.md). Za novo ciljno okruženje i dalje su obavezni pregled i kontrolirana migracija; bez instalirane DB zaštite PATCH vraća 503.

@@ -14,10 +14,10 @@ Neispravan JSON, gost, poslodavac/admin ili nevaljani Origin/CSRF ne troše
 kvotu predaje. Kontrolerove odbijene prijave, uključujući nevaljane podatke,
 duplikate i zatvoren oglas, troše pokušaj kada prođu prethodne zaštite.
 
-Početna postavka je **10 pokušaja tijekom 15 minuta po korisniku** kroz sve
-oglase. To je tehnička početna vrijednost za timski pregled s Mariom prije
-aktivacije, a ne zamjena za limit od 1000 prijava po oglasu ili cjelovita
-zaštita od botova koji imaju više računa. Prozor počinje prvim pokušajem;
+Postavka je **10 pokušaja tijekom 15 minuta po korisniku** kroz sve oglase.
+Kontrolirana produkcijska aktivacija provedena je 18. 11. 2026. To nije
+zamjena za limit od 1000 prijava po oglasu ili cjelovita zaštita od botova
+koji imaju više računa. Prozor počinje prvim pokušajem;
 sljedeći blokirani pokušaji ne produljuju ga.
 
 Ključ je isključivo `req.user.id`, obnovljen iz poslužiteljske sesije.
@@ -58,7 +58,7 @@ odgovor. Javni GET i ostale rute nisu ograničeni ovim limiterom.
 
 Nova migracija je
 `db/migrations/20261118_application_submission_rate_limit.sql`; isti SQL
-dodan je na kraj `db/schema.sql`. Kreira privatnu tablicu
+uključen je u `db/schema.sql` prije završnog sigurnosnog bloka. Kreira privatnu tablicu
 `app_private.application_submission_limits` s jednim retkom po korisniku,
 vanjskim ključem na `public.users`, brojačem i istekom prozora. Migracija
 je transakcijska i ponovljiva, uključuje RLS i oduzima ovlasti PUBLIC,
@@ -75,8 +75,10 @@ migracije pri importu, startupu ili prvom zahtjevu.
 Postojeće `APPLICATION_WRITES_ENABLED`, `APPLICATION_WRITES_CONFIRMED`
 i ograničenje ciljane baze ostaju obavezni. Kada su poslovni upisi
 isključeni, limiter ne pristupa brojaču i ne radi ni taj upis; postojeći
-kontroler i dalje odbija predaju. Ovim radom upisi nisu uključivani na
-Vercelu, `.env` nije mijenjan, a zajednički Supabase nije mijenjan.
+kontroler i dalje odbija predaju. Nakon početne implementacije migracija je
+18. 11. kontrolirano primijenjena na zajednički Supabase, a ENABLED, CONFIRMED
+i ALLOW_REMOTE uključeni su samo za Vercel Production uz TLS. Preview nije
+aktiviran. Detalji su u [aktualnom statusu](TIN_BACKEND_STATUS.md).
 
 Migracija povlačenja
 `20261112_candidate_withdrawal_booking_guard.sql` i dalje je zaseban

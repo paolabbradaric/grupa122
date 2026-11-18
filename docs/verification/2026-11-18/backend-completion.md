@@ -1,10 +1,12 @@
 # Dovršavanje backenda — 18. 11. 2026.
 
-Grana `codex/backend-completion` temelji se na mainu `4b1b099` i uključuje
-Mariov PR #55, head `afba2c5`, bez mijenjanja njegove grane. Korisnik je
-odobrio backend popravke, kontrolirane migracije i aktivaciju. Dodatno je
-potvrdio pravila REJECTED/CANCELLED pri završetku oglasa. Upload je izričito
-odgođen za kasnije; frontend i .env datoteke nisu mijenjani.
+Grana `codex/backend-completion` završno je usklađena s mainom `53c5b9f`
+(Mariov sigurnosni popravak iz PR-a #57). [PR #58](https://github.com/paolabbradaric/grupa122/pull/58)
+spojen je kao `dc88406`. Korisnik je odobrio backend popravke, kontrolirane
+migracije i aktivaciju te potvrdio REJECTED/CANCELLED pravila. Nakon početne
+odgode sam je postavio Storage varijable; naknadna provjera adaptera prolazi.
+Frontend i .env datoteke agent nije mijenjao. [Aktualni status](../../TIN_BACKEND_STATUS.md)
+odvaja završenu implementaciju od otvorene UI provjere i domenskih dogovora.
 
 ## Implementirano
 
@@ -16,7 +18,7 @@ odgođen za kasnije; frontend i .env datoteke nisu mijenjani.
 - Kandidat može rezervirati, atomski promijeniti i otkazati svoj termin.
   Vlasnik vidi rezervacije i evidentira dolazak/nedolazak. Backend/DB štite
   kapacitet, jednu aktivnu rezervaciju i podudaranje oglasa/prijave/termina.
-- SELECT → ACCEPTED i filled ostaju isti poslovni tijek; dopunjeni su obrada
+- Konačni odabir `AUDITIONED → ACCEPTED` i filled ostaju isti poslovni tijek; dopunjeni su obrada
   preostalih prijava, rezervacija, termina, povijesti i privatnih obavijesti.
   Otkazivanje koristi izričito potvrđen CANCELLED. Svi upisi jedne radnje
   ostaju u istoj transakciji; povlačenje s aktivnom rezervacijom ostaje 409.
@@ -30,7 +32,7 @@ odgođen za kasnije; frontend i .env datoteke nisu mijenjani.
   profilnog DB testa ispravljen je običnim DROP-om samo vlastite privremene
   baze nakon zatvaranja poola, bez FORCE. Test ne briše postojeće baze.
 
-Ugovori su u `docs/AUDICIJE_OBAVIJESTI_API.md`. E-pošta F-023 nije odabrana
+Ugovori su u `docs/AUDICIJE_OBAVIJESTI_API.md`. E-pošta F-023 (ranije F-034) nije odabrana
 usluga i nije dio ovog backend proširenja; obavijesti su u aplikaciji.
 
 ## Lokalni dokazi
@@ -58,7 +60,7 @@ port 5432 koriste potvrđeni lokalni castme_test i vlastite retke/sheme.
   kapacitet niti atomarnost. Puna promjena termina čuva staru rezervaciju.
 - `git diff --check` prolazi; u promjenama nema frontend ili .env datoteka.
 
-## Produkcijski plan i preflight
+## Izvršene produkcijske promjene i preflight
 
 READ ONLY provjera prije primjene potvrdila je: 0 duplih aktivnih rezervacija,
 0 termina preko kapaciteta, 0 aktivnih rezervacija uz WITHDRAWN i 0 budućih
@@ -66,14 +68,33 @@ aktivnih rezervacija nepozvanih kandidata. Postojeće podatke ne popravljamo
 niti brišemo migracijom.
 
 U jednoj kontroliranoj transakciji, uz provjeru ciljne baze preko javnih oglasa,
-primjenjuju se: guard povlačenja, brojač predaje, novi booking guard i Mariova
+primijenjeni su: guard povlačenja, brojač predaje, novi booking guard i Mariova
 sigurnosna migracija. Ugrađeni BEGIN/COMMIT pojedinih SQL datoteka uklanjaju se
 samo u kontroliranom runneru kako COMMIT ne bi prerano završio vanjsku transakciju.
-Zatim slijedi provjera triggera, indeksa, RLS-a i invoker atributa prije COMMIT-a.
-Aktivacija kandidatovih ENABLED/CONFIRMED/ALLOW_REMOTE potvrda ide samo na
-production i nakon toga nova objava; preview ostaje bez upisa.
+Prije COMMIT-a potvrđeni su sva tri omogućena invoker triggera, jedinstveni
+indeks, privatna quota tablica, RLS i očuvanje broja svih postojećih javnih
+poslovnih redaka. Kandidatove ENABLED/CONFIRMED/ALLOW_REMOTE potvrde aktivirane
+su samo za production uz TLS; preview nije aktiviran. Probe stvarnim modelima
+na produkcijskoj shemi prošao je kroz nacrt, objavu, statuse, rezervaciju,
+povlačenje i otkazivanje; svi sintetički retci vraćeni su rollbackom.
 
 Ovaj dokument ne tvrdi da je produkcijski poslodavčev UI već provjeren.
 Korisnik se treba prijaviti stvarnim poslodavačkim računom; admin uloga se ne
-mijenja niti se koristi za zaobilaženje poslovnih ovlasti. Rezultat objave i
-produkcijskih provjera bilježi se zasebno nakon izvođenja.
+mijenja niti se koristi za zaobilaženje poslovnih ovlasti. Safari automatizacija
+vratila je pogrešku snimanja zaslona, pa taj UI tijek ostaje nepotvrđen.
+
+[CI konačnog feature HEAD-a `cbdc69e`](https://github.com/paolabbradaric/grupa122/actions/runs/44367655216)
+prolazi: npm test 248 prolaza i 16 opt-in preskakanja; DB skupovi 17 + 31 + 28
+prolaza bez preskakanja. Nijedan proces nema pad.
+
+[Produkcijska objava](https://vercel.com/grupa122/grupa122/EMwGSxgTXsyCDMi3tCNZCACUB52x)
+commita `dc88406` potvrđena je kao READY na `https://grupa122.vercel.app` nakon
+postavljanja Storage varijabli. HTML, JS, CSS i javni API vraćali su 200; nove
+privatne rute bez sesije 401/no-store. U pregledanom petominutnom prozoru ove
+objave nije bilo error/fatal runtime logova. To su dokazi te objave od 18. 11.,
+a ne tvrdnja o provjeri svake kasnije objave.
+
+Privatni bucket `profiles` potvrđen je upload/download/remove probom stvarnog
+adaptera. Javni dohvat bio je odbijen i probni objekt uklonjen. Produkcijski
+upload kroz prijavljeno sučelje ostaje otvorena provjera. Privremeni lokalni
+PostgreSQL klasteri na portovima 55487 i 55488 uredno su zaustavljeni.
