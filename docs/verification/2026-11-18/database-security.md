@@ -1,8 +1,7 @@
 # Provjera ponovljivih sigurnosnih postavki baze
 
 Datum: 18. 11. 2026. Podloga: `0577906ca716d4065be3ab17d82ce4002c594d68`.
-Provjera je obavljena u zasebnom worktreeu. Promjene autentifikacijskih testova i
-deployment dokumentacije iz PR-a #54 dio su podloge, a ne ovog sigurnosnog patcha.
+Provjera je obavljena u zasebnom worktreeu.
 
 ## Lokalno okruženje i rezultati
 
@@ -23,6 +22,7 @@ Iz `backend/`:
 | `node --test --test-concurrency=1 test/auth-database.test.js test/casting-drafts-database.test.js test/publicCastingAndRateLimitDatabase.test.js` | **17 prošlo**, 0 neuspješnih, **0 preskočenih** |
 | `npm run db:migrate:security`, dvaput na lokalnom `castme_test` | Oba pokretanja uspješna |
 | `node scripts/check-security-database.js`, bez konfiguracije | Očekivani exit 1 i zahtjev za oba testna ulaza |
+| Sigurnosni test s netočnim `SECURITY_TEST_SERVER_ADDRESS` | Očekivani exit 1 prije upisa; broj baza i uloga ostao je nepromijenjen |
 | `git diff --check` | Bez grešaka razmaka |
 
 Za sigurnosni test postavljeni su `SECURITY_TEST_DATABASE_URL` lokalnog klastera
@@ -67,6 +67,21 @@ nisu obuhvaćeni gore navedenim naredbama nije ovom provjerom izvršeno.
   vlasnik. Postojeće profile/moderation regresije zasebno pokrivaju njihove
   modele, HTTP ovlasti i rollback scenarije.
 
+## CI na PostgreSQL-u 17
+
+[GitHub Actions provjera](https://github.com/paolabbradaric/grupa122/actions/runs/44354351630)
+na kodu `0d6dd747f55f3b25943cfbe2b964901029a849e2` prošla je u cijelosti na
+PostgreSQL-u **17.12**, Node.js 22.23.4 i Ubuntu runneru. `npm ci` i `npm test`
+prolaze; obični test ima 240 prolaza, 0 neuspjeha i 14 opt-in DB preskakanja.
+Zasebne DB naredbe imaju 13 + 31 + 17 = **61 prolaz**, 0 neuspjeha i **0 preskakanja**.
+
+Docker servis prima vezu na lokalno objavljenom portu, a PostgreSQL vidi internu
+adresu kontejnera. Workflow tu adresu dobiva iz inventara vlastitog servisa preko
+`docker inspect`; fixture mora potvrditi nju, ime klastera i system_identifier
+prije stvaranja/brišenja objekata. Lokalni fixture bez tog ulaza zahtijeva
+loopback adresu. Admin i novi sigurnosni fixture nakon zatvaranja poolova koriste
+običan DROP DATABASE: FORCE može poslati zakašnjeli FATAL još zatvarajućem socketu.
+
 ## Udaljena baza i granice
 
 Povezani Supabase profil MarioFER korišten je **samo za read-only** popis projekta
@@ -78,14 +93,14 @@ a ostalih 14 javnih tablica ima SELECT grantove uz zatvoren RLS. Nove profilne,
 moderacijske i rate-limit tablice još nisu prisutne.
 
 **Udaljena baza ostala je nepromijenjena.** Nisu primijenjeni DDL, funkcionalne
-migracije, Storage promjene, deployment ni merge. Sigurnosna migracija na tom
+migracije ni Storage promjene. Nisu ručno pokretane deployment naredbe ni merge;
+GitHub/Vercel integracija automatski provjerava PR. Sigurnosna migracija na tom
 projektu ostaje zaseban operativni korak prema [uputama](../../../db/Readme.md).
 Migration history nije korišten kao dokaz potpunog stanja ručno primijenjenog SQL-a.
 
 Lokalno nije bio dostupan pokrenut PostgreSQL 17 servis. Docker klijent je
-instaliran, ali njegov daemon nije radio. Novi GitHub workflow zato eksplicitno
-koristi izolirani `postgres:17` servis. Lokalni rezultati na 18.6 sami po sebi
-ne dokazuju prolaz na 17; rezultat CI-ja treba provjeriti uz PR. Mrežni Supabase
+instaliran, ali njegov daemon nije radio. Provjera ciljane glavne verzije zato je
+izvršena u izoliranom `postgres:17` CI servisu s gore navedenim rezultatom. Mrežni Supabase
 Data API probe i stvarni Google OAuth nisu dio ove regresije. Frontend nije
 mijenjan niti su pokretane njegove provjere.
 
