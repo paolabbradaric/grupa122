@@ -1,0 +1,221 @@
+/* PROFIL KANDIDATA I POSLODAVCA */
+
+.profile-editor {
+    min-height: calc(100vh - 110px);
+    padding: 45px 20px;
+    background: #fff9f2;
+    color: #7a1737;
+    box-sizing: border-box;
+}
+
+.profile-editor h1 {
+    margin: 0 auto 30px;
+    font-family: Georgia, serif;
+    font-size: 36px;
+    color: #7a1737;
+}
+
+.profile-editor form,
+.profile-editor>section {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto 25px;
+    padding: 30px;
+    background: #fffdf9;
+    border: 2px solid #e9bed0;
+    border-radius: 22px;
+    box-shadow: 6px 6px 0 #f8c9da;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.profile-editor form fieldset>div {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 18px;
+}
+
+.profile-editor label {
+    display: block;
+    margin-bottom: 6px;
+    color: #7a1737;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.profile-editor input:not([type="file"]),
+.profile-editor textarea,
+.profile-editor select {
+    width: 100%;
+    padding: 12px 14px;
+    background: white;
+    border: 1px solid #dba8b9;
+    border-radius: 12px;
+    color: #333;
+    font: inherit;
+    box-sizing: border-box;
+}
+
+.profile-editor textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.profile-editor input:focus-visible,
+.profile-editor textarea:focus-visible,
+.profile-editor select:focus-visible {
+    outline: 2px solid #bba1e8;
+    outline-offset: 2px;
+}
+
+.profile-editor button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 24px;
+    background: #7a1737;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.profile-editor button:hover:not(:disabled) {
+    background: #a13d5c;
+}
+
+.profile-editor button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.profile-editor button[type="submit"] {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.profile-editor section h2 {
+    margin-top: 0;
+    font-family: Georgia, serif;
+    color: #7a1737;
+    font-size: 25px;
+}
+
+.profile-editor section img {
+    max-width: 150px;
+    height: auto;
+    border-radius: 14px;
+    border: 2px solid #e9bed0;
+}
+
+.profile-editor input[type="file"] {
+    display: block;
+    max-width: 100%;
+    margin: 12px 0;
+    color: #655760;
+}
+
+.profile-editor p[role="alert"] {
+    max-width: 700px;
+    margin: 15px auto;
+    padding: 12px 16px;
+    background: #fff0f1;
+    border: 1px solid #d77c8b;
+    border-radius: 12px;
+    color: #8b2035;
+}
+
+.profile-editor p[role="status"] {
+    max-width: 700px;
+    margin: 15px auto;
+    color: #655760;
+}
+
+.profile-editor>p {
+    max-width: 700px;
+    margin: 15px auto 25px;
+    line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+    .profile-editor {
+        padding: 30px 16px;
+    }
+
+    .profile-editor h1 {
+        font-size: 29px;
+    }
+
+    .profile-editor form,
+    .profile-editor>section {
+        padding: 20px;
+        box-shadow: 4px 4px 0 #f8c9da;
+    }
+
+    .profile-editor button {
+        max-width: 100%;
+    }
+}
+
+/* PROFILNE FOTOGRAFIJE I PORTFOLIO */
+
+.profile-editor section {
+    text-align: left;
+}
+
+.profile-editor section>div {
+    margin: 20px 0;
+}
+
+.profile-editor section>div>div {
+    padding: 12px;
+    background: #fff9f2;
+    border: 1px solid #e9bed0;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.profile-editor section img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid #e9bed0;
+}
+
+.profile-editor section>div>div p {
+    max-width: 150px;
+    margin: 10px auto;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+    color: #655760;
+}
+
+.profile-editor section>div>div button {
+    padding: 9px 14px;
+    font-size: 13px;
+}
+
+.profile-editor section input[type="file"] {
+    width: 100%;
+    margin: 12px 0 20px;
+    padding: 12px;
+    background: #fff9f2;
+    border: 1px dashed #dba8b9;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.profile-editor section>p {
+    color: #655760;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+    .profile-editor h1 {
+        font-size: 26px;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+}

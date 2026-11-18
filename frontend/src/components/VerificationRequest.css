@@ -1,0 +1,81 @@
+/* VERIFIKACIJA POSLODAVCA */
+
+.profile-editor .verification-card {
+    width: 100%;
+    max-width: 700px;
+    margin: 25px auto;
+    padding: 30px;
+    background: #fffdf9;
+    border: 2px solid #e9bed0;
+    border-radius: 22px;
+    box-shadow: 6px 6px 0 #f8c9da;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.profile-editor .verification-card h2 {
+    margin: 0 0 20px;
+    color: #7a1737;
+    font-family: Georgia, serif;
+    font-size: 26px;
+}
+
+.profile-editor .verification-card p {
+    margin: 12px 0;
+    color: #655760;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.profile-editor .verification-card p[role="alert"] {
+    padding: 12px;
+    background: #fff0f1;
+    border: 1px solid #d77c8b;
+    border-radius: 12px;
+    color: #8b2035;
+}
+
+.profile-editor .verification-card button {
+    margin: 12px 10px 0 0;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 24px;
+    background: #7a1737;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.profile-editor .verification-card button:hover:not(:disabled) {
+    background: #a13d5c;
+}
+
+.profile-editor .verification-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.profile-editor .verification-card button:last-child {
+    background: #dcd0f5;
+    color: #7a1737;
+}
+
+.profile-editor .verification-card button:last-child:hover:not(:disabled) {
+    background: #cbb8ee;
+}
+
+@media (max-width: 700px) {
+    .profile-editor .verification-card {
+        padding: 22px 18px;
+        box-shadow: 4px 4px 0 #f8c9da;
+    }
+
+    .profile-editor .verification-card h2 {
+        font-size: 23px;
+    }
+
+    .profile-editor .verification-card button {
+        max-width: 100%;
+    }
+}

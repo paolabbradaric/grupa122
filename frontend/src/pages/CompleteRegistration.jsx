@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./CompleteRegistration.css";
 
 function isAdult(birthDate) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) return false;
@@ -150,7 +151,7 @@ export default function CompleteRegistration({
   }
 
   return (
-    <main>
+    <main className="complete-registration-page">
       <h1>Dovrši registraciju</h1>
 
       <p>Google račun: {identity?.email}</p>
