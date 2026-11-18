@@ -56,10 +56,10 @@ Rezultati i granice su u [zapisniku admin provjere](verification/2026-11-17/admi
 
 ## Preostali posao
 
-- B1, F-009/F-010: slanje i ponovno slanje zahtjeva za verifikaciju, admin dohvat i trajne odluke pending/approved/rejected. Odbijanje traži razlog; reviewer dolazi iz stvarne sesije, uz vrijeme, transakciju i zaštitu od istodobnih odluka. Uskladiti profil i objavu s posljednjom odlukom po `submitted_at DESC, id DESC`.
-- B2, F-031: tablica i slanje prijave neprimjerenog oglasa, validiran razlog, autor, oglas, vrijeme i status. Sama prijava ne mijenja automatski status oglasa.
-- B3, F-032: admin dohvat i obrada prijava, trajna odluka i obrađivač, zatvaranje neopravdane prijave bez brisanja oglasa, konkurentna obrada, prazna stanja i pogreške.
-- B4, F-025: pažljivo definirano trajno brisanje s potvrdom, svim FK vezama, transakcijom, oporavkom i čišćenjem vanjskog storagea. Bez slijepog CASCADE-a i brisanja dijeljenih ili profilnih medija. Testirati na izoliranim podacima; SQL rollback ne vraća već obrisanu vanjsku datoteku.
-- B5, F-033: zaštićeni statistički endpoint i prikaz stvarnih agregata, uz dosljedna pravila statusa i soft-deletea.
+- B1, F-006/F-007: slanje i ponovno slanje zahtjeva za verifikaciju, admin dohvat i trajne odluke pending/approved/rejected. Odbijanje traži razlog; reviewer dolazi iz stvarne sesije, uz vrijeme, transakciju i zaštitu od istodobnih odluka. Uskladiti profil i objavu s posljednjom odlukom po `submitted_at DESC, id DESC`.
+- B2, F-021: tablica i slanje prijave neprimjerenog oglasa, validiran razlog, autor, oglas, vrijeme i status. Sama prijava ne mijenja automatski status oglasa.
+- B3, F-016: admin dohvat i obrada prijava, trajna odluka i obrađivač, zatvaranje neopravdane prijave bez brisanja oglasa, konkurentna obrada, prazna stanja i pogreške.
+- B4, F-016: pažljivo definirano trajno brisanje s potvrdom, svim FK vezama, transakcijom, oporavkom i čišćenjem vanjskog storagea. Bez slijepog CASCADE-a i brisanja dijeljenih ili profilnih medija. Testirati na izoliranim podacima; SQL rollback ne vraća već obrisanu vanjsku datoteku.
+- B5, F-022: zaštićeni statistički endpoint i prikaz stvarnih agregata, uz dosljedna pravila statusa i soft-deletea.
 
 Sve buduće admin operacije ostaju iza zajedničkog routera i njegovih autorizacijskih i CSRF provjera.

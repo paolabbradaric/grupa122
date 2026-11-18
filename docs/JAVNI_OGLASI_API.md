@@ -1,6 +1,6 @@
 # Javni oglasi i filtri
 
-API za F-011–F-013. Obje rute su javne, bez sesije ili CSRF tokena, i vraćaju
+API za F-008. Obje rute su javne, bez sesije ili CSRF tokena, i vraćaju
 samo `published` oglase. Ne vraćaju podatke kandidata, prijava, kontakte
 organizacije ni interne limite prijava. Nema promjene pravila isteka roka:
 oglas sa statusom `published` ostaje vidljiv i nakon roka, ali postojeći POST

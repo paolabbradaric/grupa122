@@ -12,141 +12,97 @@ Ovo su funkcije koje naša aplikacija treba imati. Svaka ima oznaku, prioritet, 
 
 ### F-001
 
-Kandidat se prvi put prijavljuje putem OAuth 2.0 / OpenID Connect i dovršava svoj profil. Nakon uspješne prijave kandidat odabire ulogu i unosi potrebne podatke. Račun nastaje samo za osobe s najmanje 18 godina; neispravni ili nepotpuni podaci ne spremaju se. Prioritet je visok. Izvor zahtjeva: Dogovor tima o OAuth/OIDC prijavi.
+Korisnik se prvi put prijavljuje putem OAuth 2.0 / OpenID Connect, odabire ulogu kandidata ili poslodavca i dovršava svoj profil. Kandidat unosi potrebne podatke; račun nastaje samo za osobe s najmanje 18 godina, a neispravni ili nepotpuni podaci ne spremaju se. Poslodavac upisuje naziv tvrtke, OIB, kontakt i sjedište; neispravni podaci odbijaju se, a račun nije automatski verificiran. Prioritet je visok. Izvor zahtjeva: Dogovor tima o OAuth/OIDC prijavi.
 
 ### F-002
 
-Poslodavac se prvi put prijavljuje putem OAuth 2.0 / OpenID Connect i unosi podatke svoje tvrtke. Nakon vanjske prijave poslodavac odabire ulogu i upisuje naziv tvrtke, OIB, kontakt i sjedište. Neispravni podaci odbijaju se; račun nije automatski verificiran. Prioritet je visok. Izvor zahtjeva: Dogovor tima o OAuth/OIDC prijavi.
+Korisnici se prijavljuju putem vanjskog OAuth 2.0 / OpenID Connect pružatelja identiteta. Korisnik se preusmjerava pružatelju identiteta. Uspješna prijava otvara korisničku sesiju s njegovom ulogom, a neuspjela ili otkazana prijava ne dopušta zaštićene funkcije. Pri ponovnoj prijavi preko istog vanjskog identiteta aplikacija otvara postojeći profil sa spremljenim podacima, bez stvaranja novog računa; drugi vanjski identitet ne može preuzeti taj profil. Prioritet je visok. Izvor zahtjeva: Dogovor tima (28. 10. 2026.) i razrada dogovorene OAuth/OIDC prijave.
 
 ### F-003
 
-Korisnici se prijavljuju putem vanjskog OAuth 2.0 / OpenID Connect pružatelja identiteta. Korisnik se preusmjerava pružatelju identiteta. Uspješna prijava otvara korisničku sesiju s njegovom ulogom, a neuspjela ili otkazana prijava ne dopušta zaštićene funkcije. Prioritet je visok. Izvor zahtjeva: Dogovor tima (28. 10. 2026.).
+Prijavljeni korisnik može se odjaviti iz aplikacije. Nakon odjave korisnik ne može izvršavati radnje koje zahtijevaju prijavu, čak ni izravnim slanjem API zahtjeva sa starom sesijom. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-004
 
-Prijavljeni korisnik može se odjaviti iz aplikacije. Nakon odjave korisnik ne može izvršavati radnje koje zahtijevaju prijavu, čak ni izravnim slanjem API zahtjeva sa starom sesijom. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Kandidat može pregledavati i uređivati svoj profil, iskustvo, vještine i fotografije. Kandidat može spremiti ime, prezime, grad, iskustvo, vještine te ponuđene fizičke karakteristike; izmjene se vide nakon ponovne prijave, a drugi kandidat ne može mijenjati taj profil. Kandidat može dodati profilnu sliku te dodati i ukloniti najviše pet JPG/PNG slika u portfoliju i ponovno ih pregledati nakon prijave; više od pet fotografija ili nepodržan format odbijaju se bez neispravne pohrane. Prioritet je visok za podatke profila, a srednji za fotografije. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-005
 
-Aplikacija prepoznaje korisnika pri ponovnoj OAuth/OIDC prijavi i povezuje ga s njegovim postojećim profilom. Kada se korisnik drugi put prijavi preko istog vanjskog identiteta, otvara mu se postojeći profil sa spremljenim podacima. Ne stvara se novi račun i drugi vanjski identitet ne može preuzeti taj profil. Prioritet je visok. Izvor zahtjeva: Razrada dogovorene OAuth/OIDC prijave.
+Poslodavac može pregledavati i uređivati podatke o svojoj tvrtki. Vlasnik računa može spremiti i ponovno dohvatiti naziv tvrtke, OIB, kontakt, sjedište i logotip; podaci drugih poslodavaca nisu mu dostupni za uređivanje. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-006
 
-Kandidat može pregledavati i uređivati svoj profil, iskustvo i vještine. Kandidat može spremiti ime, prezime, grad, iskustvo, vještine te ponuđene fizičke karakteristike; izmjene se vide nakon ponovne prijave, a drugi kandidat ne može mijenjati taj profil. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Poslodavac može zatražiti verifikaciju tvrtke, pratiti status i ponovno poslati zahtjev nakon odbijanja. Poslodavac s valjanim podacima može poslati zahtjev; status prelazi u na čekanju odnosno u pregledu, a nakon odluke u odobreno ili odbijeno. Odbijeni poslodavac vidi razlog i može podnijeti novi zahtjev. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-007
 
-Kandidat može dodati profilnu sliku i najviše pet JPG/PNG slika u portfolio. Kandidat može dodati i ukloniti fotografije te ih ponovno pregledati nakon prijave; više od pet fotografija ili nepodržan format odbijaju se bez neispravne pohrane. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
+Administrator može pregledati, odobriti ili odbiti zahtjev za verifikaciju tvrtke. Administrator može obraditi zahtjev i zabilježiti odluku; kod odbijanja razlog je obvezan. Korisnik bez administratorske uloge ne može promijeniti status verifikacije. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-008
 
-Poslodavac može pregledavati i uređivati podatke o svojoj tvrtki. Vlasnik računa može spremiti i ponovno dohvatiti naziv tvrtke, OIB, kontakt, sjedište i logotip; podaci drugih poslodavaca nisu mu dostupni za uređivanje. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Svi posjetitelji mogu pregledavati javno objavljene casting oglase, otvoriti njihove detalje te ih pretraživati i filtrirati. Na popisu aktualnih oglasa prikazuju se samo javno objavljeni oglasi dostupni za pregled; nacrti i otkazani oglasi ne pojavljuju se. Otvaranjem oglasa prikazuju se projekt, vrsta projekta, opis i uloga, uvjeti, lokacija, rok prijave i broj traženih kandidata; za nepostojeći oglas sustav prikazuje odgovarajuću poruku. Pretraga i filtri prema nazivu, vrsti projekta, lokaciji, dobi i uvjetima uloge prikazuju samo odgovarajuće oglase; bez rezultata se prikazuje poruka, a čišćenjem filtara ponovno se vidi puni popis. Prioritet je visok za pregled oglasa i detalja, a srednji za pretraživanje i filtriranje. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-009
 
-Poslodavac može zatražiti verifikaciju tvrtke, pratiti status i ponovno poslati zahtjev nakon odbijanja. Poslodavac s valjanim podacima može poslati zahtjev; status prelazi u na čekanju odnosno u pregledu, a nakon odluke u odobreno ili odbijeno. Odbijeni poslodavac vidi razlog i može podnijeti novi zahtjev. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Prijavljeni kandidat može poslati prijavu na oglas koji još prima prijave. Kandidat može predati prijavu prije roka i prije dosezanja limita prijava; nastaje zapis povezan s kandidatom i oglasom te korisnik prima potvrdu. Gost se upućuje na prijavu u sustav. Druga prijava istog kandidata, prijava nakon roka, na zatvoren, otkazan ili popunjen oglas ili nakon dosegnutog maksimalnog broja prijava odbija se uz razlog; provjera vrijedi i pri izravnom API zahtjevu. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-010
 
-Administrator može pregledati, odobriti ili odbiti zahtjev za verifikaciju tvrtke. Administrator može obraditi zahtjev i zabilježiti odluku; kod odbijanja razlog je obvezan. Korisnik bez administratorske uloge ne može promijeniti status verifikacije. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Kandidat može pregledati svoje prijave i njihove statuse te povući prijavu koju je poslao. Kandidat vidi samo svoje prijave s pripadajućim oglasom, datumom i statusom; ne vidi prijave drugih kandidata. Vlastitu prijavu može povući dok je povlačenje dopušteno; status se ažurira, povezane rezervacije obrađuju se prema pravilima i povučena se prijava ne smatra aktivnom. Prioritet je visok za pregled prijava, a srednji za povlačenje. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-011
 
-Svi posjetitelji mogu vidjeti javno objavljene casting oglase. Posjetitelj vidi samo oglase koji su javno objavljeni i dostupni za pregled; nacrti i otkazani oglasi ne pojavljuju se na popisu aktualnih oglasa. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Korisnik može vidjeti obavijesti o prijavama i audicijama i označiti ih pročitanima. Promjena relevantnog statusa ili termina stvara obavijest namijenjenu odgovarajućem korisniku; korisnik može obavijest označiti pročitanom, bez pristupa tuđim obavijestima. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-012
 
-Posjetitelj može otvoriti casting oglas i vidjeti njegove detalje. Otvaranjem oglasa prikazuju se projekt, vrsta projekta, opis i uloga, uvjeti, lokacija, rok prijave i broj traženih kandidata; za nepostojeći oglas sustav prikazuje odgovarajuću poruku. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Poslodavac može napraviti i spremiti nacrt oglasa ili objaviti oglas s ispravno ispunjenim podacima. Djelomično popunjen nacrt može spremiti i neverificirani poslodavac; nacrt ostaje dostupan u Mojim oglasima nakon ponovne prijave i nije javno vidljiv. Samo verificirani poslodavac može objaviti oglas. Objava zahtijeva naziv i tip projekta, opis, ulogu, lokaciju, budući rok, pozitivan cijeli broj traženih kandidata te dopušten maksimalan broj prijava (početno 1000). Sustav odbija nepotpune podatke i neverificiranog poslodavca. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-013
 
-Oglase je moguće pretraživati i filtrirati prema nazivu, vrsti projekta, lokaciji, dobi i uvjetima uloge. Pretraga i filtri prikazuju samo oglase koji odgovaraju zadanim kriterijima; bez rezultata se prikazuje poruka, a čišćenjem filtara ponovno se vidi puni popis. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
+Poslodavac može pregledavati, pretraživati i filtrirati svoje oglase prema statusu te ih uređivati dok njihov status to dopušta. Poslodavac vidi svoje nacrte, objavljene, zatvorene, popunjene i otkazane oglase; pretraga i statusni filtar mijenjaju prikaz, a oglasi drugog poslodavca nisu prikazani. Vlasnik može izmijeniti dopuštena polja svog nacrta ili oglasa i ponovno vidjeti promjene; ne može uređivati tuđi oglas ili zaobići pravila statusa. Prioritet je visok za uređivanje, a srednji za pregled, pretraživanje i filtriranje vlastitih oglasa. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-014
 
-Prijavljeni kandidat može poslati prijavu na oglas koji još prima prijave. Kandidat može predati prijavu prije roka i prije dosezanja limita prijava; nastaje zapis povezan s kandidatom i oglasom te korisnik prima potvrdu. Gost se upućuje na prijavu u sustav. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Poslodavac može zatvoriti prijave ili otkazati svoj oglas. Ovlašteni poslodavac može potvrditi promjenu statusa; nakon zatvaranja ili otkazivanja nove prijave nisu moguće, a otkazivanje obrađuje i povezane buduće audicije te obavijesti. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-015
 
-Aplikacija sprječava duple prijave te prijave nakon roka ili nakon dosegnutog limita. Druga prijava istog kandidata, prijava nakon roka, na zatvoren/otkazan/popunjen oglas ili nakon dosegnutog maksimalnog broja prijava odbija se uz razlog; provjera vrijedi i pri izravnom API zahtjevu. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Poslodavac može pregledavati prijave kandidata na svoje oglase, mijenjati njihov status i unijeti razlog odbijanja. Poslodavac vidi prijave vezane uz vlastiti oglas, uz prikladne podatke kandidata, ali ne može dohvatiti prijave na tuđi oglas; administrator pristupa samo u okviru dodijeljenih ovlasti. Ovlašteni poslodavac može mijenjati stanje prijave kroz predana, u pregledu, uži izbor, pozvan na audiciju, audicija održana i odabran/odbijen; odbijanje sadrži razlog, a nevaljani prijelazi i tuđe prijave su odbijeni. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-016
 
-Kandidat može vidjeti svoje prijave i njihove statuse. Kandidat vidi samo svoje prijave s pripadajućim oglasom, datumom i statusom; ne vidi prijave drugih kandidata. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Administrator može pregledati i obraditi prijave neprimjerenih oglasa te trajno obrisati oglas i podatke povezane s njim. Administrator može pregledati prijavu, zabilježiti odluku i poduzeti dopuštenu moderatorsku radnju. Nakon izričite potvrde administrator uklanja oglas te vezane prijave, termine, rezervacije i odnosne datoteke/zapise prema pravilima brisanja; oglas više nije dohvatljiv. Korisnik bez administratorskih ovlasti ne može obraditi prijavu ni obrisati oglas. Opseg vlasničkog brisanja razjasniti. Prioritet je visok za trajno brisanje, a srednji za obradu prijava neprimjerenih oglasa. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-017
 
-Korisnik može vidjeti obavijesti o prijavama i audicijama i označiti ih pročitanima. Promjena relevantnog statusa ili termina stvara obavijest namijenjenu odgovarajućem korisniku; korisnik može obavijest označiti pročitanom, bez pristupa tuđim obavijestima. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
+Poslodavac može dodati i otkazati termine audicije s datumom, lokacijom i kapacitetom. Ovlašteni vlasnik oglasa može spremiti termin s početkom, završetkom, lokacijom i pozitivnim kapacitetom; neispravni datumi se odbijaju. Otkazivanje mijenja status termina i pokreće obavijesti rezerviranima. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-018
 
-Poslodavac može napraviti i spremiti nacrt oglasa koji nije javno vidljiv. Poslodavac može spremiti djelomično popunjen nacrt; nacrt ostaje dostupan u Mojim oglasima nakon ponovne prijave, a ne pojavljuje se među javnim oglasima. Nacrt može spremiti i poslodavac koji nije verificiran. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Kandidat koji je pozvan na audiciju može rezervirati slobodan termin te promijeniti ili otkazati rezervaciju. Pozvani kandidat može rezervirati jedan raspoloživ termin za svoju prijavu; nepozvan korisnik ili drugi kandidat to ne može. Istodobni zahtjevi ne mogu prekoračiti kapacitet ni stvoriti dvije aktivne rezervacije. Kandidat može otkazati i, kada je dopušteno, odabrati drugi slobodan termin; oslobođeno mjesto ponovno je dostupno i promjene se prikazuju sudionicima. Prioritet je visok za rezervaciju, a srednji za promjenu i otkazivanje. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-019
 
-Samo verificirani poslodavac može objaviti oglas s ispravno ispunjenim podacima. Objava zahtijeva naziv i tip projekta, opis, ulogu, lokaciju, budući rok, pozitivan cijeli broj traženih kandidata te dopušten maksimalan broj prijava (početno 1000). Sustav odbija nepotpune podatke i neverificiranog poslodavca. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Poslodavac može označiti dolazak ili nedolazak kandidata na audiciju. Evidentirani dolazak ili nedolazak prikazuje se sudionicima. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-020
 
-Poslodavac može uređivati svoje oglase dok njihov status to dopušta. Vlasnik može izmijeniti dopuštena polja svog nacrta ili oglasa i ponovno vidjeti promjene; ne može uređivati tuđi oglas ili zaobići pravila statusa. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Oglas se automatski označava popunjenim kad je odabran traženi broj kandidata. Kad se odabere točno onoliko kandidata koliko je navedeno u polju broj traženih kandidata, oglas se zatvara za prijave, označava popunjenim i obrađuje preostale prijave/rezervacije; nije moguće odabrati više kandidata od traženog broja. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-021
 
-Poslodavac može vidjeti, pretraživati i filtrirati svoje oglase prema statusu. Poslodavac vidi svoje nacrte, objavljene, zatvorene, popunjene i otkazane oglase; pretraga i statusni filtar mijenjaju prikaz, a oglasi drugog poslodavca nisu prikazani. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
+Korisnik može prijaviti oglas s neprimjerenim sadržajem. Korisnik može označiti oglas i poslati prijavu s razlogom; prijava je dostupna administratoru za obradu i ne mijenja automatski status oglasa. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-022
 
-Poslodavac može zatvoriti prijave ili otkazati svoj oglas. Ovlašteni poslodavac može potvrditi promjenu statusa; nakon zatvaranja ili otkazivanja nove prijave nisu moguće, a otkazivanje obrađuje i povezane buduće audicije te obavijesti. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
+Administrator može vidjeti osnovnu statistiku korisnika, verifikacija, oglasa i prijava. Administratorski prikaz pokazuje brojeve usklađene sa zapisima u bazi; neovlašteni korisnik nema pristup administrativnoj statistici. Prioritet je nizak. Izvor zahtjeva: Plan razvoja tima.
 
 ### F-023
 
-Poslodavac može pregledavati prijave kandidata na svoje oglase. Poslodavac vidi prijave vezane uz vlastiti oglas, uz prikladne podatke kandidata, ali ne može dohvatiti prijave na tuđi oglas; administrator pristupa samo u okviru dodijeljenih ovlasti. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
-
-### F-024
-
-Poslodavac može mijenjati status prijave i unijeti razlog odbijanja. Ovlašteni poslodavac može mijenjati stanje prijave kroz predana, u pregledu, uži izbor, pozvan na audiciju, audicija održana i odabran/odbijen; odbijanje sadrži razlog, a nevaljani prijelazi i tuđe prijave su odbijeni. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
-
-### F-025
-
-Administrator može trajno obrisati oglas i podatke povezane s njim. Nakon izričite potvrde administrator uklanja oglas te vezane prijave, termine, rezervacije i odnosne datoteke/zapise prema pravilima brisanja; oglas više nije dohvatljiv. Korisnik bez ovlasti ne može obrisati oglas. Opseg vlasničkog brisanja razjasniti. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
-
-### F-026
-
-Kandidat može povući prijavu koju je poslao. Kandidat može povući vlastitu prijavu dok je povlačenje dopušteno; status se ažurira, povezane rezervacije obrađuju se prema pravilima i povučena se prijava ne smatra aktivnom. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
-
-### F-027
-
-Poslodavac može dodati i otkazati termine audicije s datumom, lokacijom i kapacitetom. Ovlašteni vlasnik oglasa može spremiti termin s početkom, završetkom, lokacijom i pozitivnim kapacitetom; neispravni datumi se odbijaju. Otkazivanje mijenja status termina i pokreće obavijesti rezerviranima. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
-
-### F-028
-
-Kandidat koji je pozvan na audiciju može rezervirati slobodan termin. Pozvani kandidat može rezervirati jedan raspoloživ termin za svoju prijavu; nepozvan korisnik ili drugi kandidat to ne može. Istodobni zahtjevi ne mogu prekoračiti kapacitet ni stvoriti dvije aktivne rezervacije. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
-
-### F-029
-
-Kandidat može promijeniti ili otkazati rezervaciju, a poslodavac može označiti dolazak ili nedolazak. Kandidat može otkazati i, kada je dopušteno, odabrati drugi slobodan termin. Poslodavac može evidentirati dolazak ili nedolazak; oslobođeno mjesto ponovno je dostupno i promjene se prikazuju sudionicima. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
-
-### F-030
-
-Oglas se automatski označava popunjenim kad je odabran traženi broj kandidata. Kad se odabere točno onoliko kandidata koliko je navedeno u polju broj traženih kandidata, oglas se zatvara za prijave, označava popunjenim i obrađuje preostale prijave/rezervacije; nije moguće odabrati više kandidata od traženog broja. Prioritet je visok. Izvor zahtjeva: Plan razvoja tima.
-
-### F-031
-
-Korisnik može prijaviti oglas s neprimjerenim sadržajem. Korisnik može označiti oglas i poslati prijavu s razlogom; prijava je dostupna administratoru za obradu i ne mijenja automatski status oglasa. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
-
-### F-032
-
-Administrator može pregledati i obraditi prijave neprimjerenih oglasa. Administrator može pregledati prijavu, zabilježiti odluku i poduzeti dopuštenu moderatorsku radnju; korisnik bez administratorskih ovlasti to ne može. Prioritet je srednji. Izvor zahtjeva: Plan razvoja tima.
-
-### F-033
-
-Administrator može vidjeti osnovnu statistiku korisnika, verifikacija, oglasa i prijava. Administratorski prikaz pokazuje brojeve usklađene sa zapisima u bazi; neovlašteni korisnik nema pristup administrativnoj statistici. Prioritet je nizak. Izvor zahtjeva: Plan razvoja tima.
-
-### F-034
-
 Aplikacija šalje važne obavijesti o prijavama i audicijama putem e-pošte. Nakon dogovorenog događaja sustav pokušava dostaviti obavijest na adresu korisnika putem konfigurirane vanjske usluge; uspjeh ili neuspjeh dostave može se provjeriti u zapisima. Odabir usluge i točne vrste poruka treba potvrditi. Prioritet je srednji. Izvor zahtjeva: Plan tima i upute kolegija (usluga nije odabrana).
 
-Dogovorena prijava: Koristit ćemo OAuth 2.0 / OpenID Connect preko vanjskog pružatelja identiteta. Ne spremamo vlastite lozinke niti izrađujemo njihovu promjenu. F-005 sada opisuje siguran povratak na postojeći profil nakon ponovne OAuth/OIDC prijave. Google je implementirani pružatelj prema [PR-u #29](https://github.com/paolabbradaric/grupa122/pull/29). Uslugu za e-poštu (F-034) i ostala otvorena domenska pitanja treba potvrditi zasebno.
+Dogovorena prijava: Koristit ćemo OAuth 2.0 / OpenID Connect preko vanjskog pružatelja identiteta. Ne spremamo vlastite lozinke niti izrađujemo njihovu promjenu. F-002 sada opisuje siguran povratak na postojeći profil nakon ponovne OAuth/OIDC prijave. Google je implementirani pružatelj prema [PR-u #29](https://github.com/paolabbradaric/grupa122/pull/29). Uslugu za e-poštu (F-023) i ostala otvorena domenska pitanja treba potvrditi zasebno.
 
 ## 2.2 Nefunkcijski zahtjevi
 
@@ -204,17 +160,17 @@ Podaci kandidata, fotografije i prijave moraju biti dostupni samo korisnicima ko
 
 Ovdje su navedene uloge koje koriste aplikaciju i što svaka od njih može raditi.
 
-A-01. Posjetitelj (neprijavljeni korisnik). Pregled javnih oglasa i detalja; odlazak na prijavu/registraciju. F-001–F-003, F-011–F-013.
+A-01. Posjetitelj (neprijavljeni korisnik). Pregled javnih oglasa i detalja; odlazak na prijavu/registraciju. F-001–F-002, F-008.
 
-A-02. Kandidat (registrirani korisnik). Uređuje profil i portfolio, pregledava i predaje/povlači prijave, rezervira audicije i prima obavijesti. F-001, F-003–F-007, F-011–F-017, F-026, F-028–F-029, F-034.
+A-02. Kandidat (registrirani korisnik). Uređuje profil i portfolio, pregledava i predaje/povlači prijave, rezervira audicije i prima obavijesti. F-001–F-004, F-008–F-011, F-018, F-023.
 
-A-03. Poslodavac (predstavnik organizacije). Uređuje organizaciju, traži verifikaciju, upravlja oglasima i odabirom, terminima i prijavama. F-002–F-005, F-008–F-009, F-018–F-024, F-027, F-029–F-030.
+A-03. Poslodavac (predstavnik organizacije). Uređuje organizaciju, traži verifikaciju, upravlja oglasima i odabirom, terminima i prijavama. F-001–F-003, F-005–F-006, F-012–F-015, F-017, F-019–F-020.
 
-A-04. Administrator (zajednički demo račun). Provjerava organizacije, obrađuje prijavljeni sadržaj i uklanja oglase; pregledava statistike. F-010, F-025, F-031–F-033.
+A-04. Administrator (zajednički demo račun). Provjerava organizacije, obrađuje prijavljeni sadržaj i uklanja oglase; pregledava statistike. F-007, F-016, F-021–F-022.
 
-A-05. Vanjska usluga e-pošte (sekundarni akter, planirano). Sudjeluje pri slanju važnih obavijesti; usluga još nije odabrana. F-034.
+A-05. Vanjska usluga e-pošte (sekundarni akter, planirano). Sudjeluje pri slanju važnih obavijesti; usluga još nije odabrana. F-023.
 
-A-06. OAuth/OIDC pružatelj identiteta (sekundarni akter). Provjerava korisnički identitet; implementirana je Google prijava uz zasebnu lokalnu sesiju i ulogu. F-001, F-002, F-003.
+A-06. OAuth/OIDC pružatelj identiteta (sekundarni akter). Provjerava korisnički identitet; implementirana je Google prijava uz zasebnu lokalnu sesiju i ulogu. F-001, F-002.
 
 Ostali dionici: naš tim i nastavno osoblje koje prati projekt. Vanjski pružatelj identiteta je akter A-06 jer sudjeluje u prijavi.
 
@@ -244,7 +200,7 @@ Za prijavu koristimo Google preko OAuth 2.0 / OpenID Connect, a ne vlastiti sust
 
 ### C-06
 
-Nastavni plan predviđa domenski relevantnu integraciju s vanjskim sustavom/uslugom najkasnije u nastavku implementacije. Potvrditi prihvaća li se e-pošta za audicije kao integracija i odabrati dobavljača; nakon odluke precizirati F-034. Izvor: Plan rada kolegija, 10. tjedan; Plan razvoja tima. Vrsta zapisa: Ograničenje.
+Nastavni plan predviđa domenski relevantnu integraciju s vanjskim sustavom/uslugom najkasnije u nastavku implementacije. Potvrditi prihvaća li se e-pošta za audicije kao integracija i odabrati dobavljača; nakon odluke precizirati F-023. Izvor: Plan rada kolegija, 10. tjedan; Plan razvoja tima. Vrsta zapisa: Ograničenje.
 
 ### AS-01
 
@@ -266,15 +222,15 @@ Pružatelj iz prvog pitanja naknadno je odabran: Google, implementiran u PR-u #2
 
 Ovdje bilježimo veće promjene u dogovorima. Dopunit ćemo je nakon razgovora s asistentom.
 
-U razdoblju Listopad 2026. (dan nije evidentiran) promjena se odnosi na F-019, F-030. Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. Dokaz ili dogovor: Dogovor tima.
+U razdoblju Listopad 2026. (dan nije evidentiran) promjena se odnosi na F-012, F-020. Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. Dokaz ili dogovor: Dogovor tima.
 
-U razdoblju Listopad 2026. (dan nije evidentiran) promjena se odnosi na F-025. Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. Dokaz ili dogovor: Dogovor tima.
+U razdoblju Listopad 2026. (dan nije evidentiran) promjena se odnosi na F-016. Dogovoreno trajno brisanje oglasa i vezanih podataka umjesto samo skrivanja/soft deletea. Dokaz ili dogovor: Dogovor tima.
 
-U razdoblju 28. 10. 2026. promjena se odnosi na F-001–F-003, F-005, NF-02, C-05. Tim je odlučio koristiti OAuth 2.0 / OpenID Connect. Prilagođena je registracija i sigurnost, a F-005 smo prilagodili ponovnoj prijavi i povezivanju s postojećim profilom jer lozinkama upravlja vanjski pružatelj. Dokaz ili dogovor: Dogovor tima.
+U razdoblju 28. 10. 2026. promjena se odnosi na F-001–F-002, NF-02, C-05. Tim je odlučio koristiti OAuth 2.0 / OpenID Connect. Prilagođena je registracija i sigurnost, a F-002 smo prilagodili ponovnoj prijavi i povezivanju s postojećim profilom jer lozinkama upravlja vanjski pružatelj. Dokaz ili dogovor: Dogovor tima.
 
-U razdoblju 3. 11. 2026. promjena se odnosi na F-001–F-005, NF-02. Implementirana Google prijava i lokalne PostgreSQL sesije; nema vlastitih lozinki. Dokaz ili dogovor: [PR #29](https://github.com/paolabbradaric/grupa122/pull/29).
+U razdoblju 3. 11. 2026. promjena se odnosi na F-001–F-003, NF-02. Implementirana Google prijava i lokalne PostgreSQL sesije; nema vlastitih lozinki. Dokaz ili dogovor: [PR #29](https://github.com/paolabbradaric/grupa122/pull/29).
 
-Dana 17. 11. 2026. konfiguriran je lokalni Google OAuth klijent i potvrđeni su stvarna kandidatska registracija, ponovna prijava istog računa, osvježavanje i odjava. Pri nedostajućoj konfiguraciji ili ograničenju pokušaja preglednik se vraća u aplikaciju, a JSON API zadržava odgovore 503/429. Zahtjevi se time ne proširuju; dopunjeni su rezultati provjere F-001–F-005, NF-02 i NF-11. Dokaz: [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) i [Google prijava](GOOGLE_PRIJAVA.md).
+Dana 17. 11. 2026. konfiguriran je lokalni Google OAuth klijent i potvrđeni su stvarna kandidatska registracija, ponovna prijava istog računa, osvježavanje i odjava. Pri nedostajućoj konfiguraciji ili ograničenju pokušaja preglednik se vraća u aplikaciju, a JSON API zadržava odgovore 503/429. Zahtjevi se time ne proširuju; dopunjeni su rezultati provjere F-001–F-003, NF-02 i NF-11. Dokaz: [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) i [Google prijava](GOOGLE_PRIJAVA.md).
 
 Ostale važne promjene dodaju se nakon potvrde.
 
@@ -282,33 +238,33 @@ Ostale važne promjene dodaju se nakon potvrde.
 
 Za autentifikaciju i bazu provedene su automatizirane provjere 17. 11. 2026. [Poglavlje 5](5-Ispitivanje.md) povezuje ih s UC-001/UC-002 i testovima A-T01–A-T10 te navodi stupanj provjere sustavskih scenarija A-S01–A-S04. Naknadna stvarna lokalna provjera kandidata zabilježena je u [Google prijavi](GOOGLE_PRIJAVA.md). Ostali redci ostaju plan provjera ako nemaju konkretan dokaz.
 
-Zahtjevi F-001–F-005 odnose se na Prijava, odjava i računi / UC-001, UC-002. [A-T01–A-T08](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost): auth i DB testovi prošli. Stvarni kandidatski dijelovi A-S01/A-S02 potvrđeni su za registraciju, ponovnu prijavu, osvježavanje i odjavu; stvarni poslodavački tok, restart sustava i produkcija nisu potvrđeni tim provjerama.
+Zahtjevi F-001–F-003 odnose se na Prijava, odjava i računi / UC-001, UC-002. [A-T01–A-T08](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost): auth i DB testovi prošli. Stvarni kandidatski dijelovi A-S01/A-S02 potvrđeni su za registraciju, ponovnu prijavu, osvježavanje i odjavu; stvarni poslodavački tok, restart sustava i produkcija nisu potvrđeni tim provjerama.
 
-Zahtjevi F-006–F-008 odnose se na Profili kandidata i poslodavaca. Mogu li korisnici spremati svoje podatke, dodati do pet fotografija i uređivati samo vlastiti profil.
+Zahtjevi F-004–F-005 odnose se na Profili kandidata i poslodavaca. Mogu li korisnici spremati svoje podatke, dodati do pet fotografija i uređivati samo vlastiti profil.
 
-Zahtjevi F-009–F-010 odnose se na Verifikacija poslodavaca. Može li poslodavac poslati zahtjev, a administrator odobriti ili odbiti verifikaciju.
+Zahtjevi F-006–F-007 odnose se na Verifikacija poslodavaca. Može li poslodavac poslati zahtjev, a administrator odobriti ili odbiti verifikaciju.
 
-Zahtjevi F-011–F-013 odnose se na Pregled i pretraga oglasa. Prikazuju li se javni oglasi, detalji i rezultati pretrage.
+Zahtjevi F-008 odnose se na Pregled i pretraga oglasa. Prikazuju li se javni oglasi, detalji i rezultati pretrage.
 
-Zahtjevi F-014–F-016, F-026 odnose se na Prijave kandidata. Mogu li se kandidati prijaviti i povući prijavu te jesu li spriječene dvostruke i zakašnjele prijave.
+Zahtjevi F-009–F-010 odnose se na Prijave kandidata. Mogu li se kandidati prijaviti i povući prijavu te jesu li spriječene dvostruke i zakašnjele prijave.
 
-Zahtjevi F-017, F-034 odnose se na Obavijesti. Prikazuju li se obavijesti pravim korisnicima i radi li planirano slanje e-pošte.
+Zahtjevi F-011, F-023 odnose se na Obavijesti. Prikazuju li se obavijesti pravim korisnicima i radi li planirano slanje e-pošte.
 
-Zahtjevi F-018–F-022 odnose se na Izrada i upravljanje oglasima. [A-T09/A-T10](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost) potvrđuju DB dio nacrta/objave i migraciju; potpuni API/UI tok i ovlasti nisu dokazani samo tim testom.
+Zahtjevi F-012–F-014 odnose se na Izrada i upravljanje oglasima. [A-T09/A-T10](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost) potvrđuju DB dio nacrta/objave i migraciju; potpuni API/UI tok i ovlasti nisu dokazani samo tim testom.
 
-Zahtjevi F-023–F-024, F-030 odnose se na Pregled prijava i odabir kandidata. Može li poslodavac obraditi prijave i označiti oglas popunjenim kada odabere dovoljan broj kandidata.
+Zahtjevi F-015, F-020 odnose se na Pregled prijava i odabir kandidata. Može li poslodavac obraditi prijave i označiti oglas popunjenim kada odabere dovoljan broj kandidata.
 
-Zahtjevi F-025 odnose se na Brisanje oglasa. Može li administrator obrisati oglas i povezane podatke te je li brisanje zabranjeno ostalima.
+Zahtjevi F-016 odnose se na Brisanje oglasa. Može li administrator obrisati oglas i povezane podatke te je li brisanje zabranjeno ostalima.
 
-Zahtjevi F-027–F-029 odnose se na Audicije i rezervacije. Mogu li se dodavati termini, rezervirati slobodna mjesta i otkazivati rezervacije.
+Zahtjevi F-017–F-019 odnose se na Audicije i rezervacije. Mogu li se dodavati termini, rezervirati slobodna mjesta i otkazivati rezervacije.
 
-Zahtjevi F-031–F-033 odnose se na Administracija. Može li se prijaviti neprimjeren oglas, obraditi prijava i pregledati statistika.
+Zahtjevi F-016, F-021–F-022 odnose se na Administracija. Može li se prijaviti neprimjeren oglas, obraditi prijava i pregledati statistika.
 
 Zahtjevi NF-01–NF-04, NF-11–NF-12 odnose se na Sigurnost i privatnost. Jesu li podaci i korisničke ovlasti zaštićeni i prikazuju li se razumljive pogreške.
 
 Zahtjevi NF-05–NF-10 odnose se na Brzina i jednostavnost korištenja. Radi li aplikacija dovoljno brzo, pamti li podatke i može li se koristiti na različitim uređajima i preglednicima.
 
-Napomena: Potvrđeni auth/DB rezultati su u [Ispitivanju](5-Ispitivanje.md) i [zapisniku](verification/2026-11-17/README.md). Prolaz middleware testa nije dokaz ovlasti svih poslovnih modula, a registracija nije dovršena trajna izmjena profila F-006–F-008.
+Napomena: Potvrđeni auth/DB rezultati su u [Ispitivanju](5-Ispitivanje.md) i [zapisniku](verification/2026-11-17/README.md). Prolaz middleware testa nije dokaz ovlasti svih poslovnih modula, a registracija nije dovršena trajna izmjena profila F-004–F-005.
 
 ## 2.7 Pregled zahtjeva
 
@@ -324,4 +280,4 @@ M3 — 14. tjedan. Još nije održano. Na čekanju.
 
 ---
 
-Za M0: Napisali smo 34 funkcijska i 12 nefunkcijskih zahtjeva. F-005 je prilagođen OAuth/OIDC prijavi. Otvorena pitanja i dalje trebamo provjeriti s ekipom i asistentom.
+Za M0: Napisali smo 23 funkcijska i 12 nefunkcijskih zahtjeva. F-002 je prilagođen OAuth/OIDC prijavi. Otvorena pitanja i dalje trebamo provjeriti s ekipom i asistentom.

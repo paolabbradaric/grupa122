@@ -18,15 +18,15 @@ ID-ovi A-Txx označavaju provjere auth/DB područja i ne mijenjaju postojeće ID
 
 ### A-T01
 
-Ova provjera odnosi se na F-001, F-002, NF-04 / UC-001. Pokrenuti prvi test auth.test.js: granica 18 godina, nevaljan kalendarski datum, admin uloga i OIB. Očekivano ponašanje: Ispravni podaci prolaze, neispravni se odbijaju prije pohrane. Prošlo; test „validira točnu dob, kalendarski datum, ulogu i OIB”.
+Ova provjera odnosi se na F-001, NF-04 / UC-001. Pokrenuti prvi test auth.test.js: granica 18 godina, nevaljan kalendarski datum, admin uloga i OIB. Očekivano ponašanje: Ispravni podaci prolaze, neispravni se odbijaju prije pohrane. Prošlo; test „validira točnu dob, kalendarski datum, ulogu i OIB”.
 
 ### A-T02
 
-Ova provjera odnosi se na F-003, F-005, NF-02 / UC-002. Zadati profil s/bez potvrđenog e-maila; ponoviti ulazak istog vanjskog identiteta. Očekivano ponašanje: Prihvaća se potvrđeni google:sub; postojeći račun ne dobiva duplikat. Prošlo; provjera identiteta i test ponovne prijave u auth.test.js.
+Ova provjera odnosi se na F-002, NF-02 / UC-002. Zadati profil s/bez potvrđenog e-maila; ponoviti ulazak istog vanjskog identiteta. Očekivano ponašanje: Prihvaća se potvrđeni google:sub; postojeći račun ne dobiva duplikat. Prošlo; provjera identiteta i test ponovne prijave u auth.test.js.
 
 ### A-T03
 
-Ova provjera odnosi se na F-001–F-004 / UC-001, UC-002. Simulirani Google tok, zatim pending registracija, zatim valjan profil, zatim nova sesija, zatim logout, zatim stari cookie. Očekivano ponašanje: Pending nema poslovne ovlasti; dovršetak daje novu sesiju; stari cookie nakon odjave ne vraća prijavu. Prošlo; integrirani test novog računa u auth.test.js.
+Ova provjera odnosi se na F-001–F-003 / UC-001, UC-002. Simulirani Google tok, zatim pending registracija, zatim valjan profil, zatim nova sesija, zatim logout, zatim stari cookie. Očekivano ponašanje: Pending nema poslovne ovlasti; dovršetak daje novu sesiju; stari cookie nakon odjave ne vraća prijavu. Prošlo; integrirani test novog računa u auth.test.js.
 
 ### A-T04
 
@@ -46,11 +46,11 @@ Ova provjera odnosi se na NF-02, NF-11. Izostaviti Google ključeve/tajnu i prek
 
 ### A-T08
 
-Ova provjera odnosi se na F-001, F-002, F-005, NF-06 / UC-001. npm run test:db: registracija obiju uloga, dohvat datuma i identiteta, konflikt e-maila/OIB-a i sesijski set/get/expire/destroy. Očekivano ponašanje: Transakcijski upis, datum bez pomaka, rollback konflikta i ispravan sesijski store. Prošlo; 1 DB test s više tvrdnji, nad privremenim tablicama.
+Ova provjera odnosi se na F-001, F-002, NF-06 / UC-001. npm run test:db: registracija obiju uloga, dohvat datuma i identiteta, konflikt e-maila/OIB-a i sesijski set/get/expire/destroy. Očekivano ponašanje: Transakcijski upis, datum bez pomaka, rollback konflikta i ispravan sesijski store. Prošlo; 1 DB test s više tvrdnji, nad privremenim tablicama.
 
 ### A-T09
 
-Ova provjera odnosi se na F-018, F-019, NF-04 — DB dio. npm run test:db:casting: spremiti/urediti nepotpun draft, pokušati nepotpunu i zatim potpunu objavu. Očekivano ponašanje: Draft prolazi; nepotpuna objava i loši brojevi/dob/reference padaju; potpuna objava prolazi. Prošlo; podtestovi nove sheme i migracije.
+Ova provjera odnosi se na F-012, NF-04 — DB dio. npm run test:db:casting: spremiti/urediti nepotpun draft, pokušati nepotpunu i zatim potpunu objavu. Očekivano ponašanje: Draft prolazi; nepotpuna objava i loši brojevi/dob/reference padaju; potpuna objava prolazi. Prošlo; podtestovi nove sheme i migracije.
 
 ### A-T10
 
@@ -104,7 +104,7 @@ Stvarna provjera uključuje prvi kandidatski profil, ponovnu prijavu bez duplika
 
 Stvarni Google servis. Lokalni kandidatski tok potvrđen je zasebnim stvarnim Google računom u opsegu PR-a #44. A-S01/A-S02 ostaju djelomično potvrđeni: stvarni poslodavac, restart s postojećom prijavom i dio negativnih scenarija nisu ručno izvedeni. Automatizirani HTTP/DB testovi imaju zasebnu dokaznu vrijednost.
 
-Profili i portfolio. Naknadne izmjene profila još imaju demonstracijsku lokalnu pohranu. F-006–F-008 nisu dovršeni samom registracijom.
+Profili i portfolio. Naknadne izmjene profila još imaju demonstracijsku lokalnu pohranu. F-004–F-005 nisu dovršeni samom registracijom.
 
 Demo admin. Samostalna registracija admin uloge odbija se; zaseban ograničeni demo račun nije potvrđen ovim pregledom.
 

@@ -52,7 +52,7 @@ Implementacija kombinira funkcije, objekte dobivene tvornicama i stvarne razrede
 
 ### 4.4.1 Sekvencijski dijagram prijave i registracije
 
-Scenariji: [UC-001 i UC-002](3-Obrasci-uporabe.md); F-001–F-005.
+Scenariji: [UC-001 i UC-002](3-Obrasci-uporabe.md); F-001–F-003.
 
 ![Google prijava i registracija](assets/diagrams/mario-google-registracija.svg)
 
@@ -74,7 +74,7 @@ Sljedeće odluke zapisane su naknadno prema implementaciji, ranijoj dokumentacij
 
 ### ADR-AUTH-01: Lokalna sesija nakon Google prijave
 
-Zahtjevi F-001–F-005 predviđaju vanjsku prijavu, povezivanje profila i lokalne uloge. Budući da je backend već koristio Express i PostgreSQL, auth pristup prilagođen je tom okruženju. Zadržani su Passport, stabilni Google identitet i serverska sesija, uz parametrizirane SQL upite.
+Zahtjevi F-001–F-003 predviđaju vanjsku prijavu, povezivanje profila i lokalne uloge. Budući da je backend već koristio Express i PostgreSQL, auth pristup prilagođen je tom okruženju. Zadržani su Passport, stabilni Google identitet i serverska sesija, uz parametrizirane SQL upite.
 
 Aplikacija ne sprema vlastite korisničke lozinke. Nakon vanjske prijave sama provjerava ovlasti i održava sesije. Odluka je implementirana kroz [PR #29](https://github.com/paolabbradaric/grupa122/pull/29), u skladu s [razvojnim planom](RAZVOJNI_PLAN.md). [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) naknadno potvrđuje stvarnu lokalnu kandidatsku registraciju, ponovnu prijavu, osvježavanje i odjavu. Stvarni poslodavački tok, restart cijelog sustava i produkcija ostaju neprovjereni tim scenarijima.
 

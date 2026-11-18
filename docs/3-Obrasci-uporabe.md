@@ -30,7 +30,7 @@ Za svaki obrazac uporabe napisali smo tko ga pokreće, što treba biti ispunjeno
 
 Obrazac pokreće Posjetitelj (A-01).
 
-Povezani zahtjevi su F-001, F-002.
+Povezani zahtjevi su F-001.
 
 Prije početka vrijedi sljedeće: Korisnik još nema povezan profil u aplikaciji. Za prijavu koristi vanjskog OAuth/OIDC pružatelja identiteta.
 
@@ -44,7 +44,7 @@ Ishod uporabe: Korisnik ima profil povezan s vanjskom prijavom. Poslodavac mora 
 
 Obrazac pokreće Kandidat (A-02), poslodavac (A-03), administrator (A-04).
 
-Povezani zahtjevi su F-003, F-004, F-005.
+Povezani zahtjevi su F-002, F-003.
 
 Prije početka vrijedi sljedeće: Korisnik ima račun povezan s vanjskim identitetom ili dodijeljen administratorski pristup.
 
@@ -58,7 +58,7 @@ Ishod uporabe: Korisnik se prijavio preko vanjskog pružatelja i koristi funkcij
 
 Obrazac pokreće Kandidat (A-02), poslodavac (A-03).
 
-Povezani zahtjevi su F-006, F-007, F-008.
+Povezani zahtjevi su F-004, F-005.
 
 Prije početka vrijedi sljedeće: Korisnik je prijavljen.
 
@@ -72,7 +72,7 @@ Ishod uporabe: Promjene su spremljene i vide se nakon ponovne prijave; tuđi pro
 
 Obrazac pokreće Posjetitelj (A-01); pregled je dostupan i prijavljenim korisnicima.
 
-Povezani zahtjevi su F-011, F-012, F-013.
+Povezani zahtjevi su F-008.
 
 Prije početka vrijedi sljedeće: Aplikacija je dostupna.
 
@@ -86,7 +86,7 @@ Ishod uporabe: Korisnik je pronašao i pregledao oglas, bez potrebe za prijavom.
 
 Obrazac pokreće Poslodavac (A-03).
 
-Povezani zahtjevi su F-009.
+Povezani zahtjevi su F-006.
 
 Prije početka vrijedi sljedeće: Poslodavac je registriran i prijavljen.
 
@@ -100,7 +100,7 @@ Ishod uporabe: Zahtjev za verifikaciju čeka odluku administratora.
 
 Obrazac pokreće Administrator (A-04).
 
-Povezani zahtjevi su F-010.
+Povezani zahtjevi su F-007.
 
 Prije početka vrijedi sljedeće: Administrator je prijavljen i postoji zahtjev za verifikaciju.
 
@@ -114,7 +114,7 @@ Ishod uporabe: Poslodavac vidi novi status; nakon odobrenja može objavljivati o
 
 Obrazac pokreće Poslodavac (A-03).
 
-Povezani zahtjevi su F-018, F-019.
+Povezani zahtjevi su F-012.
 
 Prije početka vrijedi sljedeće: Poslodavac je prijavljen. Za javnu objavu treba biti verificiran.
 
@@ -128,7 +128,7 @@ Ishod uporabe: Oglas je javno objavljen ili spremljen kao nacrt. Prema našem do
 
 Obrazac pokreće Poslodavac (A-03).
 
-Povezani zahtjevi su F-020, F-021, F-022.
+Povezani zahtjevi su F-013, F-014.
 
 Prije početka vrijedi sljedeće: Poslodavac je prijavljen i ima barem jedan oglas.
 
@@ -142,7 +142,7 @@ Ishod uporabe: Oglas je ažuriran ili mu je promijenjen status prema pravilima.
 
 Obrazac pokreće Kandidat (A-02).
 
-Povezani zahtjevi su F-014, F-015.
+Povezani zahtjevi su F-009.
 
 Prije početka vrijedi sljedeće: Kandidat je prijavljen; oglas je objavljen i još prima prijave.
 
@@ -156,7 +156,7 @@ Ishod uporabe: Prijava je spremljena i dostupna kandidatu u Mojim prijavama.
 
 Obrazac pokreće Kandidat (A-02).
 
-Povezani zahtjevi su F-016, F-026.
+Povezani zahtjevi su F-010.
 
 Prije početka vrijedi sljedeće: Kandidat je prijavljen.
 
@@ -170,7 +170,7 @@ Ishod uporabe: Kandidat je pregledao prijave ili povukao dopuštenu prijavu.
 
 Obrazac pokreće Poslodavac (A-03).
 
-Povezani zahtjevi su F-023, F-024, F-030.
+Povezani zahtjevi su F-015, F-020.
 
 Prije početka vrijedi sljedeće: Poslodavac je prijavljen i na njegov oglas stigle su prijave.
 
@@ -184,7 +184,7 @@ Ishod uporabe: Statusi prijava su ažurirani, a odabir se sprema bez prekoračen
 
 Obrazac pokreće Poslodavac (A-03).
 
-Povezani zahtjevi su F-027, F-029.
+Povezani zahtjevi su F-017, F-019.
 
 Prije početka vrijedi sljedeće: Poslodavac je prijavljen i ima oglas za koji organizira audicije.
 
@@ -198,7 +198,7 @@ Ishod uporabe: Termin je spremljen ili otkazan; status dolaska evidentira se kad
 
 Obrazac pokreće Kandidat (A-02).
 
-Povezani zahtjevi su F-028, F-029.
+Povezani zahtjevi su F-018.
 
 Prije početka vrijedi sljedeće: Kandidat je prijavljen i pozvan je na audiciju.
 
@@ -212,7 +212,7 @@ Ishod uporabe: Kandidat ima potvrđenu rezervaciju ili je uspješno otkazao odno
 
 Obrazac pokreće Kandidat (A-02), poslodavac (A-03); usluga e-pošte (A-05) je sekundarni akter.
 
-Povezani zahtjevi su F-017, F-034.
+Povezani zahtjevi su F-011, F-023.
 
 Prije početka vrijedi sljedeće: Korisnik ima račun; nastao je događaj važan za njegovu prijavu ili audiciju.
 
@@ -226,7 +226,7 @@ Ishod uporabe: Korisnik vidi obavijest i po potrebi mijenja njezin status u pro�
 
 Obrazac pokreće Kandidat (A-02), poslodavac (A-03).
 
-Povezani zahtjevi su F-031.
+Povezani zahtjevi su F-021.
 
 Prije početka vrijedi sljedeće: Korisnik je prijavljen i može pregledati oglas.
 
@@ -240,7 +240,7 @@ Ishod uporabe: Administrator može pregledati prijavu; samim slanjem oglas se ne
 
 Obrazac pokreće Administrator (A-04).
 
-Povezani zahtjevi su F-025, F-032.
+Povezani zahtjevi su F-016.
 
 Prije početka vrijedi sljedeće: Administrator je prijavljen i postoji oglas ili prijava sadržaja za pregled.
 
@@ -254,7 +254,7 @@ Ishod uporabe: Prijava je obrađena. Kod potvrđenog brisanja oglas i povezani p
 
 Usporedili smo obrasce s ulogama i funkcijskim zahtjevima iz Analize zahtjeva.
 
-Povezanost sa zahtjevima. Svaki opisani UC navodi postojeće oznake F-001 do F-034 iz dokumenta 2.
+Povezanost sa zahtjevima. Svaki opisani UC navodi postojeće oznake F-001 do F-015 iz dokumenta 2.
 
 Korisničke uloge. Provjerit ćemo da kandidat ne može uređivati tuđe oglase, poslodavac ne vidi tuđe prijave i samo administrator izvršava administrativne radnje.
 
@@ -266,7 +266,7 @@ Usklađenost s implementacijom. Tijekom razvoja provjeravat ćemo odgovara li st
 
 Testiranje. Auth/DB testovi i potvrđeni kandidatski Google scenariji povezani su u [Ispitivanju](5-Ispitivanje.md). Rezultati ostalih obrazaca dodaju se nakon njihova izvođenja.
 
-Zahtjevi koje nismo izdvojili u zaseban oval: F-005 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u [UC-002](#uc-002-prijava-i-odjava). F-033 (administratorska statistika) jednostavan je prikaz opisan u [Analizi zahtjeva](2-Analiza-zahtjeva.md#f-033). Sljedivost zahtjeva i testova vodi se u [Analizi zahtjeva](2-Analiza-zahtjeva.md#26-sljedivost-zahtjeva).
+Zahtjevi koje nismo izdvojili u zaseban oval: F-002 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u [UC-002](#uc-002-prijava-i-odjava). F-022 (administratorska statistika) jednostavan je prikaz opisan u [Analizi zahtjeva](2-Analiza-zahtjeva.md#f-022). Sljedivost zahtjeva i testova vodi se u [Analizi zahtjeva](2-Analiza-zahtjeva.md#26-sljedivost-zahtjeva).
 
 Pitanja evidentirana pri pripremi M0:
 

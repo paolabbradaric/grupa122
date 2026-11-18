@@ -56,7 +56,7 @@ Zadaci se prate kroz [GitHub Issues](https://github.com/paolabbradaric/grupa122/
 
 Prema README-u repozitorija projektna dokumentacija vodi se u docs/ kao povezani Markdown dokumenti. UML izvori čuvaju se u [puml/](puml/), a čitljive slike u [assets/diagrams/](assets/diagrams/). Nastavni primjeri CrisisMapa nisu rezultati CastMeIfYouCan projekta.
 
-Dopuna od 17. 11. pokriva Mariovo područje iz zadatka #12, spojene PR-ove #23, #25, #29, #31 i #44 te početni SQL/ER model. Dokumentacijska grana ne mijenja poslovni kod, bazu ni tajne; opisuje i auth promjene već spojene kroz PR #44. Stari zahtjev iz issuea za vlastite lozinke razjašnjen je prema novijim F-001–F-005 i NF-02: koristi se Google prijava.
+Dopuna od 17. 11. pokriva Mariovo područje iz zadatka #12, spojene PR-ove #23, #25, #29, #31 i #44 te početni SQL/ER model. Dokumentacijska grana ne mijenja poslovni kod, bazu ni tajne; opisuje i auth promjene već spojene kroz PR #44. Stari zahtjev iz issuea za vlastite lozinke razjašnjen je prema novijim F-001–F-003 i NF-02: koristi se Google prijava.
 
 Licenca predloška dokumentacije i kodeks ponašanja opisani su u [README-u](../README.md) i [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md). Licenca nastavnog predloška ne određuje automatski licencu studentske aplikacije.
 

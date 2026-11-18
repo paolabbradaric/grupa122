@@ -1,6 +1,6 @@
 # Autentifikacija — Google OAuth i serverske sesije
 
-Provjera dokumentacije: 17. 11. 2026., kod `bd785d4`. Područje prati [zadatak #12](https://github.com/paolabbradaric/grupa122/issues/12), F-001–F-005 i UC-001/UC-002. [Arhitektura i dijagrami](4-Arhitektura-i-oblikovanje.md), [baza i migracije](BAZA_PODATAKA.md), [instalacija](6-Postavljanje-instalacija-i-konfiguracija.md) i [dokazi ispitivanja](5-Ispitivanje.md) čine povezanu dokumentaciju ovog doprinosa.
+Provjera dokumentacije: 17. 11. 2026., kod `bd785d4`. Područje prati [zadatak #12](https://github.com/paolabbradaric/grupa122/issues/12), F-001–F-003 i UC-001/UC-002. [Arhitektura i dijagrami](4-Arhitektura-i-oblikovanje.md), [baza i migracije](BAZA_PODATAKA.md), [instalacija](6-Postavljanje-instalacija-i-konfiguracija.md) i [dokazi ispitivanja](5-Ispitivanje.md) čine povezanu dokumentaciju ovog doprinosa.
 
 Naknadne promjene s grane `main`, zaključno s `f42e73d`, uključuju povratak u aplikaciju pri nedostupnoj prijavi i potvrdu stvarne lokalne Google prijave. Aktualna konfiguracija i rezultati opisani su u [Google prijavi — postavljanje i provjera](GOOGLE_PRIJAVA.md); raniji zapisnik provjera ostaje vezan uz `bd785d4`.
 
@@ -22,7 +22,7 @@ Izvorni `UsersService`. `userModel.js`. Parametrizirani SQL i postojeći `pg` po
 
 Mobilne bearer sesije, Swagger DTO-ovi i domenske uloge izvornog projekta nisu potrebni ovoj web aplikaciji. Google access/refresh tokeni odbacuju se nakon dohvaćanja identiteta; aplikacija ne treba pristup drugim Google podacima.
 
-Ovo prati postojeće zahtjeve F-001–F-005 i `RAZVOJNI_PLAN.md`: aplikacija ne sprema korisničke lozinke. Demonstracijski obrasci za lozinke zamijenjeni su Google prijavom, a sigurnosne postavke profila vode na Google račun.
+Ovo prati postojeće zahtjeve F-001–F-003 i `RAZVOJNI_PLAN.md`: aplikacija ne sprema korisničke lozinke. Demonstracijski obrasci za lozinke zamijenjeni su Google prijavom, a sigurnosne postavke profila vode na Google račun.
 
 ## Tok prijave
 
@@ -182,7 +182,7 @@ Registracijski podaci spremaju se u bazu. Profili i portfolio imaju preostali de
 
 ## Status zadatka #12 i potreban završetak
 
-Stariji zadatak još spominje vlastite lozinke i Argon2id. Noviji F-001–F-005, NF-02 i razvojni plan određuju OAuth/OIDC bez lokalnih lozinki. Promjena lozinke pripada Google računu, a F-005 označava siguran ponovni ulazak. Dokumentacija ne proglašava cijeli zadatak #12 završenim.
+Stariji zadatak još spominje vlastite lozinke i Argon2id. Noviji F-001–F-003, NF-02 i razvojni plan određuju OAuth/OIDC bez lokalnih lozinki. Promjena lozinke pripada Google računu, a F-002 označava siguran ponovni ulazak. Dokumentacija ne proglašava cijeli zadatak #12 završenim.
 
 Model baze i migracije. [Baza](BAZA_PODATAKA.md), PR-ovi #23, #25, #29 i #31; implementirano.
 

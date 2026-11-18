@@ -20,7 +20,7 @@ Migracije omogućuju očuvanje baze, uz cijenu provjere početnog stanja i redos
 
 Za dovršetak stvarne Google provjere treba izvesti prvi i ponovljeni poslodavački ulazak te ručno otkazivanje na Googleovoj stranici i provjeru predviđenih organizacijskih računa. Kandidatska registracija, ponovna prijava, osvježavanje i odjava već su potvrđeni u lokalnom okruženju. Ponovna uporaba starog cookieja pokrivena je HTTP testom; stvarni restart sustava uz očuvanje postojeće prijave ostaje neprovjeren.
 
-Za profile i portfolio treba dovršiti trajni API izmjene profila i pohrane datoteka; lokalna demonstracijska pohrana nije dovršena funkcionalnost F-006–F-008.
+Za profile i portfolio treba dovršiti trajni API izmjene profila i pohrane datoteka; lokalna demonstracijska pohrana nije dovršena funkcionalnost F-004–F-005.
 
 Za demo admin račun treba potvrditi ograničeni demo račun i njegovu namjenu bez tajni u Gitu.
 

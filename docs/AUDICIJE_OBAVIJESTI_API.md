@@ -91,7 +91,7 @@ koristi zadnji ID kao `before`; manje od `limit` redaka znači kraj.
 obavijest jednako daje 404. Svaki odgovor ima `Cache-Control: no-store`.
 Statusne promjene, povlačenje, prihvaćanje, završetak oglasa te rezervacije i
 promjene audicija stvaraju obavijesti u istoj transakciji. E-pošta se ne šalje:
-F-034 još nema odabranog pružatelja ni ugovorenih događaja dostave.
+F-023 još nema odabranog pružatelja ni ugovorenih događaja dostave.
 
 ## Admin pregled pojedinačnih prijava
 

@@ -30,7 +30,7 @@ odgođen za kasnije; frontend i .env datoteke nisu mijenjani.
   profilnog DB testa ispravljen je običnim DROP-om samo vlastite privremene
   baze nakon zatvaranja poola, bez FORCE. Test ne briše postojeće baze.
 
-Ugovori su u `docs/AUDICIJE_OBAVIJESTI_API.md`. E-pošta F-034 nije odabrana
+Ugovori su u `docs/AUDICIJE_OBAVIJESTI_API.md`. E-pošta F-023 nije odabrana
 usluga i nije dio ovog backend proširenja; obavijesti su u aplikaciji.
 
 ## Lokalni dokazi
