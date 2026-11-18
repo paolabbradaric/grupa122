@@ -2,6 +2,8 @@
 'use strict';
 
 const pool = require('../config/db');
+const { closeCastingDependents } = require('./castingClosure');
+const { notifyApplication } = require('./notificationModel');
 
 function createEmployerCandidateSelectionModel(database = pool) {
   return {
@@ -98,6 +100,7 @@ function createEmployerCandidateSelectionModel(database = pool) {
         ]);
 
         const selectedCount = counts.total + 1;
+        await notifyApplication(client, applicationId, 'application_status', 'Odabrani ste.', 'Vaša prijava je prihvaćena.');
         let castingStatus = casting.status;
 
         // Automatsko popunjavanje oglasa.
@@ -120,6 +123,7 @@ function createEmployerCandidateSelectionModel(database = pool) {
           ]);
 
           castingStatus = 'filled';
+          await closeCastingDependents(client, castingId, 'filled', userId);
         }
 
         await client.query('COMMIT');

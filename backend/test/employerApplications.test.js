@@ -55,7 +55,7 @@ test('poslodavac može dohvatiti prijave vlastitog oglasa', async () => {
   assert.equal(result.applications.length, 1);
   assert.equal(result.applications[0].firstName, 'Ana');
 
-  assert.deepEqual(queries[0].params, [10, 5]);
+  assert.deepEqual(queries[0].params, [10, 5, false]);
   assert.deepEqual(queries[1].params, [10]);
 });
 

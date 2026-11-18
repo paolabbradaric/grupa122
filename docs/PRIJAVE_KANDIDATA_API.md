@@ -87,7 +87,7 @@ Povlačenje koristi istu konfiguracijsku zaštitu `getApplicationWritesEnabled` 
 
 Rezervacija je za ovu provjeru aktivna ako joj status nije `cancelled` ili `canceled`, jednako kao u postojećim provjerama audicija. Aktivna rezervacija **blokira povlačenje s 409**; rezervacije, termini i obavijesti pritom se ne mijenjaju. Već otkazana rezervacija ne blokira povlačenje i ostaje nepromijenjena.
 
-Automatsko otkazivanje rezervacije, oslobađanje mjesta i slanje obavijesti nisu implementirani ovim zadatkom. Lucijine rute i modeli nisu mijenjani; nova DB zaštita provjerava i njegove buduće upise rezervacija. Dok ne postoji API za otkazivanje rezervacije, korisnik s aktivnom rezervacijom ne može dovršiti povlačenje ovom rutom.
+Automatsko otkazivanje rezervacije, oslobađanje mjesta i slanje obavijesti nisu implementirani ovim zadatkom. Lucijine rute i modeli nisu mijenjani; nova DB zaštita provjerava i njegove buduće upise rezervacija. Za prethodno otkazivanje vlastite buduće rezervacije sada postoji `DELETE /api/candidate/applications/:applicationId/booking`; vidi [audicije i obavijesti](AUDICIJE_OBAVIJESTI_API.md). Povlačenje i dalje vraća 409 dok je rezervacija aktivna.
 
 Nova DB zaštita serijalizira stvaranje i reaktivaciju aktivne rezervacije preko retka prijave. Trigger na rezervaciji radi verzijski upis `id = id` na prijavi: poslovne vrijednosti, `updated_at` i povijest ostaju nepromijenjeni, ali nastaje nova verzija retka. Zatim odbija aktivnu rezervaciju na `WITHDRAWN` prijavi. Trigger na prijavi odbija povlačenje uz aktivnu rezervaciju. Time se štite oba redoslijeda konkurentnog INSERT-a/UPDATE-a, uključujući zastarjele `REPEATABLE READ` transakcije koje dobivaju grešku serijalizacije. API za povlačenje izričito koristi `READ COMMITTED`.
 

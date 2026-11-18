@@ -13,17 +13,19 @@ function createEmployerCastingRouter({
   writesEnabled = false,
   model,
   statusModel,
-  selectionModel
+  selectionModel,
+  applicationsModel,
+  applicationStatusModel
 } = {}) {
   const router = Router();
 
   const controller = createEmployerCastingController({ model, writesEnabled });
   const statuses = createEmployerCastingStatusController({ model: statusModel, writesEnabled });
   const selections = createEmployerCandidateSelectionController({ model: selectionModel, writesEnabled });
-  const applications = createEmployerApplicationsController();
+  const applications = createEmployerApplicationsController({model:applicationsModel});
  
   const applicationStatuses = createEmployerApplicationStatusController({
-    writesEnabled
+    writesEnabled,model:applicationStatusModel
   });
 
 

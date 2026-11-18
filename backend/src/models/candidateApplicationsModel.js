@@ -1,6 +1,7 @@
 'use strict';
 
 const pool = require('../config/db');
+const { notifyApplication } = require('./notificationModel');
 
 // Dogovoreno pravilo F-026: povlačenje prije održane audicije.
 const withdrawableStatuses = new Set(['SUBMITTED', 'UNDER_REVIEW', 'SHORTLISTED', 'INVITED']);
@@ -115,6 +116,7 @@ function createCandidateApplicationsModel(database = pool) {
           VALUES ($1, 'WITHDRAWN', $2, $3, $4)
         `, [application.status, 'Prijavu povukao kandidat.', applicationId, userId]);
 
+        await notifyApplication(client, applicationId, 'application_status', 'Prijava je povučena.', 'Uspješno ste povukli prijavu.');
         await client.query('COMMIT');
         transaction = false;
         return { outcome: 'withdrawn', applicationId, oldStatus: application.status, status: 'WITHDRAWN' };

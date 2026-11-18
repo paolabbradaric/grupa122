@@ -25,7 +25,7 @@ function validateDraft(body, creating = false) {
       // Prazan tekst opcionalnog polja tretiramo kao NULL.
       data[key] = typeof value === 'string' && !value.trim() ? null : value;
     } else if (counts.has(key)) {
-      if (value !== null && (!Number.isSafeInteger(value) || value < (key === 'minAge' || key === 'maxAge' ? 18 : 1) ||
+      if (value !== null && (!Number.isSafeInteger(value) || value > 2147483647 || value < (key === 'minAge' || key === 'maxAge' ? 18 : 1) ||
           (key === 'maxApplications' && value > 1000))) {
         return { error: `Neispravno polje ${key}.` };
       }
@@ -80,7 +80,7 @@ function createEmployerCastingController({ model = createEmployerCastingModel(),
     },
     async publish(req, res, next) {
       const id = Number(req.params.id);
-      if (!Number.isSafeInteger(id) || id <= 0) {
+      if (!Number.isSafeInteger(id) || id <= 0 || id > 2147483647) {
         return res.status(400).json({ error: 'Neispravan ID oglasa.' });
       }
       if (!writesEnabled) {
@@ -107,7 +107,7 @@ function createEmployerCastingController({ model = createEmployerCastingModel(),
     },
     async update(req, res, next) {
       const id = Number(req.params.id);
-      if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ error: 'Neispravan ID oglasa.' });
+      if (!Number.isSafeInteger(id) || id <= 0 || id > 2147483647) return res.status(400).json({ error: 'Neispravan ID oglasa.' });
       const check = validateDraft(req.body);
       if (check.error) return res.status(400).json({ error: check.error });
       if (!writesEnabled) return res.status(503).json({ error: 'Uređivanje nacrta još nije omogućeno.' });

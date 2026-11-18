@@ -1,209 +1,105 @@
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-
-const {
-    getAuditionSlots,
-    createAuditionSlot,
-    cancelAuditionSlot
-} = require('../src/models/auditionModels');
-const { release } = require('node:os');
-const { connect } = require('node:http2');
-const { query } = require('../src/routes/castingRoutes');
-
-function mockDb(rows = []){
-    const calls = [];
-
-    return{
-        calls,
-        async query(sql, params){
-            calls.push({ sql, params });
-            return{ rows };
-        }
-    };
+const { test } = require("node:test");
+const assert = require("node:assert/strict");
+const { createAuditionWorkflowModel } = require("../src/models/auditionModels");
+function fixture({
+  owner = true,
+  status = "published",
+  slotStatus = "scheduled",
+  past = false,
+  fail = false,
+} = {}) {
+  const calls = [];
+  let released = false;
+  const client = {
+    async query(sql, args) {
+      calls.push({ sql, args });
+      if (sql.includes("FROM casting_calls c"))
+        return { rows: owner ? [{ id: 1, status }] : [] };
+      if (sql.includes("SELECT id,status,starts_at FROM audition_slots"))
+        return {
+          rows: [
+            {
+              id: 2,
+              status: slotStatus,
+              starts_at: past ? "2000-01-01" : "2099-01-01",
+            },
+          ],
+        };
+      if (sql.includes("INSERT INTO audition_slots")) {
+        if (fail) throw Error("insert failed");
+        return { rows: [{ id: 2, status: "scheduled" }] };
+      }
+      if (sql.includes("UPDATE audition_bookings"))
+        return { rows: [{ id: 3, application_id: 4 }] };
+      return { rows: [] };
+    },
+    release() {
+      released = true;
+    },
+  };
+  return {
+    calls,
+    model: createAuditionWorkflowModel({
+      query: client.query,
+      connect: async () => client,
+    }),
+    released: () => released,
+  };
 }
-
-test('dohvat termina za određeni oglas', async () => {
-    const termini = [
-        { id: 1, status: 'scheduled', capacity: 5 },
-        { id:2, status: 'scheduled', capacity: 3 }
-    ];
-
-    const db = mockDb(termini);
-
-    const result = await getAuditionSlots(10, db);
-
-    assert.deepEqual(result, termini);
-    assert.deepEqual(db.calls[0].params, [10]);
-    assert.match(db.calls[0].sql, /WHERE casting_call_id = \$1/);
-});
-
-test('poslodavac može stvoriti termin za svoj objavljeni oglas', async() => {
-    const termin = {
-        id: 7,
-        status: 'scheduled',
-        capacity: 5
-    };
-
-    const db = mockDb([termin]);
-
-    const result = await createAuditionSlot(
-        10,
-        '2026-11-15T10:00:00Z',
-        '2026-11-15T11:00:00Z',
-        'Zagreb',
-        5,
-        4,
-        db
+test("slot creation locks owned casting and accepts published or closed casting", async () => {
+  for (const status of ["published", "closed"]) {
+    const f = fixture({ status });
+    assert.equal(
+      (
+        await f.model.create(3, 1, {
+          starts_at: "2099-01-01",
+          ends_at: "2099-01-02",
+          location: "Zagreb",
+          capacity: 1,
+        })
+      ).id,
+      2,
     );
-
-    assert.deepEqual(result, termin);
-    assert.deepEqual(db.calls[0].params, [
-        10,
-        '2026-11-15T10:00:00Z',
-        '2026-11-15T11:00:00Z',
-        'Zagreb',
-        5,
-        4
-    ]);
-
-    assert.match(db.calls[0].sql, /o\.owner_id = \$6/);
-    assert.match(db.calls[0].sql, /c\.status = 'published'/);
+    assert.ok(f.calls.some((q) => q.sql.includes("FOR UPDATE OF c")));
+    assert.equal(f.calls.at(-1).sql, "COMMIT");
+    assert.equal(f.released(), true);
+  }
 });
-
-test('ne stvara termin ako oglas ne pripada poslodavcu ili nije objavljen', async()=> {
-    const db = mockDb([]);
-
-    const result = await createAuditionSlot(
-        10,
-        '2026-11-15T10:00:00Z',
-        '2026-11-15T11:00:00Z',
-        'Zagreb',
-        5,
-        4,
-        db
+test("unknown owner and forbidden casting status roll back before slot insert", async () => {
+  for (const options of [
+    { owner: false },
+    { status: "cancelled" },
+    { status: "filled" },
+    { status: "draft" },
+  ]) {
+    const f = fixture(options);
+    await assert.rejects(f.model.create(3, 1, {}));
+    assert.equal(f.calls.at(-1).sql, "ROLLBACK");
+    assert.ok(
+      !f.calls.some((q) => q.sql.includes("INSERT INTO audition_slots")),
     );
-
-    assert.equal(result, null);
+  }
 });
-
-test('poslodavac može otkazati budući termin bez rezervacija', async() => {
-    const queries = [];
-
-    const db = {
-        async connect(){
-            return {
-                async query(sql, params){
-                    queries.push({ sql, params });
-
-                    if(sql.includes('FROM audition_slots s')){
-                        return {
-                            rows: [{
-                                id: 7,
-                                status: 'scheduled',
-                                starts_at: '2099-11-15T10:00:00Z'
-                            }]
-                        };
-                    }
-                    if (sql.includes( 'AS has_active_bookings')){
-                        return {
-                            rows: [{ has_active_bookings: false}]
-                        };
-                    }
-
-                    return { rows: [] };
-                },
-                release(){}
-            };
-        }
-    };
-
-    const result = await cancelAuditionSlot(10, 7, 4, db);
-
-    assert.deepEqual(result, {
-        outcome: 'cancelled',
-        id: 7
+test("slot insertion failure rolls back and releases the connection", async () => {
+  const f = fixture({ fail: true });
+  await assert.rejects(f.model.create(3, 1, {}), /insert failed/);
+  assert.equal(f.calls.at(-1).sql, "ROLLBACK");
+  assert.equal(f.released(), true);
+});
+test("future slot cancellation cancels bookings and emits notifications in one transaction", async () => {
+  const f = fixture();
+  assert.equal((await f.model.cancel(3, 1, 2)).status, "cancelled");
+  assert.ok(f.calls.some((q) => q.sql.includes("UPDATE audition_bookings")));
+  assert.ok(f.calls.some((q) => q.sql.includes("INSERT INTO notifications")));
+  assert.equal(f.calls.at(-1).sql, "COMMIT");
+});
+test("past or cancelled slots cannot be cancelled again", async () => {
+  for (const options of [{ past: true }, { slotStatus: "cancelled" }]) {
+    const f = fixture(options);
+    await assert.rejects(f.model.cancel(3, 1, 2), {
+      code: "INVALID_SLOT_STATUS",
     });
-
-    const selectQuery = queries.find(q =>
-        q.sql.includes('FROM audition_slots s')
-    );
-
-    assert.ok(selectQuery);
-    assert.match(selectQuery.sql, /JOIN casting_calls c/);
-    assert.match(selectQuery.sql, /WHERE s\.id = \$1/);
-    assert.match(selectQuery.sql, /FOR UPDATE OF s/);
-
-    assert.ok(
-        queries.some(q =>
-            q.sql.includes("SET status = 'cancelled'")
-        )
-    );
-
-    assert.ok(
-        queries.some(q => q.sql === 'COMMIT')
-    );
-});
-
-test('poslodavac ne može otkazati tuđi ili nepostojeći termin', async() => {
-    const queries = [];
-
-    const db = {
-        async connect(){
-            return {
-                async query(sql){
-                    queries.push(sql);
-
-                    if(sql.includes('FROM audition_slots s')){
-                        return { rows: [] };
-                    }
-
-                    return { rows: [] };
-                },
-                release(){}
-            };
-        }
-    };
-
-    const result = await cancelAuditionSlot(10, 7, 4, db);
-
-    assert.deepEqual(result, { outcome: 'not_found'});
-    assert.ok(queries.includes('ROLLBACK'));
-    assert.ok(!queries.some(sql => sql.includes('UPDATE audition_slots')));
-    assert.ok(!queries.includes('COMMIT'));
-});
-
-test('poslodavac ne može otkazati termin s aktivnim rezervacijama', async()=> {
-    const queries = [];
-
-    const db ={
-        async connect(){
-            return{
-                async query(sql){
-                    queries.push(sql);
-
-                    if(sql.includes('FROM audition_slots s')){
-                        return{
-                            rows: [{
-                                id: 7,
-                                status: 'scheduled',
-                                starts_at: '2099-11-15T10:00:00Z'
-                            }]
-                        };
-                    }
-                    if(sql.includes('AS has_active_bookings')){
-                        return { rows: [{ has_active_bookings: true }]};
-                    }
-                    return { rows: [] };
-                },
-                release() {}
-            };
-        }
-    };
-
-    const result = await cancelAuditionSlot(10,7,4,db);
-
-    assert.deepEqual(result, { outcome: 'active_bookings'});
-    assert.ok(queries.includes('ROLLBACK'));
-    assert.ok(!queries.some(sql => sql.includes('UPDATE audition_slots')));
-    assert.ok(!queries.includes('COMMIT'));
+    assert.equal(f.calls.at(-1).sql, "ROLLBACK");
+    assert.ok(!f.calls.some((q) => q.sql.includes("UPDATE audition_bookings")));
+  }
 });

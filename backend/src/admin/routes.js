@@ -3,8 +3,9 @@ const { requireAdmin } = require('../auth/adminPolicy');
 const { protectMutation } = require('../auth/middleware');
 const { createModerationModel } = require('./model');
 const { body, id, reason, page, invalid } = require('./validation');
+const { createEmployerApplicationsModel } = require('../models/employerApplicationsModel');
 
-function createAdminRouter({ config, pool, model = createModerationModel(pool) }) {
+function createAdminRouter({ config, pool, model = createModerationModel(pool), applicationsModel=createEmployerApplicationsModel(pool) }) {
   const router = Router();
   router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
@@ -17,6 +18,11 @@ function createAdminRouter({ config, pool, model = createModerationModel(pool) }
     return protect(req, res, next);
   });
   router.get('/session', (req, res) => res.json({ admin: true, userId: req.user.id }));
+  router.get('/castings/:id/applications',async(req,res)=>{
+    const result=await applicationsModel.listByCasting(req.user.id,id(req.params.id),{adminRead:true});
+    if(result.outcome==='not_found')return res.status(404).json({error:'Oglas nije pronađen.'});
+    res.json({casting:result.casting,applications:result.applications});
+  });
   router.get('/verifications', async (req, res) => {
     res.json(await model.verifications(page(req.query, ['pending', 'under_review', 'approved', 'rejected'])));
   });

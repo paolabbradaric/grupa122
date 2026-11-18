@@ -70,4 +70,4 @@ jobs:
         run: |
           createdb castme_test
           psql -v ON_ERROR_STOP=1 -f ../db/schema.sql
-          AUTH_DATABASE_TESTS=1 CASTING_DATABASE_TESTS=1 PUBLIC_CASTING_DB_TESTS=1 node --test --test-concurrency=1 test/auth-database.test.js test/casting-drafts-database.test.js test/publicCastingAndRateLimitDatabase.test.js
+          AUTH_DATABASE_TESTS=1 CASTING_DATABASE_TESTS=1 PUBLIC_CASTING_DB_TESTS=1 BACKEND_COMPLETION_DB_TESTS=1 node --test --test-concurrency=1 test/auth-database.test.js test/casting-drafts-database.test.js test/publicCastingAndRateLimitDatabase.test.js test/backendCompletionDatabase.test.js

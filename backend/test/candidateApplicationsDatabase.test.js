@@ -24,6 +24,7 @@ test('Moje prijave i povlacenje: iskljucivo lokalni castme_test', {
   const ids = { users: [], profiles: [], orgs: [], projects: [], castings: [], applications: [], slots: [], bookings: [] };
   t.after(async () => {
     try {
+      if (ids.castings.length) await db.query('DELETE FROM notifications WHERE casting_call_id=ANY($1::int[])',[ids.castings]);
       // Samo zapisi kreirani u ovom izvođenju.
       if (ids.applications.length) await db.query('DELETE FROM application_status_history WHERE application_id = ANY($1::int[])', [ids.applications]);
       for (const [table, key] of [['audition_bookings', 'bookings'], ['audition_slots', 'slots'],

@@ -1,5 +1,6 @@
 
 const pool = require('../config/db');
+const { notifyApplication } = require('./notificationModel');
 
 const allowedTransitions = {
   SUBMITTED: ['UNDER_REVIEW', 'REJECTED'],
@@ -92,6 +93,16 @@ function createEmployerApplicationStatusModel(database = pool) {
           employerId
         ]);
 
+        await notifyApplication(client, applicationId, 'application_status', 'Promjena statusa prijave',
+          newStatus === 'REJECTED' ? rejectionReason.trim() : `Novi status vaše prijave: ${newStatus}.`);
+        if(newStatus==='REJECTED')await client.query(`WITH cancelled AS (
+          UPDATE audition_bookings b SET status='cancelled',cancelled_at=NOW() FROM audition_slots s
+          WHERE b.audition_slot_id=s.id AND b.application_id=$1 AND s.starts_at>NOW()
+            AND b.status NOT IN ('cancelled','canceled') RETURNING b.id
+        ) INSERT INTO notifications(user_id,type,title,message,application_id,casting_call_id,booking_id)
+          SELECT cp.user_id,'audition_cancelled','Rezervacija je otkazana.',$2,a.id,a.casting_call_id,b.id
+          FROM applications a JOIN candidate_profiles cp ON cp.id=a.candidate_id CROSS JOIN cancelled b WHERE a.id=$1`,
+        [applicationId,rejectionReason.trim()]);
         await client.query('COMMIT');
 
         return {
