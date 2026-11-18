@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { moderationRequest } from "../services/moderation";
 import "./CandidateApplications.css";
+import CandidateAuditionBooking from "./CandidateAuditionBooking";
 
 const statusi = {
   SUBMITTED: "Prijavljeno",
@@ -41,6 +42,15 @@ function CandidateApplications({ csrfToken }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const [brojRezervacijaUTijeku, setBrojRezervacijaUTijeku] = useState(0);
+
+  const rezervacijaUTijeku = brojRezervacijaUTijeku > 0;
+
+  function promijeniBrojZahtjeva(zapoceto) {
+    setBrojRezervacijaUTijeku((prethodni) =>
+      zapoceto ? prethodni + 1 : Math.max(0, prethodni - 1)
+    );
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -70,6 +80,7 @@ function CandidateApplications({ csrfToken }) {
   }, []);
 
   async function povuciPrijavu(id) {
+    if (busyId !== null || rezervacijaUTijeku) return;
     if (!window.confirm("Želiš li povući ovu prijavu?")) {
       return;
     }
@@ -160,11 +171,20 @@ function CandidateApplications({ csrfToken }) {
                   <button
                     type="button"
                     className="application-withdraw-button"
-                    disabled={busyId !== null}
+                    disabled={busyId !== null || rezervacijaUTijeku}
                     onClick={() => povuciPrijavu(prijava.id)}
                   >
                     {busyId === prijava.id ? "Povlačenje..." : "Povuci prijavu"}
                   </button>
+                )}
+                {prijava.status === "INVITED" &&
+                  ["published", "closed"].includes(prijava.castingStatus) &&
+                  busyId === null && (
+                    <CandidateAuditionBooking
+                      prijava={prijava}
+                      csrfToken={csrfToken}
+                      onBusyChange={promijeniBrojZahtjeva}
+                    />
                 )}
               </article>
             ))}
