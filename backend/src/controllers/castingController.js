@@ -1,67 +1,57 @@
+const { createCastingModel } = require('../models/castingModel');
 
-const castingModel = require('../models/castingModel');
+const textFilters = { location: 200, search: 200, projectType: 20, requirements: 1000 };
+const allowedFilters = new Set([...Object.keys(textFilters), 'age']);
 
-// Obrađuje zahtjev za javni popis casting oglasa.
-async function getAllCastings(req, res) {
-  try {
-    // Tražimo od modela da dohvati oglase iz baze.
-// Čitamo lokaciju iz URL-a, npr. ?location=Zagreb
-    
-    const location = req.query.location;
-    const search = req.query.search;
-
-    const castings = await castingModel.getPublishedCastings(location, search);
-
-    // Šaljemo rezultate korisniku u JSON formatu.
-    res.json(castings);
-  } catch (error) {
-    console.error('Greška pri dohvaćanju oglasa:', error);
-
-    // Ako nešto pođe po zlu, vraćamo HTTP 500.
-    res.status(500).json({
-      error: 'Nije moguće dohvatiti casting oglase.'
-    });
+function validateCastingFilters(query = {}) {
+  const filters = {};
+  for (const [key, value] of Object.entries(query)) {
+    if (!allowedFilters.has(key)) return { error: 'Nepoznat filtar oglasa.' };
+    if (typeof value !== 'string') return { error: 'Filtar mora imati jednu tekstualnu vrijednost.' };
+    if (value.length > (textFilters[key] || 10)) return { error: `Filtar ${key} je predugačak.` };
+    const trimmed = value.trim();
+    if (!trimmed) continue;
+    if (key === 'age') {
+      if (!/^\d+$/.test(trimmed) || Number(trimmed) < 18 || Number(trimmed) > 2147483647) {
+        return { error: 'Dob mora biti cijeli broj od najmanje 18 godina.' };
+      }
+      filters.age = Number(trimmed);
+    } else {
+      filters[key] = trimmed;
+    }
   }
+  return { filters };
 }
 
-
- // Dohvaća detalje jednog casting oglasa.
-async function getCastingById(req, res) {
-  try {
-    // ID oglasa dolazi iz URL-a.
-    const id = Number(req.params.id);
-
-    // Provjeravamo je li ID ispravan pozitivan cijeli broj.
-    if (!Number.isSafeInteger(id) || id <= 0) {
-      return res.status(400).json({
-        error: 'Neispravan ID oglasa.'
-      });
+function createCastingController({ model = createCastingModel() } = {}) {
+  return {
+    async getAllCastings(req, res) {
+      const check = validateCastingFilters(req.query);
+      if (check.error) return res.status(400).json({ error: check.error });
+      try {
+        const { filters } = check;
+        return res.json(await model.getPublishedCastings(filters.location, filters.search, filters));
+      } catch (error) {
+        console.error('Dohvat oglasa nije uspio:', error.code || 'INTERNAL_ERROR');
+        return res.status(500).json({ error: 'Nije moguće dohvatiti casting oglase.' });
+      }
+    },
+    async getCastingById(req, res) {
+      const rawId = req.params.id;
+      const id = Number(rawId);
+      if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(id) || id <= 0 || id > 2147483647) {
+        return res.status(400).json({ error: 'Neispravan ID oglasa.' });
+      }
+      try {
+        const casting = await model.getCastingById(id);
+        if (!casting) return res.status(404).json({ error: 'Casting oglas nije pronađen.' });
+        return res.json(casting);
+      } catch (error) {
+        console.error('Dohvat oglasa nije uspio:', error.code || 'INTERNAL_ERROR');
+        return res.status(500).json({ error: 'Nije moguće dohvatiti casting oglas.' });
+      }
     }
-
-    // Tražimo oglas u bazi.
-    const casting = await castingModel.getCastingById(id);
-
-    // Ako oglas ne postoji ili nije objavljen.
-    if (!casting) {
-      return res.status(404).json({
-        error: 'Casting oglas nije pronađen.'
-      });
-    }
-
-    // Ako postoji, vraćamo ga kao JSON.
-    res.json(casting);
-  } catch (error) {
-    console.error('Greška pri dohvaćanju oglasa:', error);
-
-    res.status(500).json({
-      error: 'Nije moguće dohvatiti casting oglas.'
-    });
-  }
+  };
 }
 
-
-// Omogućujemo route datoteci korištenje funkcije.
-module.exports = {
-  getAllCastings,
-  getCastingById
-};
+module.exports = { validateCastingFilters, createCastingController, ...createCastingController() };

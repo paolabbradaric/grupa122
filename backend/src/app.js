@@ -3,7 +3,8 @@ const session = require('express-session');
 const PgStore = require('connect-pg-simple')(session);
 const pool = require('./config/db');
 
-const castingRoutes = require('./routes/castingRoutes');
+const { createCastingRouter } = require('./routes/castingRoutes');
+const { createApplicationRateLimiter } = require('./middleware/applicationRateLimit');
 const { createProfileRouter } = require('./profiles/routes');
 const { createAuditionRouter } = require('./routes/auditionRoutes');
 const applicationController = require('./controllers/applicationController');
@@ -69,7 +70,7 @@ function createApp(options = {}) {
   app.use(express.json({ limit: '16kb' }));
 
   // Javni pregled objavljenih oglasa.
-  app.use('/api/castings', castingRoutes);
+  app.use('/api/castings', createCastingRouter({ model: options.publicCastingModel }));
 
   app.use('/api',
     session({
@@ -110,7 +111,9 @@ function createApp(options = {}) {
   }));
 
   app.post('/api/castings/:id/applications',
-    requireRole('candidate'), protectMutation(config), applicationHandler);
+    requireRole('candidate'), protectMutation(config),
+    createApplicationRateLimiter({ writesEnabled: applicationWritesEnabled, store: options.applicationRateLimitStore }),
+    applicationHandler);
   // Rute za audicije.
   app.use('/api/auditions', createAuditionRouter({ config, controller: options.auditionController }));
 

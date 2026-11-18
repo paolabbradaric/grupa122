@@ -1,5 +1,10 @@
 # Kandidatove prijave i povlačenje — API
 
+Za javni popis i detalje oglasa vidi [Javni oglasi API](JAVNI_OGLASI_API.md).
+Postojeći POST predaje prijave sada ima zasebno
+[ograničenje pokušaja i migraciju brojača](OGRANICENJE_PRIJAVA_API.md).
+GET vlastitih prijava i PATCH povlačenja ne troše tu kvotu.
+
 Implementacija F-016 i F-026 iz `2-Analiza-zahtjeva.md` i issuea #16. Precizni prijelazi povlačenja nisu bili definirani u specifikaciji; za ovu implementaciju potvrđeno je povlačenje **prije održane audicije**, iz `SUBMITTED`, `UNDER_REVIEW`, `SHORTLISTED` i `INVITED` u `WITHDRAWN`.
 
 ## Dohvat vlastitih prijava
