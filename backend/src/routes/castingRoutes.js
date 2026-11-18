@@ -1,10 +1,12 @@
+const { Router } = require('express');
+const { createCastingController } = require('../controllers/castingController');
 
-const express = require('express');
-const castingController = require('../controllers/castingController');
+function createCastingRouter(options) {
+  const router = Router();
+  const controller = createCastingController(options);
+  router.get('/', controller.getAllCastings);
+  router.get('/:id', controller.getCastingById);
+  return router;
+}
 
-const router = express.Router();
-
-router.get('/', castingController.getAllCastings);
-router.get('/:id', castingController.getCastingById);
-
-module.exports = router;
+module.exports = { createCastingRouter };
