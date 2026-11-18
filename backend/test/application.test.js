@@ -59,7 +59,8 @@ function createFakePool(options = {}) {
                 id: 1,
                 status: 'published',
                 application_deadline: '2099-12-31',
-                max_applications: options.maxApplications ?? 100
+                max_applications: options.maxApplications ?? 100,
+                positions_count: options.positionsCount ?? 2
               }]
         };
       }
@@ -75,7 +76,8 @@ function createFakePool(options = {}) {
       if (/COUNT\(\*\)/i.test(sql)) {
         return {
           rows: [{
-            total: options.applicationCount ?? 0
+            total: options.applicationCount ?? 0,
+            accepted_count: options.acceptedCount ?? 0
           }]
         };
       }
@@ -123,7 +125,7 @@ test('Transakcija radi ROLLBACK ako casting ne postoji', async () => {
 
   assert.equal(result.allowed, false);
   assert.equal(result.message, 'Casting oglas ne postoji.');
-  assert.ok(fake.queries.includes('BEGIN'));
+  assert.ok(fake.queries.includes('BEGIN ISOLATION LEVEL READ COMMITTED'));
   assert.ok(fake.queries.includes('ROLLBACK'));
   assert.ok(!fake.queries.some(sql => /INSERT\s+INTO\s+applications/i.test(sql)));
   assert.equal(fake.wasReleased(), true);
@@ -223,6 +225,7 @@ test('Transakcija radi ROLLBACK ako INSERT ne uspije', async () => {
                 id: 1,
                 status: 'published',
                 application_deadline: '2099-12-31',
+                positions_count: 2,
                 max_applications: 100
               }]
             };
@@ -233,7 +236,7 @@ test('Transakcija radi ROLLBACK ako INSERT ne uspije', async () => {
           }
 
           if (/COUNT\(\*\)/i.test(sql)) {
-            return { rows: [{ total: 0 }] };
+            return { rows: [{ total: 0, accepted_count: 0 }] };
           }
 
           if (/INSERT\s+INTO\s+applications/i.test(sql)) {
@@ -279,6 +282,7 @@ test('Transakcija obrađuje PostgreSQL grešku za duplu prijavu', async () => {
                 id: 1,
                 status: 'published',
                 application_deadline: '2099-12-31',
+                positions_count: 2,
                 max_applications: 100
               }]
             };
@@ -289,7 +293,7 @@ test('Transakcija obrađuje PostgreSQL grešku za duplu prijavu', async () => {
           }
 
           if (/COUNT\(\*\)/i.test(sql)) {
-            return { rows: [{ total: 0 }] };
+            return { rows: [{ total: 0, accepted_count: 0 }] };
           }
 
           if (/INSERT\s+INTO\s+applications/i.test(sql)) {
@@ -321,3 +325,23 @@ test('Transakcija obrađuje PostgreSQL grešku za duplu prijavu', async () => {
 });
 
 
+
+
+test('Prijava se odbija točno na isteku roka', t => {
+  const now = Date.parse('2030-01-01T12:00:00Z');
+  t.mock.method(Date, 'now', () => now);
+  assert.equal(applicationModel.canApplyToCasting({ status: 'published',
+    application_deadline: new Date(now), positions_count: 1, accepted_count: 0 }).allowed, false);
+});
+
+test('Transakcija odbija popunjena mjesta iako je oglas još published', async () => {
+  for (const acceptedCount of [2, 3]) {
+    const fake = createFakePool({ acceptedCount, positionsCount: 2, applicationCount: 5 });
+    const result = await applicationModel.createApplicationTransaction(1, 1, null, null, fake.pool);
+    assert.equal(result.allowed, false);
+    assert.equal(result.message, 'Sva mjesta na castingu su popunjena.');
+    assert.ok(fake.queries.includes('ROLLBACK'));
+    assert.ok(!fake.queries.some(sql => /INSERT\s+INTO\s+applications/i.test(sql)));
+    assert.equal(fake.wasReleased(), true);
+  }
+});

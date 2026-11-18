@@ -15,7 +15,7 @@ test('public filters validate types, lengths and adult age without coercing arra
 });
 
 test('anonymous public GET preserves JSON shape, legacy fields and passes combined filters', async t => {
-  const row = { id: 1, title: 'Uloga', description: 'Opis', location: 'Zagreb', positions_count: 2,
+  const row = { id: 1, title: 'Uloga', description: 'Opis', location: 'Zagreb', positions_count: 2, accepted_count: 0,
     application_deadline: '2030-01-01T00:00:00.000Z', project_title: 'Film', project_type: 'film',
     project_description: 'Opis projekta', min_age: 18, max_age: 30, appearance_req: null, exp_req: 'ples' };
   const calls = [];

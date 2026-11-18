@@ -6,6 +6,15 @@ organizacije ni interne limite prijava. Nema promjene pravila isteka roka:
 oglas sa statusom `published` ostaje vidljiv i nakon roka, ali postojeći POST
 prijave odbija zakašnjelu prijavu. Automatiku isteka treba dogovoriti zasebno.
 
+`accepted_count` je JSON broj: broj prijava tog oglasa u `ACCEPTED` ili starom
+`SELECTED` statusu; bez takvih prijava vraća 0. Vraća se u popisu i detaljima,
+bez podataka pojedinih kandidata. `POST /api/castings/:id/applications` ponovno
+provjerava rok i popunjenost na backendu nakon zaključavanja oglasa. Ako je rok
+istekao (uključujući točan trenutak isteka) ili je broj prihvaćenih dosegnuo
+`positions_count`, vraća 409 bez prijave, čak i ako je raniji GET pokazivao mjesto.
+Broj prihvaćenih i `max_applications` zasebni su uvjeti. Tijelo `{}` je dopušteno;
+`coverLetter` i `videoUrl` ostaju opcionalni.
+
 ## Popis
 
 `GET /api/castings`
@@ -21,6 +30,7 @@ Odgovor `200` je JSON polje, odnosno `[]` kada nema rezultata. Postojeća polja
   "description": "Opis uloge",
   "location": "Zagreb",
   "positions_count": 2,
+  "accepted_count": 0,
   "application_deadline": "2026-12-01T18:00:00.000Z",
   "status": "published",
   "project_id": 8,
