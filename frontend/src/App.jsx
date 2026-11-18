@@ -18,6 +18,8 @@ import CompleteRegistration from "./pages/CompleteRegistration";
 import CastingCardDetails from "./pages/CastingCardDetails";
 import { useAuth } from "./services/useAuth";
 import "./App.css";
+import "./App.css";
+import "./pages/PoslodavacAdmin.css";
 
 function readPage() {
   return window.location.pathname.replace(/\/+$/, "") === "/admin"

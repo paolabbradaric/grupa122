@@ -109,7 +109,7 @@ function MojiOglasi({
   }
 
   return (
-    <main>
+    <main className="moji-oglasi">
       <h1>Moji oglasi</h1>
 
       <p>Ovdje možete pregledavati i upravljati svojim casting oglasima.</p>

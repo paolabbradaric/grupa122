@@ -316,7 +316,7 @@ function NoviOglas({onMojiOglasi, oglasZaUredivanje, csrfToken}) {
     }
 
     return (
-        <main>
+        <main className="novi-oglas">
             <h1>{oglasZaUredivanje ? "Uredi oglas" : "Novi oglas"}</h1>
             <p>{oglasZaUredivanje ? "Uredite svoj casting oglas." : "Ovdje možete stvoriti novi casting oglas."}</p>
 
