@@ -1,34 +1,28 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "services": {
-    "backend": {
-      "root": "backend",
-      "framework": "express",
-      "entrypoint": "server.js"
-    },
     "frontend": {
       "root": "frontend",
       "framework": "vite",
+      "installCommand": "npm ci",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist",
       "rewrites": [
-        {
-          "source": "/admin",
-          "destination": "/index.html"
-        }
+        { "source": "/(.*)", "destination": "/index.html" }
       ]
+    },
+    "backend": {
+      "root": "backend",
+      "framework": "express",
+      "entrypoint": "server.mjs",
+      "installCommand": "npm ci",
+      "functions": {
+        "server.mjs": { "includeFiles": "**/certs/**" }
+      }
     }
   },
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": {
-        "service": "backend"
-      }
-    },
-    {
-      "source": "/(.*)",
-      "destination": {
-        "service": "frontend"
-      }
-    }
+    { "source": "/api/:path*", "destination": { "service": "backend" } },
+    { "source": "/(.*)", "destination": { "service": "frontend" } }
   ]
 }
