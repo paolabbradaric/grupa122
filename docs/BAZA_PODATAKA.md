@@ -10,7 +10,7 @@ PostgreSQL pohranjuje korisnike i domenske podatke. Supabase pruža zajedničku 
 
 PlantUML: [izvor](puml/mario-model-podataka.puml). Početni [ERDPlus model](../db/cast_me_if_you_can.erdplus) i SQL dodani su 17. 10. 2026.; prikaz uključuje naknadne migracije.
 
-Shema ima 17 domenskih tablica i privatnu tablicu sesija. Domenske tablice uglavnom koriste INT identitetni primarni ključ; vezne tablice složene ključeve. Domenska vremena koriste TIMESTAMPTZ, a datum rođenja DATE.
+Osnovni model ima 17 domenskih tablica i privatnu tablicu sesija. Aktualni bootstrap uz profile, moderaciju i limiter ukupno ima 20 javnih i 4 privatne tablice. Domenske tablice uglavnom koriste INT identitetni primarni ključ; vezne tablice složene ključeve. Domenska vremena koriste TIMESTAMPTZ, a datum rođenja DATE.
 
 Pregled users sadrži sljedeće podatke: jedinstveni auth_id i email, ime, prezime, datum rođenja, uloga, vremena i neobavezni deleted_at. Google identitet je `google:<sub>`; nema korisničke lozinke.
 
@@ -94,7 +94,11 @@ Ako je polazno stanje „shema bez auth dijela”, postupak je sljedeći: npm ru
 
 Ako je polazno stanje „shema s limitom, ali svim sadržajnim poljima obaveznima”, postupak je sljedeći: Provjeriti nenacrte i primijeniti npm run db:migrate:casting-drafts.
 
-Ako je polazno stanje „aktualna shema”, postupak je sljedeći: Ne ponavljati inicijalizaciju. Auth skripta može se ponoviti za izričito usklađivanje prava Supabase uloga ako postoje.
+Ako je polazno stanje „postojeća ili već zaštićena baza”, ne ponavljati inicijalizaciju. Nakon provjere cilja i preduvjeta izvršiti `npm run db:migrate:security` iz `backend/`. Sigurnosna migracija je ponovljiva i podržava osnovnih 17 javnih tablica te sesije, bez zahtijevanja novih funkcionalnih tablica.
+
+[20261118_application_security.sql](../db/migrations/20261118_application_security.sql) uključuje RLS na svim osnovnim aplikacijskim tablicama i prisutnim opcionalnim tablicama profila, moderacije i limitera. Ne uvodi funkcionalne objekte ni stupce. Auth/sesije su obavezni preduvjet; profiles pa moderation i migracija dijeljenog limitera zasebni su rolloutovi prema potrebama aplikacije. Nakon njih ponoviti sigurnosnu migraciju. Runner upravlja jednom transakcijom s rollbackom, a SQL postavlja `lock_timeout=5s`. Nedostajući obavezni objekt ili potencijalno propusna API politika zaustavljaju nadogradnju. Stroža prava, spojive politike i vlasnici ostaju sačuvani.
+
+[Operativne upute](../db/Readme.md#ponovljive-sigurnosne-postavke) daju točnu provjeru ciljne veze, preduvjete, zasebne putove nove/postojeće baze i read-only RLS/policy/ACL upite. Ne izvršavati cijeli direktorij migracija, jer sadrži i rollback te neponovljivu staru migraciju.
 
 [casting_call_maxapp.sql](../db/migrations/casting_call_maxapp.sql) dodaje limit, pozitivnost i jedinstveni projekt te preimenuje šest ograničenja. Transakcijska je, ali nije idempotentna: očekuje staru shemu i nazive.
 
@@ -108,11 +112,13 @@ Preduvjeti i upit za neispravne nenacrte nalaze se u [db/Readme.md](../db/Readme
 
 [db.js](../backend/src/config/db.js) učitava backend/.env: PGHOST, PGPORT, PGDATABASE, PGUSER i PGPASSWORD. Uz PGSSL=true koristi rejectUnauthorized=true; CA se čita iz PGSSLROOTCERT relativno prema backend/. Zajednički primjer koristi Supabase pooler na portu 5432 i javni [CA certifikat](../backend/certs/supabase-ca.crt). Lokalna veza bez TLS-a može koristiti PGSSL=false.
 
-Auth migracija uključuje RLS na users, candidate_profiles, organisations i app_private.sessions, povlači PUBLIC pristup privatnoj shemi/sesijama te izričito povlači auth prava ulogama anon i authenticated ako postoje. To ne predstavlja potpunu RLS zaštitu svih domenskih tablica. Backend koristi privilegiranu PG vezu i provodi autorizaciju u Expressu; zaseban račun s manjim pravima ostaje otvorena stavka.
+Auth migracija štiti auth podskup. Cijeli aktualni bootstrap i zasebna sigurnosna migracija štite sve aplikacijske tablice RLS-om. `PUBLIC`, `anon` i `authenticated` dodatno gube pristup privatnoj shemi/sesijama i postojećem osjetljivom ACL skupu. Obični domenski table/sequence grantovi ne ukidaju se općenito: RLS bez politika zatvara retke čak i uz grantove. Ne štiti TRUNCATE ni druge ovlasti izvan redaka. Backend koristi privilegiranu PG vezu i provodi autorizaciju u Expressu; zaseban račun s manjim pravima ostaje otvorena stavka. Advisor INFO o RLS-u bez politika očekivan je za ovaj model i nije razlog za otvaranje pristupa.
 
 app_private ne smije biti izložena Supabase Data API-ju. Lokalni cjelobrojni korisnički ID i Express sesija ne koriste Supabase auth.uid() kao identitet korisnika. Lozinke, sesijske tajne i privilegirani ključevi ostaju izvan frontenda i Gita.
 
 ## Dokazi i ograničenja
+
+[Sigurnosne regresije od 18. 11. 2026.](verification/2026-11-18/database-security.md) bilježe stvarnu lokalnu PostgreSQL provjeru bootstrapa, nadogradnje, zabrana API ulogama i rada backenda. Udaljeni katalog očitan je samo read-only; implementacija ne primjenjuje migraciju na zajednički projekt. Supabase migration history ne mora sadržavati ručno primijenjeni SQL.
 
 Početni model: [dfc3527](https://github.com/paolabbradaric/grupa122/commit/dfc3527) i [2db2a8f](https://github.com/paolabbradaric/grupa122/commit/2db2a8f). Nadogradnje: PR-ovi [#23](https://github.com/paolabbradaric/grupa122/pull/23), [#25](https://github.com/paolabbradaric/grupa122/pull/25), [#29](https://github.com/paolabbradaric/grupa122/pull/29) i [#31](https://github.com/paolabbradaric/grupa122/pull/31).
 

@@ -1,0 +1,72 @@
+name: Database security
+
+on:
+  pull_request:
+    paths:
+      - 'db/**'
+      - 'backend/**'
+      - '.github/workflows/database-security.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/**'
+      - 'backend/**'
+      - '.github/workflows/database-security.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-security:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_INITDB_ARGS: '--set=cluster_name=castme_security_test'
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      SECURITY_TEST_DATABASE_URL: postgresql://postgres:local-ci-only@127.0.0.1:5432/postgres
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: local-ci-only
+      PGDATABASE: castme_test
+      PGSSL: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Read dedicated service identity
+        run: |
+          echo "SECURITY_TEST_CLUSTER_ID=$(psql -d postgres -Atc 'SELECT system_identifier FROM pg_control_system()')" >> "$GITHUB_ENV"
+      - run: npm test
+        env:
+          SECURITY_TEST_DATABASE_URL: ''
+          SECURITY_TEST_CLUSTER_ID: ''
+      - run: npm run test:security:db
+      - name: Existing database regressions
+        env:
+          ADMIN_TEST_DATABASE_URL: postgresql://postgres:local-ci-only@127.0.0.1:5432/postgres
+          PROFILE_TEST_DATABASE_URL: postgresql://postgres:local-ci-only@127.0.0.1:5432/postgres
+          MODERATION_TEST_DATABASE_URL: postgresql://postgres:local-ci-only@127.0.0.1:5432/postgres
+        run: node --test --test-concurrency=1 test/admin-database.test.js test/profiles-database.test.js test/moderation-database.test.js
+      - name: Bootstrap and scoped auth, drafts, casting and quota regressions
+        run: |
+          createdb castme_test
+          psql -v ON_ERROR_STOP=1 -f ../db/schema.sql
+          AUTH_DATABASE_TESTS=1 CASTING_DATABASE_TESTS=1 PUBLIC_CASTING_DB_TESTS=1 node --test --test-concurrency=1 test/auth-database.test.js test/casting-drafts-database.test.js test/publicCastingAndRateLimitDatabase.test.js

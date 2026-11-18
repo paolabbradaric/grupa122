@@ -81,7 +81,18 @@ Za postojeću bazu prvo utvrditi primijenjene promjene i slijediti [migracijski 
 npm run db:migrate:auth
 npm run db:migrate:casting-drafts
 npm run db:migrate:admin
+npm run db:migrate:security
 ```
+
+Sigurnosna migracija zahtijeva osnovne tablice i `app_private.sessions`; radi i
+prije uvođenja novih tablica profila, moderacije i limitera. Obradit će ih ako
+postoje, bez njihova stvaranja. Za te funkcionalnosti zasebno primijeniti profiles,
+zatim moderation i migraciju dijeljenog limitera, pa ponoviti sigurnosnu migraciju.
+Ista naredba vrijedi za već zaštićenu bazu. Prije primjene provjeriti stvarni cilj
+runnera i preduvjete prema [uputama baze](../db/Readme.md#ponovljive-sigurnosne-postavke),
+a nakon primjene zasebno provjeriti RLS, politike i grantove. Runner koristi jednu
+transakciju i rollback uz pet sekundi čekanja na zaključavanje. Ne pokreće se pri
+startu aplikacije. Ne izvršavati sve SQL datoteke direktorija migracija.
 
 Ovo nisu obavezne naredbe svakog pokretanja. Draft migracija ima preduvjete, a starija migracija limita nije ponovljiva. Sesijska tablica mora postojati prije prijave jer aplikacija ne stvara tablicu automatski.
 
@@ -124,7 +135,14 @@ npm test
 node --test test/auth.test.js
 npm run test:db
 npm run test:db:casting
+npm run test:security:db
 ```
+
+Sigurnosna DB naredba zahtijeva `SECURITY_TEST_DATABASE_URL` i
+`SECURITY_TEST_CLUSTER_ID` namjenskog lokalnog klastera; bez njih završava
+pogreškom. [Postupak izoliranog testa](../db/Readme.md#izolirane-regresije) opisuje
+provjeru identiteta servera i stvaranje lokalnog klastera. Obični `npm test`
+preskače opt-in DB provjere; preskakanje nije dokaz sigurnosti baze.
 
 Provjere iz frontend/:
 

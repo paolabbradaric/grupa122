@@ -10,13 +10,14 @@ test('public casting SQL and shared submission quota: isolated local castme_test
 }, async t => {
   // Verify both explicit configuration and the actual server before any writes.
   assert.equal(process.env.PGHOST, '127.0.0.1');
-  assert.equal(process.env.PGPORT, '5432');
+  const port = Number(process.env.PGPORT);
+  assert.ok(Number.isInteger(port) && port > 0 && port <= 65535);
   assert.equal(process.env.PGDATABASE, 'castme_test');
   assert.equal(process.env.PGSSL, 'false');
   const suffix = randomUUID().replaceAll('-', '');
   const businessSchema = `tin_public_${suffix}`;
   const privateSchema = `tin_limits_${suffix}`;
-  const db = new Pool({ host: '127.0.0.1', port: 5432, database: 'castme_test',
+  const db = new Pool({ host: '127.0.0.1', port, database: 'castme_test',
     user: process.env.PGUSER, password: process.env.PGPASSWORD || undefined, ssl: false,
     options: `-c search_path=${businessSchema} -c statement_timeout=5000`, connectionTimeoutMillis: 3000 });
   let businessCreated = false;
@@ -43,7 +44,8 @@ test('public casting SQL and shared submission quota: isolated local castme_test
   // existing public/app_private objects, even on the isolated local database.
   const originalMigration = fs.readFileSync(path.resolve(__dirname,
     '../../db/migrations/20261118_application_submission_rate_limit.sql'), 'utf8');
-  assert.ok(schema.endsWith(originalMigration));
+  assert.ok(schema.split('-- Application table security (same SQL')[0].replaceAll('\r\n', '\n').trimEnd()
+    .endsWith(originalMigration.replaceAll('\r\n', '\n').trimEnd()));
   const migration = originalMigration.replaceAll('app_private', privateSchema)
     .replaceAll('public.users', `${businessSchema}.users`);
   await db.query(migration);
