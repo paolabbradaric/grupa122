@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { profileRequest } from "../services/profiles";
 import ChangePassword from "./ChangePassword";
+import VerificationRequest from "./VerificationRequest";
 
 const candidateFields = [
   ["firstName", "Ime", "text", 100, true],
@@ -267,20 +268,7 @@ export default function ProfileEditor({
                 busy={busy}
                 run={run}
               />
-              <h2>Verifikacija poslodavca</h2>
-              <p>
-                Status:{" "}
-                {{
-                  pending: "Na čekanju",
-                  approved: "Odobrena",
-                  rejected: "Odbijena",
-                }[data.verificationStatus] ||
-                  data.verificationStatus ||
-                  "Nije zatražena"}
-              </p>
-              <p>
-                Zahtjevi za verifikaciju bit će dostupni kroz zaseban postupak.
-              </p>
+              <VerificationRequest csrfToken={csrfToken} />
             </>
           )}
         </>

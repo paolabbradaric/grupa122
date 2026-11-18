@@ -103,7 +103,7 @@ function Application({ auth }) {
       ) : page === "prijave-kandidata" ? (
         <CandidateApplications />
       ) : page === "admin-panel" ? (
-        <AdminAccess />
+        <AdminAccess csrfToken={auth.csrfToken} />
       ) : page === "moji-oglasi" ? (
         <MojiOglasi csrfToken={auth.csrfToken} onNoviOglas={() => {
           setOdabraniOglas(null);
@@ -133,7 +133,7 @@ function Application({ auth }) {
           onMojiOglasi={() => setStranica("moji-oglasi")}
         />
       ) : page === "detalji" ? (
-        <CastingCardDetails id={odabraniOglas} />
+        <CastingCardDetails id={odabraniOglas} user={auth.user} csrfToken={auth.csrfToken} />
       ) : page === "audicije" ? (
         <Audicije
           key={odabraniOglas?.id}

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AdminPanel from './AdminPanel';
 
-export default function AdminAccess() {
+export default function AdminAccess({ csrfToken }) {
   const [access, setAccess] = useState('checking');
+  const onDenied = useCallback(status => setAccess(status === 401 ? 'login' : 'forbidden'), []);
   useEffect(() => {
     let controller;
     let active = true;
@@ -60,5 +61,5 @@ export default function AdminAccess() {
   if (access === 'forbidden') return <main><h1>Pristup nije dopušten</h1><p>Ova sesija nema administratorske ovlasti.</p>
     <a href="/api/auth/google">Ponovno se prijavi putem Googlea</a></main>;
   if (access === 'error') return <main><p role="alert">Nije moguće provjeriti pristup. Osvježi stranicu i pokušaj ponovno.</p></main>;
-  return <AdminPanel />;
+  return <AdminPanel csrfToken={csrfToken} onDenied={onDenied} />;
 }
