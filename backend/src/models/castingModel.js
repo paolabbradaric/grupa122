@@ -3,6 +3,8 @@ const pool = require('../config/db');
 // Explicit public fields: never expose organisation contacts or candidate data.
 const publicFields = `c.id, c.title, c.description, c.location,
   c.positions_count, c.application_deadline, c.status,
+  (SELECT COUNT(*)::int FROM applications a WHERE a.casting_call_id = c.id
+    AND a.status IN ('ACCEPTED', 'SELECTED')) AS accepted_count,
   p.id AS project_id, p.title AS project_title, p.project_type,
   p.title AS "projectTitle", c.title AS "roleTitle", p.project_type AS "projectType",
   p.description AS project_description, c.audition_text,

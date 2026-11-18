@@ -103,11 +103,12 @@ test('public casting SQL and shared submission quota: isolated local castme_test
     assert.deepEqual((await model.getPublishedCastings()).map(row => row.id), [3, 2, 1]);
     const row = await model.getCastingById(1);
     assert.deepEqual(Object.keys(row).sort(), ['id','title','description','location','positions_count',
-      'application_deadline','status','project_id','project_title','project_type','project_description',
+      'application_deadline','accepted_count','status','project_id','project_title','project_type','project_description',
       'audition_text','min_age','max_age','appearance_req','exp_req','projectTitle','roleTitle','projectType'].sort());
     assert.equal(row.projectTitle, 'Projekt Mjesec');
     assert.equal(row.roleTitle, 'Uloga 1');
     assert.equal(row.status, 'published');
+    assert.equal(row.accepted_count, 0);
     assert.equal(row.audition_text, 'Tekst audicije');
     assert.equal(row.project_description, 'Opis filma');
     for (const id of [4,5,6,7,999]) assert.equal(await model.getCastingById(id), null);
@@ -196,4 +197,76 @@ test('public casting SQL and shared submission quota: isolated local castme_test
     assert.equal((await db.query('SELECT COUNT(*)::int AS n FROM applications')).rows[0].n, 2);
     assert.equal((await first.request('/api/castings')).status, 200);
   });
+  await t.test('accepted_count and real HTTP submission respect capacity and deadline after GET', async t => {
+    await casting(90);
+    assert.equal((await model.getCastingById(90)).accepted_count, 0);
+    for (const id of [5,6,7]) {
+      await db.query(`INSERT INTO users(id,auth_id,email,first_name,last_name,birth_date,role)
+        VALUES($1,$2,$3,'Capacity','Probe','1990-01-01','candidate')`,
+        [id,`capacity-${id}`,`capacity-${id}@example.invalid`]);
+      await db.query('INSERT INTO candidate_profiles(id,user_id) VALUES($1,$1)',[id]);
+    }
+    await db.query(`INSERT INTO applications(candidate_id,casting_call_id,status)
+      VALUES(1,90,'ACCEPTED'),(2,90,'SELECTED'),(5,90,'REJECTED'),(6,90,'INVITED')`);
+    const applicationModel = {
+      async getCandidateProfileByUserId(id) {
+        return (await db.query('SELECT id FROM candidate_profiles WHERE user_id=$1',[id])).rows[0];
+      },
+      createApplicationTransaction: (...args) => createApplicationTransaction(...args, db)
+    };
+    const fixture = await httpFixture(t,{writesEnabled:true,publicModel:model,applicationModel,
+      appOptions:{users:{async findById(id){return(await db.query('SELECT id,role FROM users WHERE id=$1',[id])).rows[0];}}}});
+    const detail = await (await fixture.request('/api/castings/90')).json();
+    assert.equal(detail.accepted_count, 2);
+    assert.equal(typeof detail.accepted_count, 'number');
+    assert.equal((await model.getPublishedCastings()).find(row=>row.id===90).accepted_count,2);
+    const cookie = await fixture.cookie(7);
+    const submit = () => fixture.request('/api/castings/90/applications',{method:'POST',
+      headers:{Cookie:cookie,Origin:'http://localhost:5173','X-CSRF-Token':'valid-test-token','Content-Type':'application/json'},body:'{}'});
+    const full = await submit();
+    assert.equal(full.status,409);
+    assert.equal((await full.json()).error,'Sva mjesta na castingu su popunjena.');
+    assert.equal((await db.query('SELECT count(*)::int AS n FROM applications WHERE casting_call_id=90')).rows[0].n,4);
+    await db.query('UPDATE casting_calls SET positions_count=3 WHERE id=90');
+    // The page can show an available position, but POST must recheck a later expiry.
+    assert.equal((await model.getCastingById(90)).accepted_count,2);
+    await db.query("UPDATE casting_calls SET application_deadline=NOW()-INTERVAL '1 second' WHERE id=90");
+    const expired = await submit();
+    assert.equal(expired.status,409);
+    assert.equal((await expired.json()).error,'Rok za prijavu je istekao.');
+    await db.query("UPDATE casting_calls SET application_deadline=NOW()+INTERVAL '1 day' WHERE id=90");
+    const success = await submit();
+    assert.equal(success.status,201);
+    assert.equal((await success.json()).application.status,'SUBMITTED');
+    const saved=(await db.query('SELECT cover_letter,video_url FROM applications WHERE casting_call_id=90 AND candidate_id=7')).rows[0];
+    assert.deepEqual(saved,{cover_letter:null,video_url:null});
+  });
+
+  await t.test('submission sees an acceptance committed while it waits for the casting lock', async () => {
+    await casting(91);
+    await db.query('UPDATE casting_calls SET positions_count=1 WHERE id=91');
+    assert.equal((await model.getCastingById(91)).accepted_count,0);
+    const blocker=await db.connect();
+    let pending;
+    try {
+      await blocker.query('BEGIN');
+      await blocker.query('SELECT id FROM casting_calls WHERE id=91 FOR UPDATE');
+      await blocker.query("INSERT INTO applications(candidate_id,casting_call_id,status) VALUES(1,91,'ACCEPTED')");
+      let resolveWaiting;
+      const waiting=new Promise(resolve=>{resolveWaiting=resolve;});
+      const observed={async connect(){
+        const client=await db.connect();
+        return {query(sql,args){const result=client.query(sql,args);if(sql.includes('FOR UPDATE'))resolveWaiting();return result;},release(){client.release();}};
+      }};
+      pending=createApplicationTransaction(7,91,null,null,observed);
+      pending.catch(()=>{});
+      await waiting;
+      await blocker.query('COMMIT');
+      const result=await pending;
+      assert.equal(result.allowed,false);
+      assert.equal(result.message,'Sva mjesta na castingu su popunjena.');
+      assert.equal((await db.query('SELECT count(*)::int AS n FROM applications WHERE casting_call_id=91')).rows[0].n,1);
+    } finally {await blocker.query('ROLLBACK');blocker.release();if(pending)await pending;}
+  });
+
 });

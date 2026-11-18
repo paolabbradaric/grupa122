@@ -4,10 +4,12 @@ const pool = require('../config/db');
 // Dohvaćanje casting oglasa
 async function getCastingForApplication(castingId) {
   const result = await pool.query(
-    `SELECT id, title, status, application_deadline,
-            max_applications
-     FROM casting_calls
-     WHERE id = $1`,
+    `SELECT c.id, c.title, c.status, c.application_deadline,
+            c.max_applications, c.positions_count,
+            (SELECT COUNT(*)::int FROM applications a WHERE a.casting_call_id = c.id
+              AND a.status IN ('ACCEPTED', 'SELECTED')) AS accepted_count
+     FROM casting_calls c
+     WHERE c.id = $1`,
     [castingId]
   );
 
@@ -32,12 +34,16 @@ function canApplyToCasting(casting) {
 
   if (
     casting.application_deadline &&
-    new Date(casting.application_deadline) < new Date()
+    new Date(casting.application_deadline).getTime() <= Date.now()
   ) {
     return {
       allowed: false,
       message: 'Rok za prijavu je istekao.'
     };
+  }
+
+  if (casting.accepted_count >= casting.positions_count) {
+    return { allowed: false, message: 'Sva mjesta na castingu su popunjena.' };
   }
 
   return {
@@ -138,11 +144,11 @@ async function createApplicationTransaction(
   const client = await databasePool.connect();
 
   try {
-    await client.query('BEGIN');
+    await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
 
     // Zaključavamo casting kako bi se prijave obrađivale redom.
     const castingResult = await client.query(
-      `SELECT id, status, application_deadline, max_applications
+      `SELECT id, status, application_deadline, max_applications, positions_count
        FROM casting_calls
        WHERE id = $1
        FOR UPDATE`,
@@ -175,13 +181,20 @@ async function createApplicationTransaction(
       };
     }
 
-    // Provjera maksimalnog broja prijava
+    // Zaseban upit NAKON zaključavanja vidi i upravo potvrđeni konačni odabir.
+    // Konačni odabir i predaja koriste isti redak oglasa za serijalizaciju.
     const countResult = await client.query(
-      `SELECT COUNT(*)::int AS total
+      `SELECT COUNT(*)::int AS total,
+              (COUNT(*) FILTER (WHERE status IN ('ACCEPTED', 'SELECTED')))::int AS accepted_count
        FROM applications
        WHERE casting_call_id = $1`,
       [castingId]
     );
+
+    if (countResult.rows[0].accepted_count >= casting.positions_count) {
+      await client.query('ROLLBACK');
+      return { allowed: false, message: 'Sva mjesta na castingu su popunjena.' };
+    }
 
     if (countResult.rows[0].total >= casting.max_applications) {
       await client.query('ROLLBACK');
