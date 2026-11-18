@@ -3,7 +3,7 @@ const pool = require('../config/db');
 const selectColumns = `
   c.id, c.project_id AS "projectId", p.title AS "projectTitle",
   p.project_type AS "projectType", p.description AS "projectDescription",
-  c.title AS "roleTitle", c.description AS "roleDescription",
+  c.title AS "roleTitle", c.role_genre AS "roleGenre", c.description AS "roleDescription",
   c.positions_count AS "positionsCount", c.max_applications AS "maxApplications",
   c.min_age AS "minAge", c.max_age AS "maxAge", c.location,
   c.application_deadline AS "applicationDeadline", c.audition_text AS "auditionText",
@@ -44,15 +44,15 @@ function createEmployerCastingModel(database = pool) {
           INSERT INTO casting_calls (
             project_id, status, title, description, positions_count,
             max_applications, min_age, max_age, location, application_deadline,
-            audition_text, appearance_req, exp_req
-          ) VALUES ($1, 'draft', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            audition_text, appearance_req, exp_req, role_genre
+          ) VALUES ($1, 'draft', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
           RETURNING id`, [
           project.rows[0].id, data.roleTitle ?? null,
           data.roleDescription ?? null, data.positionsCount ?? null,
           data.maxApplications ?? 1000, data.minAge ?? null, data.maxAge ?? null,
           data.location ?? null, data.applicationDeadline ?? null,
           data.auditionText ?? null, data.appearanceReq ?? null,
-          data.experienceReq ?? null
+          data.experienceReq ?? null, data.roleGenre ?? null
         ]);
         await client.query('COMMIT');
         return { outcome: 'created', id: created.rows[0].id };
@@ -139,7 +139,7 @@ function createEmployerCastingModel(database = pool) {
           SELECT c.id, c.status, c.project_id,
                  p.title AS "projectTitle", p.project_type AS "projectType",
                  p.description AS "projectDescription",
-                 c.title AS "roleTitle", c.description AS "roleDescription",
+                 c.title AS "roleTitle", c.role_genre AS "roleGenre", c.description AS "roleDescription",
                  c.positions_count AS "positionsCount", c.max_applications AS "maxApplications",
                  c.min_age AS "minAge", c.max_age AS "maxAge", c.location,
                  c.application_deadline AS "applicationDeadline",
@@ -176,11 +176,11 @@ function createEmployerCastingModel(database = pool) {
           UPDATE casting_calls SET title=$1, description=$2, positions_count=$3,
           max_applications=$4, min_age=$5, max_age=$6, location=$7,
           application_deadline=$8, audition_text=$9, appearance_req=$10,
-          exp_req=$11, updated_at=NOW() WHERE id=$12`, [
+          exp_req=$11, role_genre=$12, updated_at=NOW() WHERE id=$13`, [
           value('roleTitle'), value('roleDescription'), value('positionsCount'),
           value('maxApplications'), min, max, value('location'),
           value('applicationDeadline'), value('auditionText'),
-          value('appearanceReq'), value('experienceReq'), castingId
+          value('appearanceReq'), value('experienceReq'), value('roleGenre'), castingId
         ]);
         await client.query('COMMIT');
         return { outcome: 'updated', id: castingId };

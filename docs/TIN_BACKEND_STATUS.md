@@ -1,6 +1,6 @@
 # Tin Škarpa — stanje backenda
 
-Ažurirano 18. 11. 2026., prema mainu `996b965` i dokazima produkcijske
+Ažurirano 18. 11. 2026., prema mainu `c05f46f` i dokazima produkcijske
 objave `dc88406`. Prati [Issue #16](https://github.com/paolabbradaric/grupa122/issues/16).
 Označena backend implementacija ne znači da je cijeli korisnički tijek već
 provjeren kroz produkcijsko sučelje. Issue ostaje otvoren do završetka integracije
@@ -32,15 +32,16 @@ Dokumenti API-ja: [javni oglasi](JAVNI_OGLASI_API.md),
 - [x] Tarin PR #62 povezuje statusni PATCH, konačni odabir `AUDITIONED → ACCEPTED`
   i poslodavčev rad s audicijama. Potvrđeno iz koda; produkcijski UI prihvat
   i dalje ostaje zasebna otvorena provjera.
-- [ ] Povezati kandidatove vlastite prijave/povlačenje i obavijesti s API-jem
-  te provjeriti rezervacije kroz sučelje. Rein PR #63 uređuje izgled, ali
-  `CandidateApplications` još ima prazni lokalni popis, a `CandidateNotifications`
-  lokalno stanje bez API dohvata/spremanja.
-- [ ] Dogovoriti traži li specifikacija zasebna polja za žanr/scenarij ili
-  postojeći `audition_text` pokriva dogovoreni sadržaj; zasebnih polja sada nema.
-- [ ] Potvrditi smiju li se uređivati i objavljeni oglasi te treba li istek
-  roka automatski mijenjati status. Implementirana ograničenja opisana su gore;
-  automatska promjena statusa i šire uređivanje nisu potvrđeni zahtjevi.
+- [x] Rein PR #66 povezuje kandidatove vlastite prijave/povlačenje te dohvat
+  obavijesti i označavanje pročitanosti s API-jem. Time nadograđuje izgled iz
+  PR-a #63. Potvrđeno iz koda; završni produkcijski UI prihvat ostaje otvoren.
+- [ ] Provjeriti cijeli kandidatov booking tijek kroz sučelje zajedno s ostalim
+  sudionicima; dostupnost backend ruta nije dokaz završene UI integracije.
+- [x] Korisnik je potvrdio opcionalni žanr `roleGenre` / `role_genre` (do
+  100 znakova, prazno/null prazni vrijednost); scenarij ostaje u `auditionText`.
+- [x] Korisnik je potvrdio uređivanje samo vlastitog nacrta. Nakon isteka roka
+  status ostaje nepromijenjen radi pregleda, a predaja je blokirana. Nema
+  automatskog zatvaranja niti otkazivanja audicija zbog isteka roka.
 - [ ] Proći cijeli produkcijski demo stvarnim poslodavčevim i kandidatovim
   računom te potvrditi upload kroz prijavljeno sučelje. Puni lokalni HTTP/SQL
   tijek i izolirani Storage adapter probe nisu zamjena za tu provjeru.
@@ -127,3 +128,33 @@ podacima). POST gosta vraćao je 401 bez poslovnog upisa. CI #64 potvrđuje
 250 standardnih prolaza uz 16 opt-in preskakanja te DB procese 17 + 31 + 30
 prolaza bez padova ili preskakanja. Stvarni prijavljeni produkcijski UI tijek
 ostaje zasebna otvorena provjera.
+
+
+## Potvrđeni ugovor žanra i roka — završni paket 18. 11.
+
+POST/PATCH `/api/employer/castings` prihvaća opcionalni `roleGenre` do 100
+znakova (PATCH koristi `/:id`). Neposlano polje čuva staru vrijednost, prazan
+tekst ili null je briše. GET poslodavčevih oglasa vraća `roleGenre`; javni
+GET popisa/detalja vraća `role_genre` i `roleGenre`. Žanr nije obavezan za
+objavu; postojeći scenarij ostaje `auditionText` / `audition_text`.
+
+Migracija `20261118_casting_role_genre.sql` aditivno dodaje nullable VARCHAR(100)
+i odbija nekompatibilan postojeći tip/nullability. Početni schema.sql daje isti
+ugovor. Na ciljnoj bazi primijeniti pregledanu migraciju prije objave novog
+koda koji čita stupac; ne izvršava se automatski pri pokretanju aplikacije.
+
+Ispravljena je i potvrđena greška ISO validacije: nepostojeći kalendarski
+rok poput 30. veljače sada daje 400, uz ispravno prihvaćanje prijestupnog dana
+i vremenskih zona. Poslovna pravila o statusima/uređivanju ostaju potvrđena gore.
+
+Lokalna provjera ovog paketa: npm test 253 prolaza, 0 padova, 16 opt-in DB
+preskakanja; CI-ekvivalent auth/nacrti/javni API/booking 31 prolaz bez preskakanja.
+Pokriveni su stvarni HTTP unos/izmjena/pražnjenje žanra, prikaz u javnom GET-u,
+očuvanje scenarija, 400 za nevaljan žanr/datum, 409 za uređivanje objavljenog
+oglasa te ponovljivost i očuvanje podataka pri migraciji. Frontend nije mijenjan.
+
+
+Kontrolirana primjena migracije žanra na zajedničku bazu izvršena je 18. 11.
+u jednoj transakciji prije objave novog koda. Usporedbom javnih oglasa potvrđena
+je ciljna baza, a otisak postojećih casting podataka te RLS/vlasnik/prava ostali
+su nepromijenjeni. Stupac je nullable VARCHAR(100); nije bilo brisanja/backfilla.

@@ -82,6 +82,7 @@ CREATE TABLE casting_calls
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   project_id INT NOT NULL,
+  role_genre VARCHAR(100),
   FOREIGN KEY (project_id) REFERENCES projects(id)
 );
 

@@ -59,6 +59,9 @@ test('Casting drafts: initial schema and migration enforce the same contract', {
         initialContract = await contract();
       } else {
         await client.query(legacyTable);
+        // Align the independent optional genre field before comparing draft constraints.
+        await client.query(fs.readFileSync(path.resolve(__dirname,
+          '../../db/migrations/20261118_casting_role_genre.sql'), 'utf8'));
         await insert();
         const before = (await client.query('SELECT * FROM casting_calls')).rows;
         const migration = fs.readFileSync(migrationPath, 'utf8');
