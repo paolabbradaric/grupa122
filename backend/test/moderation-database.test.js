@@ -26,7 +26,7 @@ test('moderation: isolated PostgreSQL, HTTP permissions, races, deletion and sto
   const pool = new Pool({ connectionString: url.href });
   t.after(async () => {
     await pool.end();
-    await admin.query(`DROP DATABASE ${database} WITH (FORCE)`);
+    await admin.query(`DROP DATABASE ${database}`);
     await admin.end();
   });
   const schema = await readFile(path.resolve(__dirname, '../../db/schema.sql'), 'utf8');
@@ -307,6 +307,57 @@ test('moderation: isolated PostgreSQL, HTTP permissions, races, deletion and sto
     for (let index = 0; index < 21; index++)
       last = await request('/castings/0/reports', 'POST', { reason: 'Invalid casting' });
     assert.equal(last.status, 429);
+  });
+
+  await t.test('saving an employer profile while approving verification avoids a deadlock and checks the saved snapshot', async () => {
+    await pool.query('UPDATE users SET deleted_at=NULL WHERE id=$1', [otherEmployer.id]);
+    const pending = (await model.submit(otherEmployer.id)).verification;
+    await model.reviewVerification(administrator.id, pending.id, 'under_review');
+    let signalLocked;
+    const profileLocked = new Promise(resolve => { signalLocked = resolve; });
+    let continueProfile;
+    const profileMayContinue = new Promise(resolve => { continueProfile = resolve; });
+    const profilePool = { query: (...args) => pool.query(...args), connect: async () => {
+      const c = await pool.connect();
+      return { release: () => c.release(), query: async (sql, args) => {
+        const result = await c.query(sql, args);
+        if (sql.startsWith('SELECT id FROM users') && sql.includes('FOR UPDATE')) {
+          signalLocked();
+          await profileMayContinue;
+        }
+        return result;
+      } };
+    } };
+    const profileWork = createProfileModel(profilePool).patch(otherEmployer, { phone: '+385 1 222222' });
+    // Catch immediately so neither branch can produce an unhandled rejection.
+    const profileResult = profileWork.then(value => ({ value }), error => ({ error }));
+    await profileLocked;
+    const applicationName = 'verification_race_' + randomUUID();
+    const reviewingPool = new Pool({ connectionString: url.href, application_name: applicationName, statement_timeout: 5000 });
+    const reviewResult = createModerationModel(reviewingPool)
+      .reviewVerification(administrator.id, pending.id, 'approved')
+      .then(value => ({ value }), error => ({ error }));
+    try {
+      let waiting = false;
+      const deadline = Date.now() + 3000;
+      while (Date.now() < deadline) {
+        waiting = (await row(`SELECT EXISTS(SELECT 1 FROM pg_stat_activity
+          WHERE application_name=$1 AND wait_event_type='Lock') AS waiting`, [applicationName])).waiting;
+        if (waiting) break;
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.ok(waiting, 'verification must overlap the profile transaction');
+      continueProfile();
+      const [profile, review] = await Promise.all([profileResult, reviewResult]);
+      assert.equal(profile.error, undefined, profile.error?.message);
+      assert.equal(review.error?.code, 'ORGANISATION_CHANGED', review.error?.message);
+      assert.equal((await row('SELECT status FROM verification WHERE id=$1', [pending.id])).status, 'under_review');
+      assert.equal((await row('SELECT phone FROM organisations WHERE id=$1', [otherOrg.id])).phone, '+385 1 222222');
+    } finally {
+      continueProfile();
+      await Promise.all([profileResult, reviewResult]);
+      await reviewingPool.end();
+    }
   });
 
 });

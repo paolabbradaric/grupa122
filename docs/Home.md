@@ -81,5 +81,3 @@ Granice provjere. Lokalni stvarni kandidatski Google tok potvrđen je za registr
 Povjerljivost. .env nije kopiran u granu; dokument sadrži nazive varijabli i sintetičke testne rezultate bez njihovih privatnih vrijednosti.
 
 Ispravljeni navodi ranijih uputa: „postoje samo javne GET rute”, „simulira se samo Google”, „pružatelja tek treba odabrati” i općenito „testovi nisu provedeni”. Aktualna dokumentacija navodi postojeće poslovne module, simulirani model, odabrani Google i konkretne rezultate. Nema tvrdnje da je sav sadržaj neovisno pregledan niti da su nepopisani dijelovi nastali bez AI pomoći.
-
-- [Verifikacija i moderacija — API, migracija i provjere](MODERACIJA_API.md)

@@ -1,19 +1,28 @@
-# Provjera verifikacije i moderacije — 18. 11. 2026.
+# Završna lokalna provjera smanjenog ZIP-a — 18. 11. 2026.
 
-Provjereno u izoliranom lokalnom PostgreSQL 18.6 okruženju; stvarna timska baza i Supabase objekti nisu mijenjani.
+Provjerena je konkretna isporuka: main 1b0b44d složen je u novu lokalnu mapu i preko njega su dodane točno 23 datoteke iz zadnjeg ZIP-a. Potvrđeno je da tuđi admin/profilni testovi i zajednička dokumentacija odgovaraju izvornom mainu, a dodani workflow nije prisutan. GitHub, timska baza i stvarna pohrana nisu mijenjani.
 
 | Provjera | Rezultat | Granica |
 | --- | --- | --- |
-| Backend `node --test`, uz `MODERATION_TEST_DATABASE_URL` i `PROFILE_TEST_DATABASE_URL` | 200 uspješnih, 9 izričito preskočenih, 0 neuspješnih | Preskočeni testovi zahtijevaju druge zasebne DB zastavice/konfiguracije |
-| Novi moderacijski HTTP/DB scenariji | 11 uspješnih uključujući nadređeni test | Stvarni Express, PostgreSQL, SQL transakcije i zaštite; identitet/sesija postavljeni testnom pripremom |
-| Dodatni `admin-database.test.js` pojedinačno | 11 uspješnih | Pri paralelnom pokretanju sa svim dopunskim DB testovima zabilježena je postojeća greška završnog zatvaranja veze nakon uspješnih asercija; nije mijenjan Mariov test |
-| Frontend ESLint | Prolazi | Statička provjera |
-| Frontend Vite build | Prolazi | Produkcijski bundle |
-| Renderiranje produkcijskog React panela u jsdomu | Prolazi | API odgovori simulirani, nije stvarna Google prijava |
-| `git diff --check` | Prolazi | Razmaci i patch format |
+| Redovni npm test bez posebnih DB varijabli | 181 uspješan, 11 preskočenih, 0 neuspješnih | Posebni DB testovi se preskaču |
+| Svih 11 DB skupova testova zasebno, svaki na svježoj lokalnoj bazi | Svih 11 prolazi, bez preskočenih testova unutar tih skupova | Izolirani PostgreSQL 18, bez timskih podataka |
+| Moderacijski PostgreSQL/HTTP test | 12 uspješnih uključujući nadređeni test | Pohrana i identitet u tom testu pripremljeni testnim kodom |
+| Zajednički node --test uz uključene MODERATION, PROFILE i ADMIN DB varijable | 212 uspješnih, 1 neuspješan, 8 preskočenih | admin-database.test.js: asinkrona greška terminating connection due to administrator command nakon uspješnih asercija |
+| Isto zajedničko pokretanje uz --test-concurrency=1 | 212 uspješnih, 1 neuspješan, 8 preskočenih | Analogna završna greška u profiles-database.test.js; ne tvrdi se da serijsko pokretanje rješava uzrok |
+| Frontend lint i build točno složene isporuke | Prolaze | Statička provjera i produkcijski bundle |
+| Cijeli izgrađeni React → produkcijski createApp/Passport → stvarni PostgreSQL | Prolazi opisani lokalni poslovni tok | Google provider zamijenjen testnim odgovorima; stvarni vanjski Google i Supabase nisu potvrđeni |
 
-Novi scenariji provjeravaju migraciju, rollback, očuvanje starih odluka i RLS; goste/pogrešne uloge/CSRF/krivotvorena polja; konkurentno slanje i preuzimanje, razloge i novo slanje; promijenjenu snimku podataka, jednu završnu odluku i postojeću objavu oglasa; duple prijave, zatvaranje i rate limit; sve postojeće FK veze pri brisanju, rollback greške usred brisanja, očuvane korisnike i dijeljene/profilne slike; obavijesti i audit; odgođeno čišćenje, nedostupnu pohranu i ponovni pokušaj; stvarne agregate.
+## Cijeli lokalni poslovni tok
 
-Provjera sučelja renderirala je produkcijski bundle i prošla preuzimanje/odobravanje verifikacije, prosljeđivanje CSRF tokena, onemogućeno brisanje uz pogrešnu tekstualnu potvrdu, uspješno potvrđeno brisanje, statistiku i uklanjanje panela nakon `403`. Pokretanje pravog Chromiuma nije dostupno zbog ograničenja Unix socketa ovog okruženja; vizualni pregled u pregledniku ostaje zasebna provjera.
+Korištene su stvarne auth rute, OAuth state/PKCE tok kroz Passport, tri odvojena kolačića i tri sesije spremljene u PostgreSQL. Samo odgovori vanjskog Google providera zamijenjeni su sintetičkim identitetima; nije korišten stvarni Google račun niti stvarni token.
 
-Za zajedničko okruženje ostaju primjena migracije, privatna storage konfiguracija i redovito pokretanje čišćenja, stvarni Google ulazi ovlaštenih članova i ručni prolaz s timskim podacima. Obavijesti su zapisane u postojeću tablicu; prikaz i slanje e-pošte provjeravaju se s Lucijinim modulom. PR ne zatvara cijeli #14 prije zajedničke provjere.
+Izgrađeni frontend renderiran je u jsdomu i njegovi fetch zahtjevi stvarno su pozivali Express backend. Poslodavac je kroz profil poslao zahtjev, admin ga je preuzeo i odbio uz razlog, poslodavac ga je ponovno poslao, a admin preuzeo i odobrio. Zatim je kroz postojeći backend model stvoren i objavljen oglas odobrene organizacije. Kandidat ga je otvorio i prijavio kroz sučelje; admin je prijavu zatvorio bez brisanja. Nakon nove prijave admin je kroz sučelje potvrdio trajno brisanje. SQL provjere potvrdile su brisanje oglasa, pripadajuće kandidatske prijave, termina i rezervacije, očuvanje korisnika te obavijesti vlasniku i kandidatu. Statistika je prikazala stvarne agregate. Opoziv admin pristupa uklonio je panel nakon odgovora 403.
+
+## Što ostaje izvan potvrde
+
+- Stvarna Google prijava, privatni Supabase objekti i njihovo stvarno uklanjanje.
+- Vizualni pregled u pravom pregledniku.
+- Migracija i konfiguracija zajedničkog okruženja te prikaz/slanje obavijesti s Lucijinim modulom.
+- Popravak izvornog admin/profilnog čišćenja testnih baza. Njihov WITH (FORCE) završetak nije mijenjan jer je izvan dogovorenog opsega. Poslovne asercije prolaze, ali zajednički test proces može završiti neuspješno zbog kasne greške prekida veze.
+
+U ovom dodatnom pregledu funkcionalni kod iz prethodne smanjene verzije nije promijenjen. Dopunjeni su rezultati i ispisi provjera. Zaključak se odnosi na navedenu lokalnu isporuku, a ne na neprovjereno novije stanje GitHuba ili korisničkog računala.

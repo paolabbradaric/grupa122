@@ -25,3 +25,17 @@ export async function moderationRequest(path, { method = 'GET', body, csrfToken,
 export const verificationLabels = {
   pending: 'Na čekanju', under_review: 'U provjeri', approved: 'Odobrena', rejected: 'Odbijena',
 };
+
+// Postojeći panel prikazuje cijele popise; API ih vraća u stranicama.
+export async function moderationList(path, signal) {
+  const items = [];
+  let offset = 0;
+  while (!signal.aborted) {
+    const separator = path.includes('?') ? '&' : '?';
+    const page = await moderationRequest(`${path}${separator}limit=100&offset=${offset}`, { signal });
+    items.push(...page.items);
+    if (!page.hasMore || !page.items.length) break;
+    offset += page.items.length;
+  }
+  return items;
+}

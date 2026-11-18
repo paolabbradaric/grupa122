@@ -72,11 +72,17 @@ function createModerationModel(pool) {
   }
   async function reviewVerification(actorId, verificationId, status, rejectionReason) {
     return transaction(async c => {
-      const { rows: [reference] } = await c.query('SELECT org_id FROM verification WHERE id=$1', [verificationId]);
+      const { rows: [reference] } = await c.query(`SELECT v.org_id,o.owner_id FROM verification v
+        JOIN organisations o ON o.id=v.org_id WHERE v.id=$1`, [verificationId]);
       if (!reference) fail(404, 'VERIFICATION_NOT_FOUND', 'Zahtjev nije pronađen.');
-      // Svi upisi verifikacije i profila zaključavaju organizaciju prije zahtjeva.
+      // Profil prvo zaključava korisnika pa organizaciju. Zadrži isti redoslijed:
+      // obavijest vlasniku također provjerava FK prema users i inače može nastati deadlock.
+      const owner = await c.query(`SELECT id FROM users WHERE id=$1
+        AND role='employer' AND deleted_at IS NULL FOR UPDATE`, [reference.owner_id]);
+      if (!owner.rowCount) fail(404, 'ORGANISATION_NOT_FOUND', 'Organizacija nije pronađena.');
       const { rows: [org] } = await c.query(`SELECT o.* FROM organisations o JOIN users u ON u.id=o.owner_id
-        WHERE o.id=$1 AND u.deleted_at IS NULL FOR UPDATE OF o`, [reference.org_id]);
+        WHERE o.id=$1 AND o.owner_id=$2 AND u.deleted_at IS NULL FOR UPDATE OF o`,
+        [reference.org_id, reference.owner_id]);
       if (!org) fail(404, 'ORGANISATION_NOT_FOUND', 'Organizacija nije pronađena.');
       const v = await latest(c, org.id);
       if (!v || v.id !== verificationId || !['pending', 'under_review'].includes(v.status))

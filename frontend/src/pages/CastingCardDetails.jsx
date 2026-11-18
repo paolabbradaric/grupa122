@@ -22,7 +22,7 @@ function CastingCardDetails({ id, user, csrfToken }) {
       <p>Broj traženih osoba: {casting.positions_count}</p>
       <p>Rok prijave: {casting.application_deadline}</p>
       <p>Status prijave: {casting.status}</p>
-      {["candidate", "employer"].includes(user?.role) && <ReportCasting key={id} castingId={id} csrfToken={csrfToken} />}
+      {casting.id === Number(id) && ["candidate", "employer"].includes(user?.role) && <ReportCasting key={id} castingId={id} csrfToken={csrfToken} />}
     </main>
   );
 }
