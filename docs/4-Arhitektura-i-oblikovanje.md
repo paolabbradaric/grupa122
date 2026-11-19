@@ -32,13 +32,13 @@ PostgreSQL čuva domenske podatke i privatne sesije prema [SQL shemi](../db/sche
 
 ### 4.3.1 ER dijagram i model podataka
 
-![Temeljni relacijski model](assets/diagrams/mario-model-podataka.svg)
+![Potpuni relacijski model baze podataka — 24 tablice](assets/diagrams/mario-model-podataka.svg)
 
-PlantUML: [mario-model-podataka.puml](puml/mario-model-podataka.puml). Implementacija: [schema.sql](../db/schema.sql). Objašnjenje tablica, ograničenja i nadogradnji: [Baza podataka](BAZA_PODATAKA.md).
+Izvori dijagrama: [PlantUML](puml/mario-model-podataka.puml) i [Graphviz DOT](puml/mario-model-podataka.dot). Implementacija: [schema.sql](../db/schema.sql). Objašnjenje tablica, ograničenja i nadogradnji: [Baza podataka](BAZA_PODATAKA.md).
 
-Temeljni dio sheme povezuje korisnike, kandidatove profile i organizacije, projekte i oglase, prijave, termine audicija i rezervacije. Dodatne tablice služe vještinama, povezanim datotekama, povijesti statusa, privatnim sesijama, profilnim medijima, prijavama neprimjerenih oglasa, evidenciji moderacije i ograničenjima predaje prijava. Potpuni aktualni popis tablica i ograničenja nalazi se u [schema.sql](../db/schema.sql), uz migracije za postojeće baze.
+Dijagram obuhvaća svih 24 tablice iz [schema.sql](../db/schema.sql) i 34 deklarirane veze vanjskih ključeva. Prikazane su domenske tablice korisnika, organizacija, oglasa, prijava i audicija, uz obavijesti, verifikacije, vještine, medije, povijesti statusa, moderaciju te privatne sesije i ograničenja prijava. Zasebno su prikazane i tablice koje nemaju vanjske ključeve. Pravila CHECK, jedinstveni indeksi i detalji migracija ostaju opisani u SQL shemi.
 
-Dijagram prikazuje temeljne kardinalnosti: korisnik ima najviše jedan kandidatov profil; vlasnik može imati više organizacija; projekt ima najviše jedan oglas. Dio dodatnih tablica uvedenih kasnijim migracijama nije prikazan na tom pojednostavljenom dijagramu. ID korisnika u JSON-u sesije nije strani ključ. Početni [ERDPlus model](../db/cast_me_if_you_can.erdplus) povijesni je izvor.
+Veze su označene smjerom od stranog ključa prema referenciranoj tablici, a polja pojedinih tablica navode relevantne primarne i strane ključeve. Korisnik ima najviše jedan kandidatov profil; vlasnik može imati više organizacija; projekt ima najviše jedan oglas. ID korisnika pohranjen u JSON sadržaju sesije nije SQL strani ključ. Početni [ERDPlus model](../db/cast_me_if_you_can.erdplus) povijesni je izvor.
 
 ### 4.3.2 Reprezentativni UML dijagram razreda
 
