@@ -1,10 +1,10 @@
 # 3. Obrasci uporabe — CastMeIfYouCan
 
-Verzija: Priprema za M0 (4. tjedan), listopad 2026.
+Verzija: Priprema za prvi ciklus (M1), studeni 2026.
 
 U ovom dijelu opisujemo kako će se koristiti naša aplikacija: tko što radi, koji su koraci i što se događa ako nešto ne uspije. Koristimo iste oznake funkcijskih zahtjeva kao u Analizi zahtjeva. Ovo je planirano ponašanje aplikacije — ne znači da su sve funkcije već gotove.
 
-Za UC-001 i UC-002 implementirani su auth API i odvojene automatizirane HTTP/DB provjere. [Autentifikacija](AUTENTIFIKACIJA.md) opisuje stvarni ugovor, a [Ispitivanje](5-Ispitivanje.md) razlikuje automatizirane testove od stvarnog lokalnog kandidatskog toka potvrđenog u [Google prijavi](GOOGLE_PRIJAVA.md). Stvarni poslodavački tok i produkcija nisu potvrđeni. UC-003 još ima preostalu demonstracijsku lokalnu pohranu.
+Za UC-001 i UC-002 implementirani su auth API i odvojene automatizirane HTTP/DB provjere. [Autentifikacija](AUTENTIFIKACIJA.md) opisuje stvarni ugovor, a [Ispitivanje](5-Ispitivanje.md) razlikuje automatizirane testove od stvarnog lokalnog kandidatskog toka potvrđenog u [Google prijavi](GOOGLE_PRIJAVA.md). Trajna pohrana profila iz UC-003 implementirana je kroz [PR #46](https://github.com/paolabbradaric/grupa122/pull/46). Prikazi prijava i obavijesti povezani su s API-jem kroz [PR #66](https://github.com/paolabbradaric/grupa122/pull/66), a kandidatov odabir termina audicije kroz [PR #68](https://github.com/paolabbradaric/grupa122/pull/68). Pojedinačni korisnički tokovi u produkciji provjeravaju se zasebno.
 
 ## 3.1 Dijagram obrazaca uporabe
 
@@ -264,7 +264,7 @@ Alternativni tijekovi. Obrađujemo važne slučajeve: krive podatke, istek roka,
 
 Usklađenost s implementacijom. Tijekom razvoja provjeravat ćemo odgovara li stvarni rad aplikacije ovim opisima.
 
-Testiranje. Auth/DB testovi i potvrđeni kandidatski Google scenariji povezani su u [Ispitivanju](5-Ispitivanje.md). Rezultati ostalih obrazaca dodaju se nakon njihova izvođenja.
+Testiranje. Auth/DB testovi i potvrđeni kandidatski Google scenariji povezani su u [Ispitivanju](5-Ispitivanje.md). Implementacije ostalih obrazaca uporabe povezane su s modulima oglasa, prijava, audicija i administracije; cjeloviti rezultati korisničkih provjera bilježe se nakon izvođenja.
 
 Zahtjevi koje nismo izdvojili u zaseban oval: F-002 (ponovna prijava preko istog vanjskog identiteta bez stvaranja duplog profila) obuhvaćen je u [UC-002](#uc-002-prijava-i-odjava). F-022 (administratorska statistika) jednostavan je prikaz opisan u [Analizi zahtjeva](2-Analiza-zahtjeva.md#f-022). Sljedivost zahtjeva i testova vodi se u [Analizi zahtjeva](2-Analiza-zahtjeva.md#26-sljedivost-zahtjeva).
 
