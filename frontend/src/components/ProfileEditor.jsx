@@ -413,14 +413,14 @@ export default function ProfileEditor({
                       <input
                         {...props}
                         type={type}
-                        min={type === "number" ? "0.01" : undefined}
-                        step={
-                          key === "weightKg"
-                            ? "0.01"
-                            : type === "number"
-                              ? "1"
+                        min={
+                          key === "heightCm"
+                            ? 100
+                            : key === "weightKg"
+                              ? 20
                               : undefined
                         }
+                        step={type === "number" ? 1 : undefined}
                       />
                     )}
                   </div>
