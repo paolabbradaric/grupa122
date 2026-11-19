@@ -24,7 +24,7 @@ Našu aplikaciju koristit će četiri glavne skupine korisnika.
 | **Posjetitelj (neprijavljeni korisnik)** | Želi pregledati javne casting oglase i saznati više o ulozi prije registracije. |
 | **Kandidat** | Želi napraviti svoj profil i portfolio, pronaći odgovarajuće oglase, prijaviti se i pratiti status prijave. Ako dobije poziv na audiciju, želi odabrati slobodan termin. |
 | **Poslodavac / organizacija** | Želi objaviti casting oglas, pregledati pristigle prijave, odabrati kandidate i organizirati audicije. Za objavu oglasa prvo mora imati verificiran račun. |
-| **Administrator** | Provjerava zahtjeve za verifikaciju poslodavaca, obrađuje prijavljene neprimjerene oglase te po potrebi trajno uklanja oglase i povezane podatke. Za demonstraciju planiramo jedan zajednički administratorski račun. |
+| **Administrator** | Provjerava zahtjeve za verifikaciju poslodavaca, obrađuje prijavljene neprimjerene oglase te po potrebi trajno uklanja oglase i povezane podatke. Administratorski pristup temelji se na pojedinačnim ovlaštenim Google računima; za demonstraciju se koristi postojeći ovlašteni račun. |
 | **Razvojni tim i nastavno osoblje (dionici)** | Naš tim razvija i održava aplikaciju, a asistent i nastavnik prate napredak projekta i daju povratne informacije. Ne koriste nužno aplikaciju kao kandidat ili poslodavac. |
 
 Kandidati prema našem planu moraju imati **najmanje 18 godina**. Svaki tip prijavljenog korisnika ima svoje mogućnosti, pa kandidat ne može uređivati tuđi oglas, a poslodavac ne može pregledavati prijave na oglase drugih poslodavaca. Osobni podaci kandidata i prijave trebaju biti dostupni samo ovlaštenim korisnicima.
