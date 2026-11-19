@@ -1,10 +1,10 @@
 # 2. Analiza zahtjeva — CastMeIfYouCan
 
-Verzija: Priprema za M0 (4. tjedan), 28. 10. 2026.
+Verzija: Priprema za prvi ciklus (M1), studeni 2026.
 
 Projekt: CastMeIfYouCan — stranica na kojoj kandidati pronalaze casting oglase i prijavljuju se, a poslodavci objavljuju oglase i biraju kandidate.
 
-Ovdje smo napisali što naša aplikacija treba raditi i kako ćemo provjeriti je li sve napravljeno. Dio stranica već postoji, ali nisu sve povezane s backendom i bazom. Zato zahtjevi opisuju što planiramo napraviti, a ne samo što je već gotovo.
+Ovdje smo napisali što naša aplikacija treba raditi i kako ćemo provjeriti je li sve napravljeno. Zahtjevi definiraju očekivano ponašanje sustava neovisno o tome je li određena funkcionalnost već implementirana.
 
 ## 2.1 Funkcijski zahtjevi
 
@@ -220,7 +220,7 @@ Pružatelj iz prvog pitanja naknadno je odabran: Google, implementiran u PR-u #2
 
 ## 2.5 Značajne promjene zahtjeva
 
-Ovdje bilježimo veće promjene u dogovorima. Dopunit ćemo je nakon razgovora s asistentom.
+Ovdje bilježimo veće promjene u dogovorima i potvrđene razvojne odluke.
 
 U razdoblju Listopad 2026. (dan nije evidentiran) promjena se odnosi na F-012, F-020. Potvrđen odvojeni broj traženih kandidata; u radnom planu dodatno definiran `max_applications` s početnom vrijednošću 1000. Dokaz ili dogovor: Dogovor tima.
 
@@ -232,23 +232,29 @@ U razdoblju 3. 11. 2026. promjena se odnosi na F-001–F-003, NF-02. Implementir
 
 Dana 17. 11. 2026. konfiguriran je lokalni Google OAuth klijent i potvrđeni su stvarna kandidatska registracija, ponovna prijava istog računa, osvježavanje i odjava. Pri nedostajućoj konfiguraciji ili ograničenju pokušaja preglednik se vraća u aplikaciju, a JSON API zadržava odgovore 503/429. Zahtjevi se time ne proširuju; dopunjeni su rezultati provjere F-001–F-003, NF-02 i NF-11. Dokaz: [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) i [Google prijava](GOOGLE_PRIJAVA.md).
 
-Ostale važne promjene dodaju se nakon potvrde.
+Dana 17. 11. 2026. trajna pohrana i uređivanje profila kandidata i poslodavaca povezani su s backendom i privatnom pohranom medija. Zahtjevi F-004–F-005; [PR #46](https://github.com/paolabbradaric/grupa122/pull/46).
+
+Dana 18. 11. 2026. dodani su verifikacija poslodavaca, moderacija i administratorska statistika. Zahtjevi F-006–F-007, F-016, F-021–F-022; [PR #48](https://github.com/paolabbradaric/grupa122/pull/48).
+
+Dana 18. 11. 2026. backend za rezervacije, evidenciju dolazaka i privatne obavijesti dovršen je kroz [PR #58](https://github.com/paolabbradaric/grupa122/pull/58), a prikazi kandidatovih prijava i obavijesti povezani su s API-jem kroz [PR #66](https://github.com/paolabbradaric/grupa122/pull/66). Time su dopunjene implementacije F-010–F-011 i F-018–F-019.
+
+Dana 18. 11. 2026. dodano je korisničko sučelje za rezerviranje, promjenu i otkazivanje termina audicije unutar kandidatovih prijava; [PR #68](https://github.com/paolabbradaric/grupa122/pull/68) i [PR #69](https://github.com/paolabbradaric/grupa122/pull/69).
 
 ## 2.6 Sljedivost zahtjeva
 
-Za autentifikaciju i bazu provedene su automatizirane provjere 17. 11. 2026. [Poglavlje 5](5-Ispitivanje.md) povezuje ih s UC-001/UC-002 i testovima A-T01–A-T10 te navodi stupanj provjere sustavskih scenarija A-S01–A-S04. Naknadna stvarna lokalna provjera kandidata zabilježena je u [Google prijavi](GOOGLE_PRIJAVA.md). Ostali redci ostaju plan provjera ako nemaju konkretan dokaz.
+Za autentifikaciju i bazu provedene su automatizirane provjere 17. 11. 2026. [Poglavlje 5](5-Ispitivanje.md) povezuje ih s UC-001/UC-002 i testovima A-T01–A-T10 te navodi stupanj provjere sustavskih scenarija A-S01–A-S04. Naknadna stvarna lokalna provjera kandidata zabilježena je u [Google prijavi](GOOGLE_PRIJAVA.md). Za ostale zahtjeve opisani su očekivani scenariji; ostvarene implementacije dodatno su potkrijepljene navedenim PR-ovima.
 
 Zahtjevi F-001–F-003 odnose se na Prijava, odjava i računi / UC-001, UC-002. [A-T01–A-T08](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost): auth i DB testovi prošli. Stvarni kandidatski dijelovi A-S01/A-S02 potvrđeni su za registraciju, ponovnu prijavu, osvježavanje i odjavu; stvarni poslodavački tok, restart sustava i produkcija nisu potvrđeni tim provjerama.
 
-Zahtjevi F-004–F-005 odnose se na Profili kandidata i poslodavaca. Mogu li korisnici spremati svoje podatke, dodati do pet fotografija i uređivati samo vlastiti profil.
+Zahtjevi F-004–F-005 odnose se na profile kandidata i poslodavaca. Trajna pohrana profila i privatnih medija implementirana je kroz [PR #46](https://github.com/paolabbradaric/grupa122/pull/46); provjere korisničkog sučelja i dopuštenih ograničenja ostaju zasebni testni scenariji.
 
 Zahtjevi F-006–F-007 odnose se na Verifikacija poslodavaca. Može li poslodavac poslati zahtjev, a administrator odobriti ili odbiti verifikaciju.
 
 Zahtjevi F-008 odnose se na Pregled i pretraga oglasa. Prikazuju li se javni oglasi, detalji i rezultati pretrage.
 
-Zahtjevi F-009–F-010 odnose se na Prijave kandidata. Mogu li se kandidati prijaviti i povući prijavu te jesu li spriječene dvostruke i zakašnjele prijave.
+Zahtjevi F-009–F-010 odnose se na prijave kandidata. API za pregled i povlačenje prijava implementiran je kroz [PR #50](https://github.com/paolabbradaric/grupa122/pull/50), a stranica „Moje prijave” povezana je s API-jem kroz [PR #66](https://github.com/paolabbradaric/grupa122/pull/66). Ostaju provjere dvostrukih, zakašnjelih i nedopuštenih prijava.
 
-Zahtjevi F-011, F-023 odnose se na Obavijesti. Prikazuju li se obavijesti pravim korisnicima i radi li planirano slanje e-pošte.
+Zahtjevi F-011 i F-023 odnose se na obavijesti. Privatne obavijesti implementirane su na backendu u [PR-u #58](https://github.com/paolabbradaric/grupa122/pull/58), a kandidatov prikaz povezan je s API-jem u [PR-u #66](https://github.com/paolabbradaric/grupa122/pull/66). Vanjsko slanje e-pošte (F-023) ostaje planirano.
 
 Zahtjevi F-012–F-014 odnose se na Izrada i upravljanje oglasima. [A-T09/A-T10](5-Ispitivanje.md#52-ispitni-slučajevi-i-sljedivost) potvrđuju DB dio nacrta/objave i migraciju; potpuni API/UI tok i ovlasti nisu dokazani samo tim testom.
 
@@ -256,7 +262,7 @@ Zahtjevi F-015, F-020 odnose se na Pregled prijava i odabir kandidata. Može li 
 
 Zahtjevi F-016 odnose se na Brisanje oglasa. Može li administrator obrisati oglas i povezane podatke te je li brisanje zabranjeno ostalima.
 
-Zahtjevi F-017–F-019 odnose se na Audicije i rezervacije. Mogu li se dodavati termini, rezervirati slobodna mjesta i otkazivati rezervacije.
+Zahtjevi F-017–F-019 odnose se na audicije i rezervacije. Upravljanje terminima implementirano je kroz [PR #35](https://github.com/paolabbradaric/grupa122/pull/35), backend rezervacija i evidencije dolaska kroz [PR #58](https://github.com/paolabbradaric/grupa122/pull/58), a kandidatov odabir termina kroz [PR #68](https://github.com/paolabbradaric/grupa122/pull/68).
 
 Zahtjevi F-016, F-021–F-022 odnose se na Administracija. Može li se prijaviti neprimjeren oglas, obraditi prijava i pregledati statistika.
 
@@ -264,15 +270,15 @@ Zahtjevi NF-01–NF-04, NF-11–NF-12 odnose se na Sigurnost i privatnost. Jesu 
 
 Zahtjevi NF-05–NF-10 odnose se na Brzina i jednostavnost korištenja. Radi li aplikacija dovoljno brzo, pamti li podatke i može li se koristiti na različitim uređajima i preglednicima.
 
-Napomena: Potvrđeni auth/DB rezultati su u [Ispitivanju](5-Ispitivanje.md) i [zapisniku](verification/2026-11-17/README.md). Prolaz middleware testa nije dokaz ovlasti svih poslovnih modula, a registracija nije dovršena trajna izmjena profila F-004–F-005.
+Napomena: Potvrđeni auth/DB rezultati su u [Ispitivanju](5-Ispitivanje.md) i [zapisniku](verification/2026-11-17/README.md). Prolaz middleware testa nije dokaz ovlasti svih poslovnih modula, a trajno uređivanje profila F-004–F-005 ima zasebnu implementaciju u [PR-u #46](https://github.com/paolabbradaric/grupa122/pull/46).
 
 ## 2.7 Pregled zahtjeva
 
-Ovdje ćemo nakon prezentacija upisati komentare asistenta i promjene koje dogovorimo.
+U nastavku se po ciklusima bilježe povratne informacije i promjene zahtjeva.
 
-M0 — 4. tjedan. Tim je odlučio koristiti OAuth/OIDC; još trebamo odabrati pružatelja i razjasniti e-poštu i pristup podacima. Na čekanju — nakon prezentacije upisati komentar asistenta.
+M0 — 4. tjedan. Dogovorena je OAuth/OIDC prijava. Naknadno je implementiran Google kao pružatelj identiteta ([PR #29](https://github.com/paolabbradaric/grupa122/pull/29)); komentar asistenta nije evidentiran u ovoj datoteci.
 
-M1 — 7. tjedan. Još nije održano. Na čekanju.
+M1 — rok prve predaje 20. 11. 2026. Povratne informacije još nisu evidentirane.
 
 M2 — 12. tjedan. Još nije održano. Na čekanju.
 
@@ -280,4 +286,4 @@ M3 — 14. tjedan. Još nije održano. Na čekanju.
 
 ---
 
-Za M0: Napisali smo 23 funkcijska i 12 nefunkcijskih zahtjeva. F-002 je prilagođen OAuth/OIDC prijavi. Otvorena pitanja i dalje trebamo provjeriti s ekipom i asistentom.
+Definirano je 23 funkcijska i 12 nefunkcijskih zahtjeva. F-002 je prilagođen OAuth/OIDC prijavi. Neriješene integracije i odluke navedene su u poglavlju 2.4.
