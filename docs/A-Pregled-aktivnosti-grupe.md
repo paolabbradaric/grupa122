@@ -7,7 +7,7 @@ Ovaj pregled obuhvaća plan rada i doprinose članova grupe 12.2 do prve predaje
 | Datum | Sudionici | Tema i donesene odluke | Poveznica na rezultat |
 | --- | --- | --- | --- |
 | 15. 10. 2026. | Svi članovi grupe | Prvi sastanak: upoznavanje članova i određivanje početnih uloga u timu. | — |
-| 22. 10. 2026. | Svi članovi osim Marija | Dogovorene funkcionalnosti aplikacije i raspodjela razvojnih zadataka prema područjima: računi i profili, oglasi i prijave, verifikacija, audicije, obavijesti te administracija. | [Razvojni plan](RAZVOJNI_PLAN.md) |
+| 22. 10. 2026. | Tara, Tin, Nina, Paola, Rea, Lucija | Dogovorene funkcionalnosti aplikacije i raspodjela razvojnih zadataka prema područjima: računi i profili, oglasi i prijave, verifikacija, audicije, obavijesti te administracija. | [Razvojni plan](RAZVOJNI_PLAN.md) |
 | 18. 11. 2026. | Paola, Tin, Mario i Lucija | Pregled do tada implementiranih funkcionalnosti i napretka projekta te povezivanje aplikacije s Vercelom radi javnog pristupa. | [Vercel konfiguracija (PR #49)](https://github.com/paolabbradaric/grupa122/pull/49), [javna aplikacija](https://grupa122.vercel.app/) |
 
 ## A.2 Plan rada
