@@ -32,21 +32,21 @@ PostgreSQL čuva domenske podatke i privatne sesije prema [SQL shemi](../db/sche
 
 ### 4.3.1 ER dijagram i model podataka
 
-![Potpuni relacijski model baze podataka — 24 tablice](assets/diagrams/mario-model-podataka.svg)
+![Aktualni relacijski model](assets/diagrams/mario-model-podataka.svg)
 
-Izvori dijagrama: [PlantUML](puml/mario-model-podataka.puml) i [Graphviz DOT](puml/mario-model-podataka.dot). Implementacija: [schema.sql](../db/schema.sql). Objašnjenje tablica, ograničenja i nadogradnji: [Baza podataka](BAZA_PODATAKA.md).
+PlantUML: [mario-model-podataka.puml](puml/mario-model-podataka.puml). Implementacija: [schema.sql](../db/schema.sql). Objašnjenje tablica, ograničenja i nadogradnji: [Baza podataka](BAZA_PODATAKA.md).
 
-Dijagram obuhvaća svih 24 tablice iz [schema.sql](../db/schema.sql) i 34 deklarirane veze vanjskih ključeva. Prikazane su domenske tablice korisnika, organizacija, oglasa, prijava i audicija, uz obavijesti, verifikacije, vještine, medije, povijesti statusa, moderaciju te privatne sesije i ograničenja prijava. Zasebno su prikazane i tablice koje nemaju vanjske ključeve. Pravila CHECK, jedinstveni indeksi i detalji migracija ostaju opisani u SQL shemi.
+Shema ima 17 domenskih tablica i privatnu tablicu sesija. Temeljne veze su korisnik, zatim kandidat/organizacija, organizacija, zatim projekti, zatim oglasi, kandidat + oglas, zatim prijava te prijava + termin, zatim rezervacija. Vezne tablice povezuju vještine i datoteke.
 
-Veze su označene smjerom od stranog ključa prema referenciranoj tablici, a polja pojedinih tablica navode relevantne primarne i strane ključeve. Korisnik ima najviše jedan kandidatov profil; vlasnik može imati više organizacija; projekt ima najviše jedan oglas. ID korisnika pohranjen u JSON sadržaju sesije nije SQL strani ključ. Početni [ERDPlus model](../db/cast_me_if_you_can.erdplus) povijesni je izvor.
+Dijagram prikazuje SQL kardinalnosti: korisnik ima najviše jedan kandidatov profil; vlasnik može imati više organizacija; projekt ima najviše jedan oglas. ID korisnika u JSON-u sesije nije strani ključ. Početni [ERDPlus model](../db/cast_me_if_you_can.erdplus) povijesni je izvor; aktualni prikaz uključuje kasnije migracije.
 
 ### 4.3.2 Reprezentativni UML dijagram razreda
 
-![Reprezentativni UML dijagram modula autentifikacije](assets/diagrams/mario-auth-razredi.svg)
+![Odgovornosti auth modula i razreda](assets/diagrams/mario-auth-razredi.svg)
 
 PlantUML: [mario-auth-razredi.puml](puml/mario-auth-razredi.puml). Kod: [auth/](../backend/src/auth/).
 
-Implementacija kombinira funkcije, objekte dobivene tvornicama i stvarne razrede. Stereotipovi to razlikuju: AuthError je razred, UserModel je objekt koji vraća createUserModel(pool), a router i validacija su moduli. Ne uvodi se izmišljeni ORM entitet. Dijagram prikazuje modul autentifikacije kao reprezentativni dio strukture sustava; poslovna pravila oglasa, prijava i audicija implementirana su u odgovarajućim kontrolerima, servisima i modelima.
+Implementacija kombinira funkcije, objekte dobivene tvornicama i stvarne razrede. Stereotipovi to razlikuju: AuthError je razred, UserModel je objekt koji vraća createUserModel(pool), a router i validacija su moduli. Ne uvodi se izmišljeni ORM entitet. Ovo je prikaz sadašnje strukture, a ne dokaz da je dijagram izrađen prije koda.
 
 ## 4.4 Ponašanje tijekom izvođenja
 
