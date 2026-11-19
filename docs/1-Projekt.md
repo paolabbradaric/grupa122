@@ -1,7 +1,7 @@
 # 1. Opseg projekta — CastMeIfYouCan
 
 **Projekt:** CastMeIfYouCan  
-**Verzija:** Priprema za M0 (4. tjedan), listopad 2026.
+**Verzija:** Priprema za prvi ciklus (M1), studeni 2026.
 
 CastMeIfYouCan je web-aplikacija koja povezuje osobe zainteresirane za glumu i druge uloge u produkcijama s poslodavcima koji traže kandidate. Ovdje opisujemo problem koji želimo riješiti, kome je aplikacija namijenjena i što planiramo napraviti. Funkcionalnosti navedene u ovom dokumentu dio su našeg plana; nisu sve još implementirane.
 
@@ -13,7 +13,7 @@ Kada netko traži glumačku ulogu, statistiranje ili sličan angažman, informac
 
 Želimo da kandidat na jednom mjestu može pronaći priliku koja ga zanima i pratiti status prijave, a da poslodavac lakše organizira izbor kandidata. Aplikacija neće sama odlučivati tko je najbolji za ulogu — konačnu odluku donosi poslodavac.
 
-**Primjer korištenja:** Kandidat pronađe oglas za ulogu u kratkometražnom filmu, pročita uvjete i prijavi se. Poslodavac nakon pregleda prijava kandidata može pozvati na audiciju, a kandidat zatim odabire slobodan termin. Ovo je planirani način rada aplikacije, a ne tvrdnja da je cijeli proces već gotov.
+**Primjer korištenja:** Kandidat pronađe oglas za ulogu u kratkometražnom filmu, pročita uvjete i prijavi se. Poslodavac nakon pregleda prijava kandidata može pozvati na audiciju, a kandidat zatim odabire slobodan termin. 
 
 ## 1.2 Ciljani korisnici i dionici
 
@@ -40,10 +40,10 @@ U ovom dijelu navodimo što želimo imati u aplikaciji, što zasad ne planiramo 
 - **Casting oglasi:** javni pregled, detalji i pretraživanje oglasa te stvaranje, spremanje nacrta i uređivanje vlastitih oglasa. Prema dogovoru, **jedan oglas predstavlja jedan projekt i jednu ulogu**.
 - **Prijave kandidata:** kandidat se može prijaviti dok je oglas otvoren, pogledati svoje prijave i njihove statuse te povući prijavu kada je to dopušteno. Na isti oglas ne može poslati više prijava.
 - **Odabir kandidata:** poslodavac pregledava prijave i mijenja njihove statuse (npr. u pregledu, uži izbor, poziv na audiciju, odabran ili odbijen). Oglas se može označiti popunjenim kad se odabere traženi broj kandidata.
-- **Audicije i obavijesti:** poslodavac može definirati termine audicije s kapacitetom, a pozvani kandidat odabrati slobodan termin. Planirane su i obavijesti o važnim promjenama prijave ili termina.
+- **Audicije i obavijesti:** poslodavac može definirati termine audicije s kapacitetom, a pozvani kandidat odabrati slobodan termin. Privatne obavijesti o važnim promjenama prijave ili termina dio su aplikacije; slanje e-pošte ostaje planirana integracija.
 - **Administracija:** pregled verifikacija, obrada prijavljenog sadržaja i trajno brisanje oglasa s povezanim podacima uz odgovarajuće ovlasti.
 
-Kod objave oglasa zasebno se upisuju **broj traženih kandidata** i **maksimalan broj prijava**. Za maksimalan broj prijava predviđena je početna vrijednost od **1000**, koju ćemo uskladiti s pravilima sustava.
+Kod objave oglasa zasebno se upisuju **broj traženih kandidata** i **maksimalan broj prijava**. Zadana vrijednost maksimalnog broja prijava je **1000**, uz dodatne provjere dopuštenih granica.
 
 ### Izvan opsega ili odgođeno
 
@@ -57,9 +57,9 @@ Ove granice postavili smo da se prvo možemo usredotočiti na objavu oglasa, pri
 ### Vanjske ovisnosti
 
 - **PostgreSQL baza podataka:** koristimo je za spremanje korisnika, oglasa, prijava, audicija i drugih podataka. Postojeću bazu čuvamo i po potrebi je mijenjamo migracijama.
-- **Usluga za javno postavljanje aplikacije:** za kasniju demonstraciju aplikacija mora biti dostupna putem interneta; konkretan pružatelj još nije naveden u ovom dokumentu.
+- **Javno postavljanje aplikacije:** aplikacija je objavljena putem [Vercela](https://grupa122.vercel.app/).
 - **Vanjska usluga za slanje e-pošte:** planiramo je za važnije obavijesti o prijavama i audicijama, ali još trebamo dogovoriti koju ćemo uslugu koristiti i hoće li ona zadovoljiti zahtjev kolegija za vanjskom integracijom.
-- **Prijava putem vanjskog pružatelja identiteta:** dogovorili smo da ćemo koristiti **OAuth 2.0 / OpenID Connect (OIDC)** za prijavu. Vanjski pružatelj potvrđuje identitet korisnika, a u našoj aplikaciji spremamo korisnički profil i ulogu (kandidat ili poslodavac). Konkretni pružatelj identiteta još nije odabran.
+- **Prijava putem vanjskog pružatelja identiteta:** dogovorili smo da ćemo koristiti **OAuth 2.0 / OpenID Connect (OIDC)** za prijavu. Vanjski pružatelj potvrđuje identitet korisnika, a u našoj aplikaciji spremamo korisnički profil i ulogu (kandidat ili poslodavac). Odabrani pružatelj identiteta je Google.
 
 ## 1.4 Postojeći pristupi i opravdanost projekta
 
@@ -67,6 +67,3 @@ Jedan mogući način traženja castinga danas je pregledavanje različitih objav
 
 Ovo je primjer problema koji želimo riješiti, a ne rezultat provedenog istraživanja tržišta ili usporedba s konkretnom postojećom platformom. Ne tvrdimo da takvo rješenje već ne postoji — CastMeIfYouCan je naš projekt u kojem želimo osmisliti i napraviti povezani proces prijava na castinge.
 
----
-
-**Napomena za M0:** Tim je odlučio koristiti **OAuth 2.0 / OpenID Connect** za prijavu. Još trebamo odabrati pružatelja identiteta, potvrditi vanjsku integraciju za obavijesti te dogovoriti detalje brisanja oglasa i pristupa osobnim podacima. Ovaj dokument opisuje plan, a ne već dovršene funkcionalnosti.
