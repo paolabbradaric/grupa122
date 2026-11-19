@@ -1,8 +1,6 @@
 # 4. Arhitektura i oblikovanje — CastMeIfYouCan
 
-Polazna provjera arhitekture: 17. 11. 2026., kod [bd785d4](https://github.com/paolabbradaric/grupa122/commit/bd785d4265b4a1ed35cfdd254f5f2f9e7c822a4d). Naknadna dopuna prati [PR #44](https://github.com/paolabbradaric/grupa122/pull/44), spojen u `f42e73d`; konfiguracija i potvrđeni lokalni Google scenariji opisani su u [Google prijavi](GOOGLE_PRIJAVA.md).
-
-Poglavlje opisuje implementirane temelje baze i autentifikacije te njihove veze s ostatkom aplikacije. Poslovni moduli oglasa, prijava i audicija drugih članova koriste isti Express proces i PostgreSQL. Granice provjerenog ponašanja navedene su u [Ispitivanju](5-Ispitivanje.md).
+Aplikacija koristi React/Vite klijent i Node.js/Express backend s PostgreSQL bazom podataka. Google služi kao pružatelj identiteta, a javna aplikacija postavljena je putem Vercela. Auth, oglasi, prijave kandidata, audicije, obavijesti i administracija organizirani su u odvojene module unutar istog backenda. Dodatni tehnički detalji i provjere navedeni su u [Autentifikaciji](AUTENTIFIKACIJA.md), [Bazi podataka](BAZA_PODATAKA.md) i [Ispitivanju](5-Ispitivanje.md).
 
 ## 4.1 Ključne arhitekturne odluke
 
@@ -13,6 +11,8 @@ Korisnički račun povezuje se s Googleovim trajnim identifikatorom preko `users
 Sadržaj sesije sprema se u PostgreSQL kako bi se mogao ponovno učitati nakon restarta procesa. Korisnik i njegov profil ili organizacija nastaju u jednoj transakciji, dok je spremanje prijavljene sesije zaseban korak nakon uspješnog upisa računa.
 
 Pravila za nepotpune nacrte provode se i u bazi. Ona odbija nepotpunu objavu čak i pri izravnom SQL upisu. Backend dodatno provjerava vlasništvo oglasa, verifikaciju poslodavca i dopuštene promjene statusa.
+
+React klijent prikazuje javne oglase i zasebna sučelja kandidata, poslodavca i administratora. Zaštićeni API zahtjevi prolaze autentifikaciju i provjere uloge, vlasništva i CSRF tokena; poslovni moduli provode dodatna pravila o rokovima, statusima, limitima prijava i kapacitetima termina. Kandidatove prijave i obavijesti dohvaćaju se putem API-ja, a rezerviranje audicija povezuje kandidatov prikaz s postojećim backend rutama ([PR #66](https://github.com/paolabbradaric/grupa122/pull/66), [PR #68](https://github.com/paolabbradaric/grupa122/pull/68)).
 
 ## 4.2 Gradivni blokovi i UML dijagram komponenata
 
