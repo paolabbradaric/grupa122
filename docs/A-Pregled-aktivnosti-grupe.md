@@ -18,7 +18,7 @@ Redoslijed i ovisnosti zadataka opisani su u [razvojnom planu](RAZVOJNI_PLAN.md)
 
 ## A.3 Aktivnosti i doprinosi članova
 
-Pregled doprinosa svih članova temelji se na spojenim Pull Requestovima. Redoslijed je abecedni, od Z prema A.
+Pregled doprinosa svih članova temelji se na spojenim Pull Requestovima.
 
 | Član (GitHub račun) | Glavni doprinosi | Spojeni Pull Requestovi |
 | --- | --- | --- |
