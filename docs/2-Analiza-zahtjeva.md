@@ -166,7 +166,7 @@ A-02. Kandidat (registrirani korisnik). Uređuje profil i portfolio, pregledava 
 
 A-03. Poslodavac (predstavnik organizacije). Uređuje organizaciju, traži verifikaciju, upravlja oglasima i odabirom, terminima i prijavama. F-001–F-003, F-005–F-006, F-012–F-015, F-017, F-019–F-020.
 
-A-04. Administrator (zajednički demo račun). Provjerava organizacije, obrađuje prijavljeni sadržaj i uklanja oglase; pregledava statistike. F-007, F-016, F-021–F-022.
+A-04. Administrator (ovlašteni Google račun). Provjerava organizacije, obrađuje prijavljeni sadržaj i uklanja oglase; pregledava statistike. F-007, F-016, F-021–F-022.
 
 A-05. Vanjska usluga e-pošte (sekundarni akter, planirano). Sudjeluje pri slanju važnih obavijesti; usluga još nije odabrana. F-023.
 
@@ -192,7 +192,7 @@ Postojeću PostgreSQL bazu treba sačuvati; usklađenja sheme izvoditi migracija
 
 ### C-04
 
-Za demonstraciju se koristi jedan zajednički administratorski račun; pristupni podaci nisu dio repozitorija. Ograničiti ovlasti i čuvanje tajni; provjeriti postupak demo prijave. Izvor: Dogovor tima. Vrsta zapisa: Ograničenje.
+Administratorski pristup imaju pojedinačni ovlašteni Google računi iz privatnog serverskog popisa; demonstracija koristi jedan postojeći ovlašteni račun. Popis i tajne nisu dio repozitorija. Izvor: [Razvojni plan](RAZVOJNI_PLAN.md). Vrsta zapisa: Ograničenje.
 
 ### C-05
 
