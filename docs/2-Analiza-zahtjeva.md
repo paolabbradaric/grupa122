@@ -276,7 +276,7 @@ Napomena: Potvrđeni auth/DB rezultati su u [Ispitivanju](5-Ispitivanje.md) i [z
 
 U nastavku se po ciklusima bilježe povratne informacije i promjene zahtjeva.
 
-M0 — 4. tjedan. Dogovorena je OAuth/OIDC prijava. Naknadno je implementiran Google kao pružatelj identiteta ([PR #29](https://github.com/paolabbradaric/grupa122/pull/29)); komentar asistenta nije evidentiran u ovoj datoteci.
+M0 — 4. tjedan. Dogovorena je OAuth/OIDC prijava. Naknadno je implementiran Google kao pružatelj identiteta ([PR #29](https://github.com/paolabbradaric/grupa122/pull/29)).
 
 M1 — rok prve predaje 20. 11. 2026. Povratne informacije još nisu evidentirane.
 
