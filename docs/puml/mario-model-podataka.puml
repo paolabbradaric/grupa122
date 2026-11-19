@@ -4,147 +4,152 @@ hide circle
 skinparam linetype ortho
 skinparam shadowing false
 skinparam defaultFontName SansSerif
-title CastMeIfYouCan — sve 24 tablice u db/schema.sql
+title CastMeIfYouCan — relacijski model iz db/schema.sql
 
-entity "users" as t1 {
-  * PK id
-  UQ auth_id, email
-  role, deleted_at
+entity users {
+  * id : INT <<PK>>
+  --
+  auth_id : VARCHAR <<UNIQUE>>
+  email : VARCHAR <<UNIQUE>>
+  role : VARCHAR
+  deleted_at : TIMESTAMPTZ (NULL)
 }
-entity "candidate_profiles" as t2 {
-  * PK id ; FK user_id -> users
-  bio, experience
-  weight_kg, eye_color, hair_color
+entity candidate_profiles {
+  * id : INT <<PK>>
+  --
+  user_id : INT <<FK, UNIQUE>>
 }
-entity "organisations" as t3 {
-  * PK id ; FK owner_id -> users
-  UQ reg_num
+entity organisations {
+  * id : INT <<PK>>
+  --
+  owner_id : INT <<FK>>
+  reg_num : VARCHAR <<UNIQUE>>
+  location : VARCHAR (NULL)
 }
-entity "projects" as t4 {
-  * PK id ; FK org_id -> organisations
-  title, project_type
+entity projects {
+  * id : INT <<PK>>
+  --
+  org_id : INT <<FK>>
+  title : VARCHAR
+  project_type : VARCHAR
 }
-entity "casting_calls" as t5 {
-  * PK id ; FK project_id -> projects
-  status, positions_count
-  max_applications, role_genre
+entity casting_calls {
+  * id : INT <<PK>>
+  --
+  project_id : INT <<FK, UNIQUE>>
+  status : VARCHAR
+  positions_count : INT (NULL u draft)
+  max_applications : INT = 1000
 }
-entity "applications" as t6 {
-  * PK id ; FK candidate_id -> candidate_profiles
-  FK casting_call_id -> casting_calls
-  status, rejection_reason
+entity applications {
+  * id : INT <<PK>>
+  --
+  candidate_id : INT <<FK>>
+  casting_call_id : INT <<FK>>
+  status : VARCHAR
+  UNIQUE(candidate_id, casting_call_id)
 }
-entity "audition_slots" as t7 {
-  * PK id ; FK casting_call_id -> casting_calls
-  capacity, starts_at, ends_at
+entity audition_slots {
+  * id : INT <<PK>>
+  --
+  casting_call_id : INT <<FK>>
+  capacity : INT
 }
-entity "audition_bookings" as t8 {
-  * PK id ; FK audition_slot_id -> audition_slots
-  FK application_id -> applications
-  status, attendance_status
+entity audition_bookings {
+  * id : INT <<PK>>
+  --
+  audition_slot_id : INT <<FK>>
+  application_id : INT <<FK>>
 }
-entity "notifications" as t9 {
-  * PK id ; FK user_id -> users
-  FK application_id, casting_call_id
-  FK booking_id (svi opcionalni)
+entity notifications {
+  * id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  application_id : INT <<FK, NULL>>
+  casting_call_id : INT <<FK, NULL>>
+  booking_id : INT <<FK, NULL>>
 }
-entity "verification" as t10 {
-  * PK id ; FK org_id -> organisations
-  FK reviewed_by -> users (opc.)
+entity media_files {
+  * id : INT <<PK>>
+  --
+  owner_user_id : INT <<FK>>
+  storage_key : VARCHAR
 }
-entity "casting_reports" as t11 {
-  * PK id ; FK casting_call_id (opc.)
-  FK reporter_id, reviewed_by -> users
+entity verification {
+  * id : INT <<PK>>
+  --
+  org_id : INT <<FK>>
+  reviewed_by : INT <<FK, NULL>>
+  status : VARCHAR
 }
-entity "app_private.moderation_events" as t12 {
-  * PK id ; FK actor_id -> users
-  action, entity_id
+entity skills {
+  * id : INT <<PK>>
+  --
+  name : VARCHAR <<UNIQUE>>
 }
-entity "media_files" as t13 {
-  * PK id ; FK owner_user_id -> users
-  UQ (id, owner_user_id)
+entity candidate_skills {
+  * candidate_id : INT <<PK, FK>>
+  * skill_id : INT <<PK, FK>>
 }
-entity "profile_media" as t14 {
-  * PK media_id ; FK -> media_files
-  FK candidate_id -> candidate_profiles
-  FK org_id -> organisations (uvjetno)
+entity casting_call_skills {
+  * casting_call_id : INT <<PK, FK>>
+  * skill_id : INT <<PK, FK>>
 }
-entity "profile_storage_objects" as t15 {
-  * PK storage_key
-  bez stranih ključeva
+entity application_files {
+  * application_id : INT <<PK, FK>>
+  * media_file_id : INT <<PK, FK>>
 }
-entity "application_files" as t16 {
-  * PK (application_id, media_file_id)
-  FK -> applications, media_files
+entity casting_call_status_history {
+  * id : INT <<PK>>
+  --
+  casting_call_id : INT <<FK>>
+  changed_by : INT <<FK, NULL>>
 }
-entity "skills" as t17 {
-  * PK id ; UQ name
-  category
+entity application_status_history {
+  * id : INT <<PK>>
+  --
+  application_id : INT <<FK>>
+  changed_by : INT <<FK, NULL>>
 }
-entity "candidate_skills" as t18 {
-  * PK (candidate_id, skill_id)
-  FK -> candidate_profiles, skills
-}
-entity "casting_call_skills" as t19 {
-  * PK (casting_call_id, skill_id)
-  FK -> casting_calls, skills
-}
-entity "casting_call_status_history" as t20 {
-  * PK id ; FK casting_call_id -> casting_calls
-  FK changed_by -> users (opc.)
-}
-entity "application_status_history" as t21 {
-  * PK id ; FK application_id -> applications
-  FK changed_by -> users (opc.)
-}
-entity "app_private.sessions" as t22 {
-  * PK sid ; JSON sess
-  nema SQL FK prema users
-}
-entity "app_private.moderation_file_cleanup" as t23 {
-  * PK storage_key
-  bez stranih ključeva
-}
-entity "app_private.application_submission_limits" as t24 {
-  * PK/FK user_id -> public.users
-  total_hits, reset_at
+entity "app_private.sessions" as sessions {
+  * sid : VARCHAR <<PK>>
+  --
+  sess : JSON
+  expire : TIMESTAMP
 }
 
-t1 ||--o{ t2 : user_id
-t1 ||--o{ t3 : owner_id
-t3 ||--o{ t4 : org_id
-t4 ||--o{ t5 : project_id
-t2 ||--o{ t6 : candidate_id
-t5 ||--o{ t6 : casting_call_id
-t5 ||--o{ t7 : casting_call_id
-t7 ||--o{ t8 : audition_slot_id
-t6 ||--o{ t8 : application_id
-t1 ||--o{ t9 : user_id
-t6 ||--o{ t9 : application_id
-t5 ||--o{ t9 : casting_call_id
-t8 ||--o{ t9 : booking_id
-t1 ||--o{ t13 : owner_user_id
-t3 ||--o{ t10 : org_id
-t1 ||--o{ t10 : reviewed_by
-t2 ||--o{ t18 : candidate_id
-t17 ||--o{ t18 : skill_id
-t5 ||--o{ t19 : casting_call_id
-t17 ||--o{ t19 : skill_id
-t6 ||--o{ t16 : application_id
-t13 ||--o{ t16 : media_file_id
-t5 ||--o{ t20 : casting_call_id
-t1 ||--o{ t20 : changed_by
-t6 ||--o{ t21 : application_id
-t1 ||--o{ t21 : changed_by
-t13 ||--o{ t14 : (media_id, owner_user_id)
-t2 ||--o{ t14 : (candidate_id, owner_user_id)
-t3 ||--o{ t14 : (org_id, owner_user_id)
-t5 ||--o{ t11 : casting_call_id
-t1 ||--o{ t11 : reporter_id
-t1 ||--o{ t11 : reviewed_by
-t1 ||--o{ t12 : actor_id
-t1 ||--o{ t24 : user_id
-note bottom of t22
-  app_private.sessions nema deklarirani SQL strani ključ.
+users ||--o| candidate_profiles
+users ||--o{ organisations : owner_id
+organisations ||--o{ projects
+projects ||--o| casting_calls
+candidate_profiles ||--o{ applications
+casting_calls ||--o{ applications
+casting_calls ||--o{ audition_slots
+audition_slots ||--o{ audition_bookings
+applications ||--o{ audition_bookings
+users ||--o{ notifications
+applications |o--o{ notifications
+casting_calls |o--o{ notifications
+audition_bookings |o--o{ notifications
+users ||--o{ media_files
+organisations ||--o{ verification
+users |o--o{ verification : reviewed_by
+candidate_profiles ||--o{ candidate_skills
+skills ||--o{ candidate_skills
+casting_calls ||--o{ casting_call_skills
+skills ||--o{ casting_call_skills
+applications ||--o{ application_files
+media_files ||--o{ application_files
+casting_calls ||--o{ casting_call_status_history
+users |o--o{ casting_call_status_history : changed_by
+applications ||--o{ application_status_history
+users |o--o{ application_status_history : changed_by
+note right of sessions
+  sess može sadržavati lokalni ID korisnika.
+  Ta veza nije SQL strani ključ.
+end note
+note bottom of audition_bookings
+  Prikazane su kardinalnosti koje nameće SQL.
+  Poslovna pravila mogu biti stroža od njih.
 end note
 @enduml
