@@ -33,12 +33,12 @@ Istog dana [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) uključu
 
 | Član (GitHub račun) | Glavni doprinosi | Spojeni Pull Requestovi |
 | --- | --- | --- |
-| Lucija (`lucaa042`) | Backend dohvaćanja, stvaranja i otkazivanja termina audicija te automatizirani testovi | [#35](https://github.com/paolabbradaric/grupa122/pull/35) |
 | Tin (`ts56989`) | Backend oglasa i prijava, statusi, rezervacije audicija, evidencija dolazaka i obavijesti | [#30](https://github.com/paolabbradaric/grupa122/pull/30), [#50](https://github.com/paolabbradaric/grupa122/pull/50), [#58](https://github.com/paolabbradaric/grupa122/pull/58), [#67](https://github.com/paolabbradaric/grupa122/pull/67) |
-| Rea (`rg56695`) | Registracija, profil i navigacija, prikazi kandidatovih prijava i obavijesti | [#51](https://github.com/paolabbradaric/grupa122/pull/51), [#60](https://github.com/paolabbradaric/grupa122/pull/60), [#66](https://github.com/paolabbradaric/grupa122/pull/66) |
-| Nina (`nj56590`) | Javni prikaz, detalji i filtri casting oglasa | [#36](https://github.com/paolabbradaric/grupa122/pull/36), [#59](https://github.com/paolabbradaric/grupa122/pull/59) |
 | Tara (`tf56511`) | Poslodavčevi oglasi i audicije te kandidatovo sučelje za rezervacije | [#42](https://github.com/paolabbradaric/grupa122/pull/42), [#62](https://github.com/paolabbradaric/grupa122/pull/62), [#68](https://github.com/paolabbradaric/grupa122/pull/68), [#69](https://github.com/paolabbradaric/grupa122/pull/69) |
+| Rea (`rg56695`) | Registracija, profil i navigacija, prikazi kandidatovih prijava i obavijesti | [#51](https://github.com/paolabbradaric/grupa122/pull/51), [#60](https://github.com/paolabbradaric/grupa122/pull/60), [#66](https://github.com/paolabbradaric/grupa122/pull/66) |
 | Paola (`paolabbradaric`) | Verifikacija poslodavaca, moderacija oglasa, administratorska statistika i postavljanje aplikacije | [#48](https://github.com/paolabbradaric/grupa122/pull/48), [#49](https://github.com/paolabbradaric/grupa122/pull/49) |
+| Nina (`nj56590`) | Javni prikaz, detalji i filtri casting oglasa | [#36](https://github.com/paolabbradaric/grupa122/pull/36), [#59](https://github.com/paolabbradaric/grupa122/pull/59) |
+| Lucija (`lucaa042`) | Backend dohvaćanja, stvaranja i otkazivanja termina audicija te automatizirani testovi | [#35](https://github.com/paolabbradaric/grupa122/pull/35) |
 
 Utrošene sate članovi upisuju na temelju vlastite evidencije; sati nisu procijenjeni iz broja commitova.
 
