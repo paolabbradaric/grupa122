@@ -1,14 +1,17 @@
 # A. Pregled aktivnosti grupe
 
-Ovaj pregled opisuje podjelu rada i potvrđene doprinose bazi i autentifikaciji do 17. 11. 2026.
+Ovaj pregled obuhvaća plan rada i doprinose članova grupe 12.2 do prve predaje, na temelju spojenih promjena u repozitoriju.
 
 ## A.1 Evidencija sastanaka
 
-U pregledanom repozitoriju nema popunjene evidencije sastanaka za ovaj doprinos. Zato nisu navedeni pretpostavljeni datumi, sudionici ni trajanje rada. Odluke su potkrijepljene [razvojnim planom](RAZVOJNI_PLAN.md), GitHub zadacima i PR-ovima.
+| Datum | Sudionici | Tema i donesene odluke | Poveznica na rezultat |
+| --- | --- | --- | --- |
+
+Evidenciju održanih sastanaka i prisutnosti članovi grupe dopunjuju potvrđenim podacima.
 
 ## A.2 Plan rada
 
-Mario priprema bazu, migracije, prijavu i provjere ovlasti koje koriste ostali dijelovi aplikacije. Rea povezuje prijavu i profile s korisničkim sučeljem. Tin, Nina i Tara rade na oglasima i prijavama, Lucija na audicijama i obavijestima, a Paola na verifikaciji, moderaciji i integraciji.
+Mario je radio na bazi, migracijama, autentifikaciji i provjerama ovlasti. Rea je razvijala sučelja prijave, registracije, profila, kandidatovih prijava i obavijesti. Tin je radio na backendu oglasa, prijava, rezervacija audicija i obavijesti, Nina na javnom prikazu i filtriranju oglasa, Tara na poslodavčevu sučelju i kandidatovu odabiru termina, Lucija na backendu upravljanja terminima audicija i testovima, a Paola na verifikaciji poslodavaca, moderaciji i administratorskim funkcijama.
 
 Redoslijed i ovisnosti tih zadataka opisani su u razvojnom planu. Nakon povezivanja slijedi zajednička provjera cijelih korisničkih tokova.
 
@@ -26,11 +29,22 @@ Na Mariov zahtjev 17. studenoga dopunjena je dokumentacija i ponovljene su posto
 
 Istog dana [PR #44](https://github.com/paolabbradaric/grupa122/pull/44) uključuje dovršenu lokalnu Google konfiguraciju, povratak preglednika u aplikaciju pri nedostupnoj prijavi ili ograničenju pokušaja i dodatne auth testove. Stvarnim kandidatskim računom potvrđeni su prvi ulazak, dovršavanje profila, osvježavanje, odjava s uklanjanjem PostgreSQL sesije i ponovna prijava u isti račun bez duplikata. [Google prijava](GOOGLE_PRIJAVA.md) navodi točan opseg i granice tih provjera; OAuth tajne ostaju izvan Gita.
 
-Sati rada nisu dostavljeni pa nisu procijenjeni. Poslovni moduli ostalih članova zadržavaju svoje autorstvo; uporaba zajedničkog middlewarea ne pripisuje njihov rad autoru autentifikacije.
+### Doprinosi ostalih članova grupe
+
+| Član (GitHub račun) | Glavni doprinosi | Spojeni Pull Requestovi |
+| --- | --- | --- |
+| Lucija (`lucaa042`) | Backend dohvaćanja, stvaranja i otkazivanja termina audicija te automatizirani testovi | [#35](https://github.com/paolabbradaric/grupa122/pull/35) |
+| Tin (`ts56989`) | Backend oglasa i prijava, statusi, rezervacije audicija, evidencija dolazaka i obavijesti | [#30](https://github.com/paolabbradaric/grupa122/pull/30), [#50](https://github.com/paolabbradaric/grupa122/pull/50), [#58](https://github.com/paolabbradaric/grupa122/pull/58), [#67](https://github.com/paolabbradaric/grupa122/pull/67) |
+| Rea (`rg56695`) | Registracija, profil i navigacija, prikazi kandidatovih prijava i obavijesti | [#51](https://github.com/paolabbradaric/grupa122/pull/51), [#60](https://github.com/paolabbradaric/grupa122/pull/60), [#66](https://github.com/paolabbradaric/grupa122/pull/66) |
+| Nina (`nj56590`) | Javni prikaz, detalji i filtri casting oglasa | [#36](https://github.com/paolabbradaric/grupa122/pull/36), [#59](https://github.com/paolabbradaric/grupa122/pull/59) |
+| Tara (`tf56511`) | Poslodavčevi oglasi i audicije te kandidatovo sučelje za rezervacije | [#42](https://github.com/paolabbradaric/grupa122/pull/42), [#62](https://github.com/paolabbradaric/grupa122/pull/62), [#68](https://github.com/paolabbradaric/grupa122/pull/68), [#69](https://github.com/paolabbradaric/grupa122/pull/69) |
+| Paola (`paolabbradaric`) | Verifikacija poslodavaca, moderacija oglasa, administratorska statistika i postavljanje aplikacije | [#48](https://github.com/paolabbradaric/grupa122/pull/48), [#49](https://github.com/paolabbradaric/grupa122/pull/49) |
+
+Utrošene sate članovi upisuju na temelju vlastite evidencije; sati nisu procijenjeni iz broja commitova.
 
 ## A.4 Pregled promjena u repozitoriju
 
-Doprinos se može dodatno pratiti kroz [GitHub Contributors](https://github.com/paolabbradaric/grupa122/graphs/contributors) i [commitove računa mariohaluzan](https://github.com/paolabbradaric/grupa122/commits/main/?author=mariohaluzan). Početna implementacija obuhvaća razdoblje od 17. listopada do 4. studenoga, a 17. studenoga slijede dokumentacijska provjera i dopuna stvarne lokalne Google prijave kroz PR #44. Broj commitova ne pokazuje ukupne sate ni sav rad na integraciji.
+Doprinosi cijelog tima mogu se pratiti kroz [GitHub Contributors](https://github.com/paolabbradaric/grupa122/graphs/contributors), povijest commitova te PR-ove navedene u ovom dodatku. Prve promjene započele su u listopadu, a integracija backenda, korisničkih sučelja i javne aplikacije nastavljena je u studenome. Broj commitova nije mjerilo ukupnih radnih sati.
 
 ## A.5 Inženjerski izazovi i rješenja
 
@@ -41,5 +55,7 @@ Nacrti su zahtijevali drukčija pravila od objavljenih oglasa. Dio NOT NULL uvje
 Postojeća baza i Express backend zadržani su tijekom prilagodbe prijave. Umjesto uvođenja novog aplikacijskog okvira pripremljene su migracije i auth moduli koji koriste postojeći pg pool. Zajednička veza osigurana je TLS-om i javnim CA certifikatom, uz privatne pristupne podatke.
 
 Za provjeru prijave bilo je potrebno razlikovati simulirani HTTP tok od stvarnih SQL upisa. Zato su testovi razdvojeni. Početni zapisnik na `bd785d4` nije uključivao stvarni Google tok; naknadni PR #44 potvrđuje lokalni kandidatski tok kroz Google i postojeću bazu. Stvarni poslodavački tok, restart s postojećom prijavom i produkcijska konfiguracija ostaju zasebne neprovedene provjere.
+
+Kod rezervacija audicija trebalo je spriječiti prekoračenje kapaciteta pri istodobnim zahtjevima. Backend koristi zaključavanje i ograničenja baze ([PR #58](https://github.com/paolabbradaric/grupa122/pull/58)), a kandidatovo sučelje za odabir i promjenu termina povezano je naknadno ([PR #68](https://github.com/paolabbradaric/grupa122/pull/68)). Prikazi prijava i obavijesti naknadno su povezani s odgovarajućim API-jem ([PR #66](https://github.com/paolabbradaric/grupa122/pull/66)).
 
 [Status zadatka #12](AUTENTIFIKACIJA.md#status-zadatka-12-i-potreban-završetak) i [kazalo](Home.md) vode na povezane dijelove dokumentacije.
