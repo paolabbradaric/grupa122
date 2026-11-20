@@ -4,7 +4,7 @@ Faza A povezuje postojeću Google prijavu s administratorskim ovlastima i putanj
 
 ## Konfiguracija i opoziv
 
-Jedini izvor dopuštenih adresa je privatni backend `ADMIN_EMAILS`, koji čita `src/auth/config.js`. Unijeti svih pet dogovorenih punih Google adresa, odvojenih zarezom, bez navodnika oko pojedinih stavki. Javni primjer u `.env.example` namjerno nema stvarni popis. Taj popis ne smije biti u `VITE_*` varijabli, frontend kodu ili Git povijesti.
+Jedini izvor dopuštenih adresa je privatni backend `ADMIN_EMAILS`, koji čita `src/auth/config.js`. Unijeti pune Google adrese ovlaštenih administratora i demonstracijskog računa, odvojene zarezom, bez navodnika oko pojedinih stavki. Javni primjer u `.env.example` namjerno nema stvarni popis. Taj popis ne smije biti u `VITE_*` varijabli, frontend kodu ili Git povijesti.
 
 Primjer sintakse: `ADMIN_EMAILS=admin.one@example.com,admin.two@example.com`.
 
@@ -24,7 +24,7 @@ Za novi dopušteni Google identitet kreira se samo `users` zapis s ulogom admin.
 
 Provisioniranje koristi jednu SQL transakciju, zaključavanje subjecta/adrese, provjeru aktivnog računa i jedinstvene indekse. Istodobne prve prijave istog identiteta vraćaju isti račun. Dva različita subjecta ne mogu preuzeti istu normaliziranu adresu. SQL greške i konflikti poništavaju cijelu transakciju.
 
-Mariov postojeći Google račun ID 49 ostaje demo administrator. Kandidatski profil je sačuvan; jedna aktivna uloga ne daje mu istodobno kandidatske ovlasti. Obrisani mock admin ID 48 ne vraća se, a ranije odluke verifikacije ne pripisuju se Mariju. Nema migracije s tim produkcijskim ID-jevima.
+Za demonstraciju administratorskih funkcija koristi se poseban Google račun s administratorskim ovlastima. Pristupni podaci dostavljaju se asistentima privatnim Microsoft Teams kanalom TG12.2. Kandidatski profil je sačuvan; jedna aktivna uloga ne daje mu istodobno kandidatske ovlasti. Obrisani mock admin ID 48 ne vraća se, a ranije odluke verifikacije ne pripisuju se Mariju. Nema migracije s tim produkcijskim ID-jevima.
 
 ## API i prikaz
 

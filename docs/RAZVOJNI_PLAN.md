@@ -4,7 +4,7 @@ Implementacija Google prijave, sesija i registracije opisana je u [Autentifikaci
 
 ## Potvrđene odluke
 - Prijava putem OAuth 2.0 / OpenID Connect pružatelja identiteta; vlastite korisničke lozinke ne pohranjujemo.
-- Uloge: kandidat, poslodavac, admin. Pet administratora koristi individualne Google račune s privatnog serverskog popisa. Demo koristi Mariov postojeći Google račun; nema zasebne zajedničke admin prijave.
+- Uloge: kandidat, poslodavac, admin. Administratorski pristup imaju ovlašteni Google računi s privatnog serverskog popisa. Za demonstraciju koristi se poseban Google račun s administratorskim ovlastima. Pristupni podaci dostavljaju se asistentima privatnim Microsoft Teams kanalom TG12.2.
 - Gosti vide javne oglase; prijavljeni poslodavac vidi samo svoje oglase.
 - Svaki oglas je zaseban projekt s jednom ulogom.
 - Svaki oglas ima `positions_count` (broj traženih kandidata) i `max_applications` (najviše prijava; početna vrijednost 1000 po oglasu). Prijave su moguće do roka, dok je oglas objavljen i limit nije dosegnut; kandidat se može prijaviti jednom na isti oglas. Dodatno su potrebne zaštite od automatiziranih prijava (npr. rate limiting).
