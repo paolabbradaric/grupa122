@@ -16,6 +16,19 @@ Mario je radio na bazi, migracijama, autentifikaciji i provjerama ovlasti. Rea j
 
 Redoslijed i ovisnosti zadataka opisani su u [razvojnom planu](RAZVOJNI_PLAN.md). Integracija je napredovala kroz povezivanje korisničkih sučelja s API-jem, dok se cjeloviti korisnički tokovi dodatno provjeravaju.
 
+### Sprintovi
+
+Dosadašnji rad naknadno je sažet prema promjenama u repozitoriju:
+
+| Sprint | Razdoblje | Cilj |
+| --- | --- | --- |
+| [Sprint 1](meeting-notes/sprint-01.md) | 23. 10. – 5. 11. 2026. | Prijava korisnika i pregled casting oglasa. |
+| [Sprint 2](meeting-notes/sprint-02.md) | 6. 11. – 19. 11. 2026. | Povezani tijek od objave oglasa do rezervacije audicije. |
+
+### Definition of Done
+
+Zadatak smatramo dovršenim kada dogovorena funkcionalnost radi, povezana je s potrebnim dijelovima aplikacije i bazom te su provedene odgovarajuće provjere. Promjene trebaju biti pregledane i uključene u glavnu granu, a dokumentacija dopunjena kada je potrebno. Poznati nedostaci i preostali posao evidentiraju se u GitHub Issues.
+
 ## A.3 Aktivnosti i doprinosi članova
 
 Pregled doprinosa svih članova temelji se na spojenim Pull Requestovima.
